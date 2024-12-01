@@ -1,0 +1,487 @@
+{
+  "configuration" : { },
+  "description" : "CM3070 Final Project",
+  "documentation" : { },
+  "id" : 1,
+  "lastModifiedAgent" : "structurizr-ui",
+  "lastModifiedDate" : "2024-12-01T11:54:22Z",
+  "model" : {
+    "people" : [ {
+      "id" : "1",
+      "location" : "Unspecified",
+      "name" : "Installer",
+      "properties" : {
+        "structurizr.dsl.identifier" : "u_installer"
+      },
+      "relationships" : [ {
+        "description" : "Configures",
+        "destinationId" : "4",
+        "id" : "11",
+        "sourceId" : "1",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Configures",
+        "destinationId" : "7",
+        "id" : "12",
+        "sourceId" : "1",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Configures",
+        "destinationId" : "6",
+        "id" : "13",
+        "linkedRelationshipId" : "12",
+        "sourceId" : "1"
+      }, {
+        "description" : "Configures",
+        "destinationId" : "10",
+        "id" : "14",
+        "sourceId" : "1",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Configures",
+        "destinationId" : "9",
+        "id" : "15",
+        "linkedRelationshipId" : "14",
+        "sourceId" : "1"
+      } ],
+      "tags" : "Element,Person"
+    }, {
+      "id" : "2",
+      "location" : "Unspecified",
+      "name" : "User",
+      "properties" : {
+        "structurizr.dsl.identifier" : "u_user"
+      },
+      "relationships" : [ {
+        "description" : "Views notifications and videos",
+        "destinationId" : "7",
+        "id" : "16",
+        "sourceId" : "2",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Views notifications and videos",
+        "destinationId" : "6",
+        "id" : "17",
+        "linkedRelationshipId" : "16",
+        "sourceId" : "2"
+      } ],
+      "tags" : "Element,Person"
+    }, {
+      "id" : "3",
+      "location" : "Unspecified",
+      "name" : "Viewer",
+      "properties" : {
+        "structurizr.dsl.identifier" : "u_viewer"
+      },
+      "relationships" : [ {
+        "description" : "Views selected recorded videos",
+        "destinationId" : "8",
+        "id" : "18",
+        "sourceId" : "3",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Views selected recorded videos",
+        "destinationId" : "6",
+        "id" : "19",
+        "linkedRelationshipId" : "18",
+        "sourceId" : "3"
+      } ],
+      "tags" : "Element,Person"
+    } ],
+    "softwareSystems" : [ {
+      "containers" : [ {
+        "documentation" : { },
+        "id" : "5",
+        "name" : "Movement Detection",
+        "properties" : {
+          "structurizr.dsl.identifier" : "s_local.movementdetection"
+        },
+        "relationships" : [ {
+          "description" : "Uploads to",
+          "destinationId" : "8",
+          "id" : "22",
+          "sourceId" : "5",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Uploads to",
+          "destinationId" : "6",
+          "id" : "23",
+          "linkedRelationshipId" : "22",
+          "sourceId" : "5"
+        } ],
+        "tags" : "Element,Container"
+      } ],
+      "documentation" : { },
+      "id" : "4",
+      "location" : "Unspecified",
+      "name" : "Local Camera System",
+      "properties" : {
+        "structurizr.dsl.identifier" : "s_local"
+      },
+      "relationships" : [ {
+        "description" : "Uploads to",
+        "destinationId" : "8",
+        "id" : "24",
+        "linkedRelationshipId" : "22",
+        "sourceId" : "4"
+      }, {
+        "description" : "Uploads to",
+        "destinationId" : "6",
+        "id" : "25",
+        "linkedRelationshipId" : "22",
+        "sourceId" : "4"
+      } ],
+      "tags" : "Element,Software System"
+    }, {
+      "containers" : [ {
+        "documentation" : { },
+        "id" : "7",
+        "name" : "Dashboard",
+        "properties" : {
+          "structurizr.dsl.identifier" : "s_remote.dashboard"
+        },
+        "relationships" : [ {
+          "description" : "Accesses Video",
+          "destinationId" : "8",
+          "id" : "30",
+          "sourceId" : "7",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Container"
+      }, {
+        "documentation" : { },
+        "id" : "8",
+        "name" : "Storage",
+        "properties" : {
+          "structurizr.dsl.identifier" : "s_remote.storage"
+        },
+        "relationships" : [ {
+          "description" : "Triggers",
+          "destinationId" : "10",
+          "id" : "26",
+          "sourceId" : "8",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Triggers",
+          "destinationId" : "9",
+          "id" : "27",
+          "linkedRelationshipId" : "26",
+          "sourceId" : "8"
+        } ],
+        "tags" : "Element,Container,Storage"
+      } ],
+      "documentation" : { },
+      "id" : "6",
+      "location" : "Unspecified",
+      "name" : "Remote System",
+      "properties" : {
+        "structurizr.dsl.identifier" : "s_remote"
+      },
+      "relationships" : [ {
+        "description" : "Triggers",
+        "destinationId" : "10",
+        "id" : "28",
+        "linkedRelationshipId" : "26",
+        "sourceId" : "6"
+      }, {
+        "description" : "Triggers",
+        "destinationId" : "9",
+        "id" : "29",
+        "linkedRelationshipId" : "26",
+        "sourceId" : "6"
+      } ],
+      "tags" : "Element,Software System"
+    }, {
+      "containers" : [ {
+        "documentation" : { },
+        "id" : "10",
+        "name" : "Notifier",
+        "properties" : {
+          "structurizr.dsl.identifier" : "s_notification.notifier"
+        },
+        "relationships" : [ {
+          "description" : "Notifies",
+          "destinationId" : "2",
+          "id" : "20",
+          "sourceId" : "10",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Container"
+      } ],
+      "documentation" : { },
+      "id" : "9",
+      "location" : "Unspecified",
+      "name" : "Notification System",
+      "properties" : {
+        "structurizr.dsl.identifier" : "s_notification"
+      },
+      "relationships" : [ {
+        "description" : "Notifies",
+        "destinationId" : "2",
+        "id" : "21",
+        "linkedRelationshipId" : "20",
+        "sourceId" : "9"
+      } ],
+      "tags" : "Element,Software System"
+    } ]
+  },
+  "name" : "Private Camera System",
+  "properties" : {
+    "structurizr.dsl" : "d29ya3NwYWNlICJQcml2YXRlIENhbWVyYSBTeXN0ZW0iICJDTTMwNzAgRmluYWwgUHJvamVjdCIgewoKICAgICFpZGVudGlmaWVycyBoaWVyYXJjaGljYWwKCgogICAgbW9kZWwgewogICAgICAgIHVfaW5zdGFsbGVyID0gcGVyc29uICJJbnN0YWxsZXIiCiAgICAgICAgdV91c2VyID0gcGVyc29uICJVc2VyIgogICAgICAgIHVfdmlld2VyID0gcGVyc29uICJWaWV3ZXIiCiAgICAgICAgc19sb2NhbCA9IHNvZnR3YXJlU3lzdGVtICJMb2NhbCBDYW1lcmEgU3lzdGVtIiB7CiAgICAgICAgICAgIG1vdmVtZW50RGV0ZWN0aW9uID0gY29udGFpbmVyICJNb3ZlbWVudCBEZXRlY3Rpb24iCiAgICAgICAgfQogICAgICAgIHNfcmVtb3RlID0gc29mdHdhcmVTeXN0ZW0gIlJlbW90ZSBTeXN0ZW0iIHsKICAgICAgICAgICAgZGFzaGJvYXJkID0gY29udGFpbmVyICJEYXNoYm9hcmQiCiAgICAgICAgICAgIHN0b3JhZ2UgPSBjb250YWluZXIgIlN0b3JhZ2UiIHsKICAgICAgICAgICAgICAgIHRhZ3MgIlN0b3JhZ2UiCiAgICAgICAgICAgIH0KICAgICAgICB9CiAgICAgICAgc19ub3RpZmljYXRpb24gPSBzb2Z0d2FyZVN5c3RlbSAiTm90aWZpY2F0aW9uIFN5c3RlbSIgewogICAgICAgICAgICBub3RpZmllciA9IGNvbnRhaW5lciAiTm90aWZpZXIiCiAgICAgICAgfQoKICAgICAgICAjIHVzZXIgaW50ZXJhY3Rpb25zCiAgICAgICAgdV9pbnN0YWxsZXIgLT4gc19sb2NhbCAiQ29uZmlndXJlcyIKICAgICAgICB1X2luc3RhbGxlciAtPiBzX3JlbW90ZS5kYXNoYm9hcmQgIkNvbmZpZ3VyZXMiCiAgICAgICAgdV9pbnN0YWxsZXIgLT4gc19ub3RpZmljYXRpb24ubm90aWZpZXIgIkNvbmZpZ3VyZXMiCiAgICAgICAgdV91c2VyIC0+IHNfcmVtb3RlLmRhc2hib2FyZCAiVmlld3Mgbm90aWZpY2F0aW9ucyBhbmQgdmlkZW9zIgogICAgICAgIHVfdmlld2VyIC0+IHNfcmVtb3RlLnN0b3JhZ2UgIlZpZXdzIHNlbGVjdGVkIHJlY29yZGVkIHZpZGVvcyIKCiAgICAgICAgc19ub3RpZmljYXRpb24ubm90aWZpZXIgLT4gdV91c2VyICJOb3RpZmllcyIKCiAgICAgICAgIyBzeXN0ZW0gaW50ZXJhY3Rpb25zCiAgICAgICAgc19sb2NhbC5tb3ZlbWVudERldGVjdGlvbiAtPiBzX3JlbW90ZS5zdG9yYWdlICJVcGxvYWRzIHRvIgogICAgICAgIHNfcmVtb3RlLnN0b3JhZ2UgLT4gc19ub3RpZmljYXRpb24ubm90aWZpZXIgIlRyaWdnZXJzIgogICAgICAgIAogICAgICAgICMgbG9jYWwgc3lzdGVtIGludGVybmFsIGludGVyYWN0aW9ucwoKICAgICAgICAjIHJlbW90ZSBzeXN0ZW0gaW50ZXJuYWwgaW50ZXJhY3Rpb25zCiAgICAgICAgc19yZW1vdGUuZGFzaGJvYXJkIC0+IHNfcmVtb3RlLnN0b3JhZ2UgIkFjY2Vzc2VzIFZpZGVvIgoKICAgICAgICAjIG5vdGlmaWNhdGlvbiBzeXN0ZW0gaW50ZXJuYWwgaW50ZXJhY3Rpb25zCgoKICAgICAgICAjIHN5c3RlbS5kYXNoYm9hcmQgLT4gc3lzdGVtLmRiICJSZWFkcyBmcm9tIGFuZCB3cml0ZXMgdG8iCiAgICB9CgogICAgdmlld3MgewoKICAgICAgICBzeXN0ZW1MYW5kc2NhcGUgbGFuZHNjYXBlICJQcml2YXRlIFNlY3VyaXR5IENhbWVyYSBTeXN0ZW0iIHsKICAgICAgICAgICAgaW5jbHVkZSAqCiAgICAgICAgICAgICMgYXV0b2xheW91dCBscgogICAgICAgIH0KICAgICAgIAogICAgICAgIHN5c3RlbUNvbnRleHQgc19sb2NhbCAiTG9jYWxDYW1lcmFTeXN0ZW0iIHsKICAgICAgICAgICAgaW5jbHVkZSAqCiAgICAgICAgICAgIGF1dG9sYXlvdXQgbHIKICAgICAgICB9CgogICAgICAgIGNvbnRhaW5lciBzX3JlbW90ZSAiUmVtb3RlRGFzaGJvYXJkU3lzdGVtIiB7CiAgICAgICAgICAgIGluY2x1ZGUgKgogICAgICAgICAgICBhdXRvbGF5b3V0IGxyCiAgICAgICAgfQoKICAgICAgICBjb250YWluZXIgc19ub3RpZmljYXRpb24gIk5vdGlmaWNhdGlvblN5c3RlbSIgewogICAgICAgICAgICBpbmNsdWRlICoKICAgICAgICAgICAgYXV0b2xheW91dCBscgogICAgICAgIH0KCiAgICAgICAgc3R5bGVzIHsKICAgICAgICAgICAgZWxlbWVudCAiRWxlbWVudCIgewogICAgICAgICAgICAgICAgY29sb3IgI2ZmZmZmZgogICAgICAgICAgICB9CiAgICAgICAgICAgIGVsZW1lbnQgIlBlcnNvbiIgewogICAgICAgICAgICAgICAgYmFja2dyb3VuZCAjMDU1MjdkCiAgICAgICAgICAgICAgICBzaGFwZSBwZXJzb24KICAgICAgICAgICAgfQogICAgICAgICAgICBlbGVtZW50ICJTb2Z0d2FyZSBTeXN0ZW0iIHsKICAgICAgICAgICAgICAgIGJhY2tncm91bmQgIzA2NjI5NgogICAgICAgICAgICB9CiAgICAgICAgICAgIGVsZW1lbnQgIkNvbnRhaW5lciIgewogICAgICAgICAgICAgICAgYmFja2dyb3VuZCAjMDc3M2FmCiAgICAgICAgICAgIH0KICAgICAgICAgICAgZWxlbWVudCAiU3RvcmFnZSIgewogICAgICAgICAgICAgICAgc2hhcGUgY3lsaW5kZXIKICAgICAgICAgICAgfQogICAgICAgIH0KIAogICAgICAgIHRoZW1lIGh0dHBzOi8vc3RhdGljLnN0cnVjdHVyaXpyLmNvbS90aGVtZXMvYW1hem9uLXdlYi1zZXJ2aWNlcy0yMDIzLjAxLjMxL3RoZW1lLmpzb24KICAgIH0KCgoKICAgIGNvbmZpZ3VyYXRpb24gewogICAgICAgIHNjb3BlIG5vbmUKICAgIH0KCn0="
+  },
+  "views" : {
+    "configuration" : {
+      "branding" : { },
+      "lastSavedView" : "RemoteDashboardSystem",
+      "metadataSymbols" : "SquareBrackets",
+      "styles" : {
+        "elements" : [ {
+          "color" : "#ffffff",
+          "tag" : "Element"
+        }, {
+          "background" : "#05527d",
+          "shape" : "Person",
+          "tag" : "Person"
+        }, {
+          "background" : "#066296",
+          "tag" : "Software System"
+        }, {
+          "background" : "#0773af",
+          "tag" : "Container"
+        }, {
+          "shape" : "Cylinder",
+          "tag" : "Storage"
+        } ]
+      },
+      "terminology" : { },
+      "themes" : [ "https://static.structurizr.com/themes/amazon-web-services-2023.01.31/theme.json" ]
+    },
+    "containerViews" : [ {
+      "automaticLayout" : {
+        "applied" : true,
+        "edgeSeparation" : 0,
+        "implementation" : "Graphviz",
+        "nodeSeparation" : 300,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 300,
+        "vertices" : false
+      },
+      "dimensions" : {
+        "height" : 2700,
+        "width" : 2320
+      },
+      "elements" : [ {
+        "id" : "1",
+        "x" : 200,
+        "y" : 849
+      }, {
+        "id" : "2",
+        "x" : 1675,
+        "y" : 199
+      }, {
+        "id" : "3",
+        "x" : 925,
+        "y" : 2099
+      }, {
+        "id" : "4",
+        "x" : 900,
+        "y" : 1499
+      }, {
+        "id" : "7",
+        "x" : 900,
+        "y" : 899
+      }, {
+        "id" : "8",
+        "x" : 1650,
+        "y" : 899
+      }, {
+        "id" : "9",
+        "x" : 900,
+        "y" : 299
+      } ],
+      "externalSoftwareSystemBoundariesVisible" : false,
+      "key" : "RemoteDashboardSystem",
+      "order" : 3,
+      "relationships" : [ {
+        "id" : "11",
+        "vertices" : [ {
+          "x" : 796,
+          "y" : 1378
+        } ]
+      }, {
+        "id" : "12"
+      }, {
+        "id" : "15",
+        "vertices" : [ {
+          "x" : 796,
+          "y" : 720
+        } ]
+      }, {
+        "id" : "16"
+      }, {
+        "id" : "18",
+        "vertices" : [ {
+          "x" : 1350,
+          "y" : 1949
+        } ]
+      }, {
+        "id" : "21"
+      }, {
+        "id" : "24"
+      }, {
+        "id" : "27"
+      }, {
+        "id" : "30"
+      } ],
+      "softwareSystemId" : "6"
+    }, {
+      "automaticLayout" : {
+        "applied" : true,
+        "edgeSeparation" : 0,
+        "implementation" : "Graphviz",
+        "nodeSeparation" : 300,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 300,
+        "vertices" : false
+      },
+      "dimensions" : {
+        "height" : 1500,
+        "width" : 1570
+      },
+      "elements" : [ {
+        "id" : "1",
+        "x" : 200,
+        "y" : 199
+      }, {
+        "id" : "2",
+        "x" : 200,
+        "y" : 899
+      }, {
+        "id" : "6",
+        "x" : 900,
+        "y" : 299
+      }, {
+        "id" : "10",
+        "x" : 900,
+        "y" : 899
+      } ],
+      "externalSoftwareSystemBoundariesVisible" : false,
+      "key" : "NotificationSystem",
+      "order" : 4,
+      "relationships" : [ {
+        "id" : "13"
+      }, {
+        "id" : "14"
+      }, {
+        "id" : "17",
+        "vertices" : [ {
+          "x" : 796,
+          "y" : 720
+        } ]
+      }, {
+        "id" : "20"
+      }, {
+        "id" : "28",
+        "vertices" : [ {
+          "x" : 1125,
+          "y" : 649
+        }, {
+          "x" : 1125,
+          "y" : 849
+        } ]
+      } ],
+      "softwareSystemId" : "9"
+    } ],
+    "systemContextViews" : [ {
+      "automaticLayout" : {
+        "applied" : true,
+        "edgeSeparation" : 0,
+        "implementation" : "Graphviz",
+        "nodeSeparation" : 300,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 300,
+        "vertices" : false
+      },
+      "dimensions" : {
+        "height" : 1054,
+        "width" : 2300
+      },
+      "elements" : [ {
+        "id" : "1",
+        "x" : 200,
+        "y" : 454
+      }, {
+        "id" : "4",
+        "x" : 900,
+        "y" : 200
+      }, {
+        "id" : "6",
+        "x" : 1650,
+        "y" : 504
+      } ],
+      "enterpriseBoundaryVisible" : true,
+      "key" : "LocalCameraSystem",
+      "order" : 2,
+      "relationships" : [ {
+        "id" : "11"
+      }, {
+        "id" : "13"
+      }, {
+        "id" : "25"
+      } ],
+      "softwareSystemId" : "4"
+    } ],
+    "systemLandscapeViews" : [ {
+      "description" : "Private Security Camera System",
+      "dimensions" : {
+        "height" : 2609,
+        "width" : 2900
+      },
+      "elements" : [ {
+        "id" : "1",
+        "x" : 394,
+        "y" : 1090
+      }, {
+        "id" : "2",
+        "x" : 2105,
+        "y" : 1446
+      }, {
+        "id" : "3",
+        "x" : 2105,
+        "y" : 721
+      }, {
+        "id" : "4",
+        "x" : 1191,
+        "y" : 537
+      }, {
+        "id" : "6",
+        "x" : 1190,
+        "y" : 1154
+      }, {
+        "id" : "9",
+        "x" : 1190,
+        "y" : 1771
+      } ],
+      "enterpriseBoundaryVisible" : true,
+      "key" : "landscape",
+      "order" : 1,
+      "relationships" : [ {
+        "id" : "11"
+      }, {
+        "id" : "13"
+      }, {
+        "id" : "15"
+      }, {
+        "id" : "17"
+      }, {
+        "id" : "19"
+      }, {
+        "id" : "21"
+      }, {
+        "id" : "25"
+      }, {
+        "id" : "29"
+      } ]
+    } ]
+  }
+}
