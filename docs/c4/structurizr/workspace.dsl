@@ -2,83 +2,111 @@ workspace "Private Camera System" "CM3070 Final Project" {
 
     !identifiers hierarchical
 
-
     model {
         u_installer = person "Installer"
-        u_user = person "User"
-        u_viewer = person "Viewer"
-        s_local = softwareSystem "Local Camera System" {
-            movementDetection = container "Movement Detection"
-        }
-        s_remote = softwareSystem "Remote System" {
-            dashboard = container "Dashboard"
-            storage = container "Storage" {
-                tags "Storage"
+        u_user = person "Dashboard User"
+        u_viewer = person "External Viewer"
+        s = softwareSystem "Security Camera System" {
+            tags "Overall System"
+            local = group "Local Camera System" {
+                movementDetection = container "Movement Detection" {
+                    tags "Local"
+                }
+                camera = container "Camera System" {
+                    tags "Local"
+                }
             }
-        }
-        s_notification = softwareSystem "Notification System" {
-            notifier = container "Notifier"
+            remote = group "Remote System" {
+                dashboard = container "Dashboard" {
+                    tags "Remote"
+                }
+                storage = container "Video Storage" {
+                    tags "Storage" "Remote"
+                }
+                db = container "Database" {
+                    tags "Storage" "Remote"
+                }
+            }
+            notfication = group "Notification System" {
+                notifier = container "Notifier" {
+                    tags "Notification"
+                }
+            }
         }
 
         # user interactions
-        u_installer -> s_local "Configures"
-        u_installer -> s_remote.dashboard "Configures"
-        u_installer -> s_notification.notifier "Configures"
-        u_user -> s_remote.dashboard "Views notifications and videos"
-        u_viewer -> s_remote.storage "Views selected recorded videos"
+        u_installer -> s.movementDetection "Configures"
+        u_installer -> s.dashboard "Configures"
+        u_installer -> s.notifier "Configures"
+        u_user -> s.dashboard "Views notifications and videos"
+        u_viewer -> s.dashboard "Views selected recorded videos"
+        # u_viewer -> s.storage "Views selected recorded videos"
 
-        s_notification.notifier -> u_user "Notifies"
+        s.notifier -> u_user "Sends notification"
 
         # system interactions
-        s_local.movementDetection -> s_remote.storage "Uploads to"
-        s_remote.storage -> s_notification.notifier "Triggers"
+        s.movementDetection -> s.storage "Uploads movement video to" 
+        s.storage -> s.notifier "Triggers" 
         
         # local system internal interactions
+        s.camera -> s.movementDetection "streams video to"
 
         # remote system internal interactions
-        s_remote.dashboard -> s_remote.storage "Accesses Video"
+        s.dashboard -> s.storage "Accesses and Deletes Video"
+        s.storage -> s.db "Creates Record"
+        s.dashboard -> s.db "Updates Video Status"
 
         # notification system internal interactions
-
-
-        # system.dashboard -> system.db "Reads from and writes to"
+        s.notifier -> s.db "Record notification sent"
     }
 
     views {
 
-        systemLandscape landscape "Private Security Camera System" {
+        systemContext s "CameraSystemContext" {
+            title "Camera System Context"
             include *
-            # autolayout lr
+        }
+
+        container s "LocalSystem" {
+            title "Local System Container View"
+            include ->s.local->
         }
        
-        systemContext s_local "LocalCameraSystem" {
-            include *
-            autolayout lr
+        container s "RemoteDashboardSystem" {
+            title "Remote Dashboard System Container View"
+            include ->s.dashboard-> ->s.storage-> ->s.db->
+            exclude "u_installer -> s.local"
+            exclude "u_installer -> s.notifier"
+            exclude "s.notifier -> u_user"
+        }
+       
+        container s "NotificationSystem" {
+            title "Notificiation System Container View"
+            include ->s.notifier->
+            exclude "s.storage -> s.db"
         }
 
-        container s_remote "RemoteDashboardSystem" {
-            include *
-            autolayout lr
-        }
-
-        container s_notification "NotificationSystem" {
-            include *
-            autolayout lr
-        }
 
         styles {
             element "Element" {
                 color #ffffff
+                metadata false
+            }
+            element "Local" {
+                background green
+            }
+            element "Remote" {
+                background purple
+            }
+            element "Notification" {
+                background blue
             }
             element "Person" {
                 background #05527d
                 shape person
             }
-            element "Software System" {
-                background #066296
-            }
-            element "Container" {
-                background #0773af
+            element "Overall System" {
+                background red
             }
             element "Storage" {
                 shape cylinder
@@ -88,10 +116,5 @@ workspace "Private Camera System" "CM3070 Final Project" {
         theme https://static.structurizr.com/themes/amazon-web-services-2023.01.31/theme.json
     }
 
-
-
-    configuration {
-        scope none
-    }
 
 }
