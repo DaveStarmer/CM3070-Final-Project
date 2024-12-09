@@ -1,0 +1,27 @@
+# feat: introduces a new feature                 #
+# fix: patches a bug                             #
+# docs: adds or updates documentation            #
+# style: improve code structure/format not logic #
+# refactor: changes code no new feats/bug fixes  #
+# test: adds or modifies tests                   #
+# ci: change CI configuration files and scripts  #
+# chore: changes don't modify src or test files  #
+# build: changes to build system/ext dependencies#
+# revert: reverts a previous commit              #
+# Title. Max 50 chars. Which is here >>>>>>>>>>  #
+# Format should be:
+#   <type>[optional scope]: <description>
+#     <type>: fix/feat/docs/ci/build/chore/style/refactor/perf/test
+#     scope: scope in brackets, e.g. (api)
+#     optional ! to denote breaking change
+#     description: summary, keep imperitive. No terminal full stop.
+# Using conventional commits: https://www.conventionalcommits.org/en/v1.0.0/
+# Remember blank line between title and body.
+
+# Body: Explain *what* and *why* (not *how*). Include task ID.
+# Wrap at 72 chars. ################################## which is here:  #
+
+# Remember blank line before footer
+
+# Footer used for noting breaking change. Start by decommenting below  #
+# BREAKING CHANGE:
