@@ -58,6 +58,60 @@ workspace "Private Camera System" "CM3070 Final Project" {
 
         # notification system internal interactions
         s.notifier -> s.db "Record notification sent"
+
+        # AWS Deployment
+        aws = deploymentEnvironment "AWS Account" {
+            aws_users = deploymentNode "Users" {
+                tags "invisible"
+                u_aws_user = infrastructureNode "Users" {
+                    tags "Amazon Web Services - Users"
+                }
+            }
+            aws_deploy = deploymentNode "Amazon Web Services" {
+                tags "Amazon Web Services - Cloud"
+                aws_s = softwareSystemInstance s
+                s3_video = infrastructureNode "Video Storage" {
+                    tags "Amazon Web Services - Simple Storage Service S3 Standard"
+                }
+                cloudfront = infrastructureNode "CloudFront" {
+                    tags "Amazon Web Services - CloudFront"
+                }
+                lambda_auth = infrastructureNode "Authorisation Lambda" {
+                    tags "Amazon Web Services - Lambda"
+                }
+                s3_dashboard = infrastructureNode "Dashboard Website Storage" {
+                    tags "Amazon Web Services - Simple Storage Service S3 Standard"
+                }
+                cognito = infrastructureNode "Cognito" {
+                    tags "Amazon Web Services - Cognito"
+                }
+                notifications_db = infrastructureNode "Notifications Database" {
+                    tags "Amazon Web Services - DynamoDB"
+                }
+                notifications_api = infrastructureNode "Notifications API" {
+                    tags "Amazon Web Services - Lambda"
+                }
+                notifications_sns = infrastructureNode "Notification Topic" {
+                    tags "Amazon Web Services - Simple Notification Service"
+                }
+
+                cloudfront -> lambda_auth "Call to check authorisation"
+                cognito -> lambda_auth "Authorisation interaction"
+                lambda_auth -> cognito "Authorisation interaction"
+                cloudfront -> s3_dashboard "Retrieve Website"
+                cloudfront -> s3_video "Retrieve Video"
+                cloudfront -> notifications_api "Retrieves and updates notifications"
+                notifications_api -> cloudfront "Returns notification information"
+                s3_video -> notifications_sns "Trigger notification"
+                notifications_sns -> notifications_db "Store notification"
+                notifications_api -> notifications_db "Retrieve Notifications"
+            }
+                aws_deploy.notifications_sns -> aws_users.u_aws_user "Notify"
+                aws_users.u_aws_user -> aws_deploy.cloudfront "Authorise and connect to dashboard through"
+
+        }
+
+
     }
 
     views {
@@ -86,11 +140,24 @@ workspace "Private Camera System" "CM3070 Final Project" {
             exclude "s.storage -> s.db"
         }
 
+        container s "FullSystem" {
+            title "Full System Container View"
+            include *
+        }
+
+        deployment s aws {
+            include *
+        }
+
 
         styles {
             element "Element" {
                 color #ffffff
                 metadata false
+            }
+            element deploymentEnvironment {
+                color black
+                metadata true
             }
             element "Local" {
                 background green
@@ -110,6 +177,17 @@ workspace "Private Camera System" "CM3070 Final Project" {
             }
             element "Storage" {
                 shape cylinder
+            }
+            element "invisible" {
+                background white
+                colour white
+            }
+            element "Amazon Web Services - Users" {
+                background white
+            }
+            relationship "Relationship" {
+                fontSize 36
+                width 400
             }
         }
  
