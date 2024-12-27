@@ -146,6 +146,7 @@ workspace "Private Camera System" "CM3070 Final Project" {
         }
 
         deployment s aws {
+            title "AWS Deployment View"
             include *
         }
 
