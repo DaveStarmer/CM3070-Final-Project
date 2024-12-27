@@ -1,5 +1,6 @@
 {
     "pylint.args": [
         "--rcfile=.pylintrc"
-    ]
+    ],
+    "editor.defaultFormatter": "ms-python.black-formatter"
 }
