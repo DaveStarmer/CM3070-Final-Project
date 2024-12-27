@@ -194,6 +194,4 @@ workspace "Private Camera System" "CM3070 Final Project" {
  
         theme https://static.structurizr.com/themes/amazon-web-services-2023.01.31/theme.json
     }
-
-
 }

@@ -1,0 +1,21 @@
+# uses image from https://github.com/marketplace/actions/generate-structurizr-diagrams-images-from-dsl
+name: Structurizr Diagram Generation
+run-name: Generating Structurizr Diagrams
+on:
+  push:
+    paths:
+      - docs/c4/structurizr/** # only run on changes to docs
+jobs:
+  generate-diagrams:
+    name: Generate Diagrams
+    runs-on: ubuntu-latest
+    container: 
+      image: ghcr.io/sebastienfi/structurizr-cli-with-bonus:latest
+    permissions:
+      contents: write # allow writing to the repo
+    steps:
+      - uses: sebastienfi/structurizr-gen-images@v1 # docker image for structurizr container
+        with:
+          repo-token: $ {{ secrets.GITHUB_TOKEN }} # permission for the action to write
+          workspace-path: 'docs/c4/structurizr/workspace.dsl' # location of source files
+          output-path: 'docs/c4' # location of output diagrams
