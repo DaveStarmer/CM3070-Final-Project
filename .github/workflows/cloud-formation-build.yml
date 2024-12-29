@@ -9,21 +9,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: list current directory
-        run: ls > curr.lsf
-      - name: list parent directory
-        run: ls .. > parent.lsf
-      - name: upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          path: "*.lsf"
-      - name: check current directory
-        run: pwd
       - name: cdk synth
         uses: youyo/aws-cdk-github-actions@v2
         with:
             cdk_subcommand: 'synth'
-            # working_dir: 'remote-aws/cdk'
+            working_dir: 'remote-aws/cdk'
             cdk_stack: 'dashboardstack'
             cdk_args: '--app app'
         env:
