@@ -15,7 +15,7 @@ jobs:
       - name: upload artifact
         uses: actions/upload-artifact@v4
         with:
-          path: *.lsf
+          path: "*.lsf"
       - name: check current directory
         run: pwd
       - name: cdk synth
