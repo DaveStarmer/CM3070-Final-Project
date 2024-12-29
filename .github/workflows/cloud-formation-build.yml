@@ -8,6 +8,7 @@ jobs:
   synth-cdk:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: list current directory
         run: ls > curr.lsf
       - name: list parent directory
