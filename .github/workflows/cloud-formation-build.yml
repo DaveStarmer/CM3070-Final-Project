@@ -9,7 +9,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: list current directory
-        run: ls
+        run: |
+          ls > temp.txt
+          cat temp.txt
       - name: list parent directory
         run: ls ..
       - name: check current directory
