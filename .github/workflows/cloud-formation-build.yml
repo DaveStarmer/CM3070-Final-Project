@@ -4,11 +4,14 @@ on:
   push:
     paths:
       - remote-aws/cdk/** # only run on changes to cdk
+env:
+  AWS_REGION: 'eu-west-2'
 jobs:
   synth-cdk:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -21,13 +24,9 @@ jobs:
             working_dir: 'remote-aws/cdk'
             cdk_stack: 'DashboardStack'
         env:
-            # AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            # AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_ACCESS_KEY_ID: "access_key"
             AWS_SECRET_ACCESS_KEY: "secret_access_key"
             AWS_DEFAULT_REGION: 'eu-west-1'
-      - name: Report current directory
-        run: pwd
       - name: Upload CloudFormation Template
         run: |
           cp remote-aws/cdk/cdk.out/*.template.json remote-aws
@@ -35,5 +34,26 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add remote-aws/*.template.json
-          git commit -m "chore: generate CloudFormation template"
-          git push
+          set +e  # Grep succeeds with nonzero exit codes to show results.
+          git diff -s --exit-code remote-aws/*.template.json
+          if [ $? -eq 0 ]
+          then
+            set -e
+            git commit -m "chore: generate CloudFormation template"
+            git push
+          else
+            set -e
+            echo "No changes since last run"
+          fi   
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502
+        with:
+          role-to-assume: github-deployment
+          role-session-name: arolesession
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Deploy CloudFormation Template
+        run: >
+          aws cloudformation deploy
+          --template-file remote-aws/DashboardStack.template.json
+          --stack-name DashboardStack
+        
