@@ -6,7 +6,7 @@ export class DashboardStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    new Bucket(this, "video-bucket", {
+    new Bucket(this, "videoBucket", {
       bucketName:"video-bucket"
     })
   }
