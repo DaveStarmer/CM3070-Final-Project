@@ -1,0 +1,21 @@
+name: Generate CloudFormation Script
+run-name: Generating CloudFormation Script
+on:
+  push:
+    paths:
+      - remote-aws/cdk/** # only run on changes to cdk
+jobs:
+  synth-cdk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: cdk synth
+        uses: youyo/aws-cdk-github-actions@v2
+        with:
+            cdk_subcommand: 'synth'
+            working_dir: 'remote-aws/cdk'
+        env:
+            # AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            # AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_ACCESS_KEY_ID: "access_key"
+            AWS_SECRET_ACCESS_KEY: "secret_access_key"
+            AWS_DEFAULT_REGION: 'eu-west-1'
