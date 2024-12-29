@@ -8,6 +8,8 @@ jobs:
   synth-cdk:
     runs-on: ubuntu-latest
     steps:
+      - name: current directory
+        run: pwd
       - name: cdk synth
         uses: youyo/aws-cdk-github-actions@v2
         with:
