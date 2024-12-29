@@ -9,11 +9,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: list current directory
-        run: |
-          ls > temp.txt
-          cat temp.txt
+        run: ls > curr.lsf
       - name: list parent directory
-        run: ls ..
+        run: ls .. > parent.lsf
+      - name: upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          path: *.lsf
       - name: check current directory
         run: pwd
       - name: cdk synth
