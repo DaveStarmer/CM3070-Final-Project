@@ -10,6 +10,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
       - name: cdk synth
         uses: youyo/aws-cdk-github-actions@v2
         with:
@@ -25,10 +27,7 @@ jobs:
       - name: Report current directory
         run: pwd
       - name: Upload CloudFormation Template
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
-      - run: |
+        run: |
           cp remote-aws/cdk/cdk.out/*.template.json remote-aws
           # Configure Bot's information
           git config user.name "github-actions[bot]"
