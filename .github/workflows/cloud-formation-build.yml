@@ -8,9 +8,10 @@ jobs:
   synth-cdk:
     runs-on: ubuntu-latest
     steps:
-      - name: current directory
+      - name: list current directory
         run: |
-          pwd
+          ls
+          ls ..
           cd remote-aws/cdk
           pwd
       - name: check current directory
