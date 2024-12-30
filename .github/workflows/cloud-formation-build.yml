@@ -31,7 +31,7 @@ jobs:
         run: |
           cp remote-aws/cdk/cdk.out/*.template.json remote-aws
           python3 build/strip_cdk.py
-      - name: Upload CloudFormation Template
+      - name: Commit CloudFormation Template if necessary
         run: |
           # Configure Bot's information
           git config user.name "github-actions[bot]"
@@ -44,6 +44,7 @@ jobs:
             git add remote-aws/*.template.json
             git commit -m "chore: generate CloudFormation template"
             git push
+            echo "Changes committed"
           else
             echo "No changes since last run"
           fi   
