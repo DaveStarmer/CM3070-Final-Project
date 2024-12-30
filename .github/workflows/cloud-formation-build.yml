@@ -33,12 +33,12 @@ jobs:
           # Configure Bot's information
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add remote-aws/*.template.json
           git diff --exit-code remote-aws/*.template.json
           DIFFERENCE=$?
-          echo $DIFFERENCE
-          if [ $DIFFERENCE -eq 0 ]
+          echo git diff exit code = $DIFFERENCE
+          if [ $DIFFERENCE -ne 0 ]
           then
+            git add remote-aws/*.template.json
             git commit -m "chore: generate CloudFormation template"
             git push
           else
