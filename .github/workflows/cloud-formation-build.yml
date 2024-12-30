@@ -62,4 +62,5 @@ jobs:
           aws cloudformation deploy
           --template-file remote-aws/DashboardStack.template.json
           --stack-name DashboardStack
+          --parameter-overrides uniqueId=a102dbccb12364e0866af88472c9da91
         

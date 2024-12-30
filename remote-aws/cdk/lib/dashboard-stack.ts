@@ -7,12 +7,12 @@ export class DashboardStack extends Stack {
     super(scope, id, props);
     const uniqueId = new CfnParameter(this, "uniqueId", {
       type: "String",
-      description: "Unique element for buckets",
-      default: ""
+      description: "Unique element for bucket naming",
+      allowedPattern: "^[a-z0-9-]{1,32}$"
     });
 
     new Bucket(this, "videoBucket", {
-      bucketName: Fn.sub("vid-dash-${AWS::AccountId}-video")
+      bucketName: Fn.sub("vid-dash-${uniqueId}-video")
     })
   }
 }
