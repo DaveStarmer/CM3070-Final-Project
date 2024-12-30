@@ -26,7 +26,7 @@ jobs:
         env:
             AWS_ACCESS_KEY_ID: "access_key"
             AWS_SECRET_ACCESS_KEY: "secret_access_key"
-            AWS_DEFAULT_REGION: 'eu-west-1'
+            AWS_DEFAULT_REGION: 'eu-west-2'
       - name: Upload CloudFormation Template
         run: |
           cp remote-aws/cdk/cdk.out/*.template.json remote-aws
@@ -48,7 +48,6 @@ jobs:
         uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502
         with:
           role-to-assume: github-deployment
-          role-session-name: arolesession
           aws-region: ${{ env.AWS_REGION }}
       - name: Deploy CloudFormation Template
         run: >
