@@ -2,8 +2,8 @@
  "Parameters": {
   "uniqueId": {
    "Type": "String",
-   "Default": "",
-   "Description": "Unique element for buckets"
+   "AllowedPattern": "^[a-z0-9-]{1,32}$",
+   "Description": "Unique element for bucket naming"
   }
  },
  "Resources": {
@@ -11,7 +11,7 @@
    "Type": "AWS::S3::Bucket",
    "Properties": {
     "BucketName": {
-     "Fn::Sub": "vid-dash-${AWS::AccountId}-video"
+     "Fn::Sub": "vid-dash-${uniqueId}-video"
     }
    },
    "UpdateReplacePolicy": "Retain",
