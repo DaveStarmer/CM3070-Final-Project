@@ -12,7 +12,7 @@ export class DashboardStack extends Stack {
     });
 
     new Bucket(this, "videoBucket", {
-      bucketName: Fn.sub("vid-dash-${uniqueId}-video")
+      bucketName: Fn.sub("vid-dash-video-${uniqueId}")
     })
   }
 }

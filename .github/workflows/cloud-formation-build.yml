@@ -62,5 +62,6 @@ jobs:
           aws cloudformation deploy
           --template-file remote-aws/DashboardStack.template.json
           --stack-name DashboardStack
+          # parameter to make bucket names unique - hash, as using account number not considered secure
           --parameter-overrides uniqueId=a102dbccb12364e0866af88472c9da91
         
