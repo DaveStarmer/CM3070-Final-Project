@@ -1,14 +1,17 @@
-name: Generate CloudFormation Script
-run-name: Generating CloudFormation Script
+name: Generate CloudFormation Script and Deploy
+run-name: Generating and Deploying CloudFormation Script
 on:
   push:
     paths:
       - remote-aws/cdk/** # only run on changes to cdk
+env:
+  AWS_REGION: 'eu-west-2'
 jobs:
   synth-cdk:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -20,20 +23,45 @@ jobs:
             cdk_subcommand: 'synth'
             working_dir: 'remote-aws/cdk'
             cdk_stack: 'DashboardStack'
+            cdk_args: '-q'
         env:
-            # AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            # AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_ACCESS_KEY_ID: "access_key"
             AWS_SECRET_ACCESS_KEY: "secret_access_key"
-            AWS_DEFAULT_REGION: 'eu-west-1'
-      - name: Report current directory
-        run: pwd
-      - name: Upload CloudFormation Template
+            AWS_DEFAULT_REGION: 'eu-west-2'
+      - name: Copy and Cleanse CloudFormation Template of CDK
         run: |
           cp remote-aws/cdk/cdk.out/*.template.json remote-aws
+          python3 build/strip_cdk.py
+      - name: Commit CloudFormation Template if necessary
+        run: |
           # Configure Bot's information
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add remote-aws/*.template.json
-          git commit -m "chore: generate CloudFormation template"
-          git push
+          # get git diff
+          set +e
+          git diff --exit-code remote-aws/*.template.json
+          DIFFERENCE=$?
+          echo git diff exit code = $DIFFERENCE
+          if [ $DIFFERENCE -ne 0 ]
+          then
+            git add remote-aws/*.template.json
+            git commit -m "chore: generate CloudFormation template"
+            git push
+            echo "Changes committed"
+          else
+            echo "No changes since last run"
+          fi
+          set -e
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Deploy CloudFormation Template
+        run: >
+          aws cloudformation deploy
+          --template-file remote-aws/DashboardStack.template.json
+          --stack-name DashboardStack
+          # parameter to make bucket names unique - hash, as using account number not considered secure
+          --parameter-overrides uniqueId=a102dbccb12364e0866af88472c9da91
+        
