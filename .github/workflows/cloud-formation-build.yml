@@ -23,6 +23,7 @@ jobs:
             cdk_subcommand: 'synth'
             working_dir: 'remote-aws/cdk'
             cdk_stack: 'DashboardStack'
+            cdk_args: '-q'
         env:
             AWS_ACCESS_KEY_ID: "access_key"
             AWS_SECRET_ACCESS_KEY: "secret_access_key"
@@ -36,6 +37,8 @@ jobs:
           # Configure Bot's information
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # get git diff
+          set +e
           git diff --exit-code remote-aws/*.template.json
           DIFFERENCE=$?
           echo git diff exit code = $DIFFERENCE
@@ -47,7 +50,8 @@ jobs:
             echo "Changes committed"
           else
             echo "No changes since last run"
-          fi   
+          fi
+          set -e
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502
         with:

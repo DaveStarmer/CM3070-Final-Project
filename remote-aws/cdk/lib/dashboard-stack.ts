@@ -11,7 +11,7 @@ export class DashboardStack extends Stack {
       default: Fn.ref("AWS::AccountId")
     });
 
-    new Bucket(this, "video-bucket", {
+    new Bucket(this, "videoBucket", {
       bucketName: Fn.sub("vid-dash-${uniqueId}-video")
     })
   }
