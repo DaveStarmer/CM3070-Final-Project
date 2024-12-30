@@ -1,5 +1,5 @@
-name: Generate CloudFormation Script
-run-name: Generating CloudFormation Script
+name: Generate CloudFormation Script and Deploy
+run-name: Generating and Deploying CloudFormation Script
 on:
   push:
     paths:
@@ -27,6 +27,8 @@ jobs:
             AWS_ACCESS_KEY_ID: "access_key"
             AWS_SECRET_ACCESS_KEY: "secret_access_key"
             AWS_DEFAULT_REGION: 'eu-west-2'
+      - name: Cleanse CloudFormation Template of CDK
+        run: python3 build/strip_cdk.py
       - name: Upload CloudFormation Template
         run: |
           cp remote-aws/cdk/cdk.out/*.template.json remote-aws
