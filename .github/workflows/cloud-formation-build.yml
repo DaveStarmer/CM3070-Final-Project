@@ -33,7 +33,6 @@ jobs:
           python3 build/strip_cdk.py
       - name: Upload CloudFormation Template
         run: |
-          cp remote-aws/cdk/cdk.out/*.template.json remote-aws
           # Configure Bot's information
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
