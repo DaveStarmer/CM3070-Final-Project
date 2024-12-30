@@ -37,6 +37,7 @@ def remove_cdk_requirements(filename: str):
     json_dict["Rules"] = remove_kvp(json_dict["Rules"], "CheckBootstrapVersion")
     with open(filename, "w") as f:
         json.dump(json_dict, f, indent=1)
+    print(f"{filename} cleansed")
 
 
 template_files = (
