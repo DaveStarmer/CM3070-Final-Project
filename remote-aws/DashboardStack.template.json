@@ -11,7 +11,7 @@
    "Type": "AWS::S3::Bucket",
    "Properties": {
     "BucketName": {
-     "Fn::Sub": "vid-dash-${uniqueId}-video"
+     "Fn::Sub": "vid-dash-video-${uniqueId}"
     }
    },
    "UpdateReplacePolicy": "Retain",
