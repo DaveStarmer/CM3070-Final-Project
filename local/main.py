@@ -13,6 +13,11 @@ CAMERA_NUMBERS_LIST = [0]
 
 
 def start_camera():
+    """Initialise devices, and loop detection motion
+
+    Raises:
+        RuntimeError: Camera failure
+    """
     cameras = []
     frame_shapes = []
     frame_rates = []
@@ -47,6 +52,16 @@ def start_camera():
 
 
 def initialise_camera(camera_number):
+    """Initialise camera from index
+
+    Args:
+        camera_number (int): Index of camera to initialise
+
+    Returns:
+        cv2.VideoCapture: openCV camera object
+        tuple: frame shape (width, height)
+        int: frame rate (in fps)
+    """
     camera = cv2.VideoCapture(camera_number, cv2.CAP_V4L)
 
     if camera.isOpened():
