@@ -4,9 +4,14 @@ from datetime import datetime
 import cv2
 import numpy as np
 
+# frames to compare back against
 FRAME_HISTORY = 20
+# additional time to process video
 ADDITIONAL_PROCESSING_SECS = 0
+# threshold under which to merge or dispose of bounding rectangles which overlap
 IOU_THRESHOLD = 0.2
+# maximum difference in average brightness before it is assumed lights have been turned on or off
+MAX_BRIGHT_DIFF = 20
 
 
 class MovementDetection:
@@ -30,8 +35,8 @@ class MovementDetection:
         self.video_length = video_length
         # full colour video
         self._video = []
-        # hsv version of video
-        self._hsv_video = []
+        # rough measure of illumination
+        self._illumination = []
         # detection instance
         self._bg_sub = cv2.createBackgroundSubtractorMOG2(
             history=FRAME_HISTORY, varThreshold=25
@@ -51,7 +56,11 @@ class MovementDetection:
             boolean: movement has been detected and there is a full length video clip available
         Raises:
         """
+        # add video to list to produce final video
         self._video.append(frame)
+        # calculate the average illumination of the frame
+        self._illumination.append(np.average(frame))
+        # process for background subtraction
         det_frame = self._bg_sub.apply(frame)
 
         # ensure that sufficient video has been stored
@@ -59,16 +68,32 @@ class MovementDetection:
             return False
 
         moving_objects = self._detect_movement(det_frame)
-        if len(moving_objects) > 0:
+
+        # if movement is detected and the change in overall brightness is little enough
+        # it is not lighting being switched on or off. As the camera in use has an
+        # infrared mode, the change is in colour rather than brightness and this is of
+        # limited use
+        if (
+            len(moving_objects) > 0
+            and abs(self._illumination[-1] - self._illumination[-FRAME_HISTORY])
+            < MAX_BRIGHT_DIFF
+        ):
+            # draw the detection rectangles on the video
             self._draw_rectangles(moving_objects)
+            # note movement detection time if this has not been detected before
             if self._movement_dt is None:
                 print("Movement detected")
                 self._movement_dt = datetime.now()
         if self._movement_dt is not None:
+            # note the number of captured frames
             self._captured_frames += 1
+
+        # correct length video has been captured - return true to write video
         if self._captured_frames + self.preroll >= self.video_length * self._frame_rate:
             self._tidy()
             return True
+
+        # tidy video storage (to ensure memory does not run out)
         self._tidy()
         return False
 
@@ -98,12 +123,15 @@ class MovementDetection:
         )
         if len(self._video) > frames_to_retain:
             self._video = self._video[-frames_to_retain:]
+        if len(self._illumination) > frames_to_retain:
+            self._illumination = self._illumination[-frames_to_retain:]
 
     def get_video(self):
         """Get video clip"""
+        out_datetime = self._movement_dt.strftime("%Y%m%d%H%M%S")
         self._movement_dt = None
         self._captured_frames = 0
-        return self._video
+        return self._video, out_datetime
 
 
 def remove_nested_bounding_rects(bounds: list) -> np.array:
