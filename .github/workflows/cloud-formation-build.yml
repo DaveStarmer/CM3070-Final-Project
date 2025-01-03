@@ -70,4 +70,11 @@ jobs:
           --template-file remote-aws/InstructionsStack.template.json
           --stack-name InstructionsStack
           --parameter-overrides uniqueId=a102dbccb12364e0866af88472c9da91
+      - name: Deploy Instructions CloudFormation Template
+        run: >
+          aws cloudformation deploy
+          --template-file remote-aws/InstructionsStack.template.json
+          --stack-name InstructionsStack
+          # parameter to make bucket names unique - hash, as using account number not considered secure
+          --parameter-overrides uniqueId=a102dbccb12364e0866af88472c9da91
         
