@@ -17,12 +17,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
-      - name: cdk synth
+      - name: Run cdk synth
         uses: youyo/aws-cdk-github-actions@v2
         with:
             cdk_subcommand: 'synth'
             working_dir: 'remote-aws/cdk'
-            cdk_stack: 'DashboardStack'
+            # cdk_stack: 'DashboardStack InstructionsStack'
             cdk_args: '-q'
         env:
             AWS_ACCESS_KEY_ID: "access_key"
@@ -42,26 +42,32 @@ jobs:
           git diff --exit-code remote-aws/*.template.json
           DIFFERENCE=$?
           echo git diff exit code = $DIFFERENCE
-          if [ $DIFFERENCE -ne 0 ]
-          then
+          # if [ $DIFFERENCE -ne 0 ]
+          # then
             git add remote-aws/*.template.json
-            git commit -m "chore: generate CloudFormation template"
+            git status
+            git commit -m "chore: generate CloudFormation templates"
             git push
             echo "Changes committed"
-          else
-            echo "No changes since last run"
-          fi
+          # else
+          #   echo "No changes since last run"
+          # fi
           set -e
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502
         with:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE }}
           aws-region: ${{ env.AWS_REGION }}
-      - name: Deploy CloudFormation Template
+      - name: Deploy Dashboard CloudFormation Template
         run: >
           aws cloudformation deploy
           --template-file remote-aws/DashboardStack.template.json
           --stack-name DashboardStack
-          # parameter to make bucket names unique - hash, as using account number not considered secure
+          --parameter-overrides uniqueId=a102dbccb12364e0866af88472c9da91
+      - name: Deploy Instructions CloudFormation Template
+        run: >
+          aws cloudformation deploy
+          --template-file remote-aws/InstructionsStack.template.json
+          --stack-name InstructionsStack
           --parameter-overrides uniqueId=a102dbccb12364e0866af88472c9da91
         
