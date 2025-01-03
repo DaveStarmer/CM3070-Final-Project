@@ -1,7 +1,6 @@
 import { CfnParameter, Fn, Stack, StackProps } from 'aws-cdk-lib';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
-import { createHash } from 'node:crypto'
 
 export class InstructionsStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -12,8 +11,11 @@ export class InstructionsStack extends Stack {
       allowedPattern: "^[a-z0-9-]{1,32}$"
     })
       
-    /** Unique ID for public-facing resources */
-    const publicUniqueId = createHash('md5').update(uniqueId.toString()).digest('hex')
+    const publicUniqueId = new CfnParameter(this, "publicUniqueId", {
+      type: "String",
+      description: "Unique element for bucket naming",
+      allowedPattern: "^[a-z0-9-]{1,32}$"
+    })
       
     /** Bucket for code upload for sharing and  */
     const codeBucket = new Bucket(this, "codeBucket", {

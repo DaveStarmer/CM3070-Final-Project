@@ -1,5 +1,6 @@
 import { Stack, StackProps } from "aws-cdk-lib";
 import { HostedZone } from "aws-cdk-lib/aws-route53";
+import { Bucket } from "aws-cdk-lib/aws-s3";
 import { Construct } from "constructs";
 import { Domain } from "domain";
 
