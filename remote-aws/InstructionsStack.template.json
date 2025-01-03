@@ -1,0 +1,26 @@
+{
+ "Parameters": {
+  "uniqueId": {
+   "Type": "String",
+   "AllowedPattern": "^[a-z0-9-]{1,32}$",
+   "Description": "Unique element for bucket naming"
+  }
+ },
+ "Resources": {
+  "codeBucket9D8D5B72": {
+   "Type": "AWS::S3::Bucket",
+   "Properties": {
+    "BucketName": {
+     "Fn::Sub": "instruct-code-${publicUniqueId}"
+    }
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "InstructionsStack/codeBucket/Resource"
+   }
+  }
+ },
+ "Conditions": {},
+ "Rules": {}
+}
