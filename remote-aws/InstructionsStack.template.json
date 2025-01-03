@@ -4,6 +4,11 @@
    "Type": "String",
    "AllowedPattern": "^[a-z0-9-]{1,32}$",
    "Description": "Unique element for bucket naming"
+  },
+  "publicUniqueId": {
+   "Type": "String",
+   "AllowedPattern": "^[a-z0-9-]{1,32}$",
+   "Description": "Unique element for bucket naming"
   }
  },
  "Resources": {
