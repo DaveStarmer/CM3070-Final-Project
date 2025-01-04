@@ -1,10 +1,5 @@
 {
  "Parameters": {
-  "uniqueId": {
-   "Type": "String",
-   "AllowedPattern": "^[a-z0-9-]{1,32}$",
-   "Description": "Unique element for bucket naming"
-  },
   "codeBucketName": {
    "Type": "String",
    "AllowedPattern": "^[a-z0-9.-]{1,63}$",
@@ -12,17 +7,17 @@
   }
  },
  "Resources": {
-  "videoBucket07D1C31D": {
+  "codeBucket9D8D5B72": {
    "Type": "AWS::S3::Bucket",
    "Properties": {
     "BucketName": {
-     "Fn::Sub": "vid-dash-video-${uniqueId}"
+     "Ref": "codeBucketName"
     }
    },
    "UpdateReplacePolicy": "Retain",
    "DeletionPolicy": "Retain",
    "Metadata": {
-    "aws:cdk:path": "DashboardStack/videoBucket/Resource"
+    "aws:cdk:path": "DeploymentStack/codeBucket/Resource"
    }
   }
  },

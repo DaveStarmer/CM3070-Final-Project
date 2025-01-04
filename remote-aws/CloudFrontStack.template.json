@@ -1,0 +1,216 @@
+{
+ "Parameters": {
+  "uniqueId": {
+   "Type": "String",
+   "AllowedPattern": "^[a-z0-9-]{1,32}$",
+   "Description": "Unique element for bucket naming"
+  },
+  "codeBucketName": {
+   "Type": "String",
+   "AllowedPattern": "^[a-z0-9.-]{1,63}$",
+   "Description": "Private Code Bucket Name"
+  }
+ },
+ "Resources": {
+  "cloudFrontOAI": {
+   "Type": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "Properties": {
+    "CloudFrontOriginAccessIdentityConfig": {
+     "Comment": "CloudFrontOAI"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/cloudFrontOAI"
+   }
+  },
+  "publicWebBucket98286A44": {
+   "Type": "AWS::S3::Bucket",
+   "Properties": {
+    "BucketName": {
+     "Fn::Sub": "vid-dash-public-web-${uniqueId}"
+    },
+    "CorsConfiguration": {
+     "CorsRules": [
+      {
+       "AllowedHeaders": [
+        "*"
+       ],
+       "AllowedMethods": [
+        "GET"
+       ],
+       "AllowedOrigins": [
+        "http*"
+       ],
+       "ExposedHeaders": [
+        "Etag",
+        "x-amx-meta-custom-header"
+       ]
+      }
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/publicWebBucket/Resource"
+   }
+  },
+  "publicWebBucketPolicyF511513F": {
+   "Type": "AWS::S3::BucketPolicy",
+   "Properties": {
+    "Bucket": {
+     "Ref": "publicWebBucket98286A44"
+    },
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "s3:GetBucket*",
+        "s3:GetObject*",
+        "s3:List*"
+       ],
+       "Effect": "Allow",
+       "Principal": {
+        "CanonicalUser": {
+         "Fn::GetAtt": [
+          "cloudFrontOAI",
+          "S3CanonicalUserId"
+         ]
+        }
+       },
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "publicWebBucket98286A44",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "publicWebBucket98286A44",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/publicWebBucket/Policy/Resource"
+   }
+  },
+  "privateWebBucketDEC03662": {
+   "Type": "AWS::S3::Bucket",
+   "Properties": {
+    "BucketName": {
+     "Fn::Sub": "vid-dash-private-web-${uniqueId}"
+    }
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/privateWebBucket/Resource"
+   }
+  },
+  "privateWebBucketPolicy5939BD04": {
+   "Type": "AWS::S3::BucketPolicy",
+   "Properties": {
+    "Bucket": {
+     "Ref": "privateWebBucketDEC03662"
+    },
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "s3:GetBucket*",
+        "s3:GetObject*",
+        "s3:List*"
+       ],
+       "Effect": "Allow",
+       "Principal": {
+        "CanonicalUser": {
+         "Fn::GetAtt": [
+          "cloudFrontOAI",
+          "S3CanonicalUserId"
+         ]
+        }
+       },
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "privateWebBucketDEC03662",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "privateWebBucketDEC03662",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/privateWebBucket/Policy/Resource"
+   }
+  },
+  "CloudFrontDistributionBA64CE3A": {
+   "Type": "AWS::CloudFront::Distribution",
+   "Properties": {
+    "DistributionConfig": {
+     "Comment": "CF Distro",
+     "DefaultCacheBehavior": {
+      "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
+      "Compress": true,
+      "TargetOriginId": "CloudFrontStackCloudFrontDistributionOrigin1E5559293",
+      "ViewerProtocolPolicy": "allow-all"
+     },
+     "DefaultRootObject": "index.html",
+     "Enabled": true,
+     "HttpVersion": "http2",
+     "IPV6Enabled": true,
+     "Origins": [
+      {
+       "DomainName": {
+        "Fn::GetAtt": [
+         "privateWebBucketDEC03662",
+         "RegionalDomainName"
+        ]
+       },
+       "Id": "CloudFrontStackCloudFrontDistributionOrigin1E5559293",
+       "S3OriginConfig": {
+        "OriginAccessIdentity": ""
+       }
+      }
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/CloudFrontDistribution/Resource"
+   }
+  }
+ },
+ "Rules": {}
+}

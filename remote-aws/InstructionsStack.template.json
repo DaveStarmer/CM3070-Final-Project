@@ -9,10 +9,15 @@
    "Type": "String",
    "AllowedPattern": "^[a-z0-9-]{1,32}$",
    "Description": "Unique element for bucket naming"
+  },
+  "codeBucketName": {
+   "Type": "String",
+   "AllowedPattern": "^[a-z0-9.-]{1,63}$",
+   "Description": "Private Code Bucket Name"
   }
  },
  "Resources": {
-  "codeBucket9D8D5B72": {
+  "publicCodeBucket7DECA10E": {
    "Type": "AWS::S3::Bucket",
    "Properties": {
     "BucketName": {
@@ -22,7 +27,7 @@
    "UpdateReplacePolicy": "Retain",
    "DeletionPolicy": "Retain",
    "Metadata": {
-    "aws:cdk:path": "InstructionsStack/codeBucket/Resource"
+    "aws:cdk:path": "InstructionsStack/publicCodeBucket/Resource"
    }
   }
  },
