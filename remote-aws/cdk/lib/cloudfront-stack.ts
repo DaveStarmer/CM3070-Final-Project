@@ -13,14 +13,30 @@ export class CloudFrontStack extends Stack {
     super(scope, id, props)
 
     // elements passed in as parameters
-    /** Verify correct region for CloudFront deployment */
-    const correctRegion = Fn.conditionEquals(Fn.ref("AWS::Region"), "us-east-1")
-
     /** CloudFormation Parameter for Unique ID to add to resource names where necessary */
     const uniqueId = new CfnParameter(this, "uniqueId", {
       type: "String",
       description: "Unique element for bucket naming",
       allowedPattern: "^[a-z0-9-]{1,32}$"
+    }).toString()
+
+    /** name of code bucket */
+    const codeBucketName = new CfnParameter(this, "codeBucketName", {
+      type: "String",
+      description: "Private Code Bucket Name",
+      allowedPattern: "^[a-z0-9\.-]{1,63}$",
+      default: "instruct-code-2560df37ccbefd6b43eeb50fdc8abe7f"
+    }).toString()
+
+    /** code bucket construct */
+    const codeBucket = Bucket.fromBucketName(this, "codeBucket", Fn.ref(codeBucketName))
+
+    /** Registered Domain Name */
+    const domainName = new CfnParameter(this, "domainName", {
+      type: "String",
+      description: "Registered Domain Name",
+      // pattern taken from https://stackoverflow.com/a/3809435
+      allowedPattern: "[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)"
     }).toString()
 
     /** Parameter for Certificate ARN */
@@ -32,24 +48,6 @@ export class CloudFrontStack extends Stack {
 
     /** Certificate */
     const certificate = Certificate.fromCertificateArn(this, "dashboardCertificate", certificateArn)
-
-    /** name of private code bucket */
-    const codeBucketName = new CfnParameter(this, "codeBucketName", {
-      type: "String",
-      description: "Private Code Bucket Name",
-      allowedPattern: "^[a-z0-9\.-]{1,63}$"
-    }).toString()
-
-    /** private code bucket construct */
-    const codeBucket = Bucket.fromBucketName(this, "codeBucket", Fn.ref(codeBucketName))
-
-    /** Registered Domain Name */
-    const domainName = new CfnParameter(this, "domainName", {
-      type: "String",
-      description: "Registered Domain Name",
-      // pattern taken from https://stackoverflow.com/a/3809435
-      allowedPattern: "[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)"
-    }).toString()
 
     // Create Resources
     /** CloudFront User */

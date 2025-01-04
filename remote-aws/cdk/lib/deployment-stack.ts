@@ -6,7 +6,7 @@ export class DeploymentStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props)
 
-    const codeBucketName = new CfnParameter(this, "codeBucketName", {
+    const uniqueId = new CfnParameter(this, "uniqueId", {
       type: "String",
       description: "Private Code Bucket Name",
       allowedPattern: "^[a-z0-9\.-]{1,63}$"
@@ -14,7 +14,7 @@ export class DeploymentStack extends Stack {
 
     /** Private Code Bucket */
     new Bucket(this, "codeBucket", {
-      bucketName: Fn.ref("codeBucketName")
+      bucketName: Fn.sub("deployment-code-${uniqueId}")
     })
   }
 }

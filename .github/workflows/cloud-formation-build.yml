@@ -62,9 +62,19 @@ jobs:
           aws cloudformation deploy
           --template-file remote-aws/DeploymentStack.template.json
           --stack-name DeploymentStack
-          --parameter-overrides codeBucketName=${{ secrets.PRIVATE_CODE_BUCKET }}
-      # - name: Copy Code to Private Code Bucket
-      #   run: aws s3 cp remote-aws/*.template.json s3://${{ secrets.PRIVATE_CODE_BUCKET }}/CloudFormation
+          --parameter-overrides uniqueId=${{ secrets.UNIQUE_ID }}
+      - name: Copy Code to Private Code Bucket
+        run: aws s3 cp remote-aws/*.template.json s3://${{ secrets.PRIVATE_CODE_BUCKET }}/CloudFormation/ --recursive
+      - name: Deploy Instructions CloudFormation Template
+        run: >
+          aws cloudformation deploy
+          --s3-bucket ${{ secrets.PRIVATE_CODE_BUCKET }}
+          --template-file CloudFormation/InstructionsStack.template.json
+          --stack-name InstructionsStack
+          --parameter-overrides publicUniqueId=${{ secrets.PUBLIC_UNIQUE_ID }}
+          uniqueId=${{ secrets.UNIQUE_ID }}
+      - name: Copy Code to Public Code Bucket
+        run: aws s3 cp remote-aws/DashboardStack.template.json s3://${{ vars.PUBLIC_CODE_BUCKET }}/CloudFormation/
       - name: Deploy CloudFront CloudFormation Template
         run: >
           aws --region us-east-1 cloudformation deploy
@@ -81,15 +91,4 @@ jobs:
           --stack-name DashboardStack
           --parameter-overrides uniqueId=${{ secrets.UNIQUE_ID }}
           codeBucketName=${{ secrets.PRIVATE_CODE_BUCKET }}
-      - name: Deploy Instructions CloudFormation Template
-        run: >
-          aws cloudformation deploy
-          --template-file remote-aws/InstructionsStack.template.json
-          --stack-name InstructionsStack
-          --parameter-overrides publicUniqueId=${{ secrets.PUBLIC_UNIQUE_ID }}
-          uniqueId=${{ secrets.UNIQUE_ID }}
-          codeBucketName=${{ secrets.PRIVATE_CODE_BUCKET }}
-          certificateArn=${{ secrets.CERTIFICATE_ARN }}
-          domain=${{ vars.DOMAIN }}
-      - name: Copy Code to Private Code Bucket
-        run: aws s3 cp remote-aws/DashboardStack.template.json s3://${{ secrets.PRIVATE_CODE_BUCKET }}/CloudFormation
+
