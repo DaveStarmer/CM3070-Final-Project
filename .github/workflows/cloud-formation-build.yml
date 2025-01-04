@@ -62,16 +62,22 @@ jobs:
           aws cloudformation deploy
           --template-file remote-aws/DeploymentStack.template.json
           --stack-name DeploymentStack
-          --parameter-overrides codeBucketName=${{ vars.codeBucket }}
+          --parameter-overrides codeBucketName=${{ secrets.PRIVATE_CODE_BUCKET }}
       - name: Copy Public CloudFormation Template
-        run: aws s3 cp remote-aws/DashboardStack.template.json s3://${{ vars.codeBucket }}
+        run: aws s3 cp remote-aws/DashboardStack.template.json s3://${{ secrets.PRIVATE_CODE_BUCKET }}
+      - name: Deploy CloudFront CloudFormation Template
+        run: >
+          aws --region us-east-1 cloudformation deploy
+          --template-file remote-aws/DeploymentStack.template.json
+          --stack-name CloudFrontStack
+          --parameter-overrides uniqueId=${{ secrets.UNIQUE_ID }} codeBucketName=${{ secrets.PRIVATE_CODE_BUCKET }}
       - name: Deploy Dashboard CloudFormation Template
         run: >
           aws cloudformation deploy
           --template-file remote-aws/DashboardStack.template.json
           --stack-name DashboardStack
           --parameter-overrides uniqueId=${{ secrets.UNIQUE_ID }}
-          codeBucketName=${{ vars.codeBucket }}
+          codeBucketName=${{ secrets.PRIVATE_CODE_BUCKET }}
       - name: Deploy Instructions CloudFormation Template
         run: >
           aws cloudformation deploy
@@ -79,4 +85,6 @@ jobs:
           --stack-name InstructionsStack
           --parameter-overrides publicUniqueId=${{ secrets.PUBLIC_UNIQUE_ID }}
           uniqueId=${{ secrets.UNIQUE_ID }}
-          codeBucketName=${{ vars.codeBucket }}
+          codeBucketName=${{ secrets.PRIVATE_CODE_BUCKET }}
+          certificateArn=${{ secrets.CERTIFICATE_ARN }}
+          domain=${{ vars.DOMAIN }}
