@@ -7,7 +7,7 @@
   },
   "certificateArn": {
    "Type": "String",
-   "AllowedPattern": "^[a-z0-9.-]{1,2048}",
+   "AllowedPattern": "^[a-z0-9\\.-]{1,2048}",
    "Description": "ARN of certificate"
   },
   "codeBucketName": {
@@ -17,7 +17,7 @@
   },
   "domainName": {
    "Type": "String",
-   "AllowedPattern": "[-a-zA-Z0-9@:%._+~#=]{1,256}.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)",
+   "AllowedPattern": "[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)",
    "Description": "Registered Domain Name"
   }
  },
