@@ -29,14 +29,14 @@ export class CloudFrontStack extends Stack {
     /** user principal for cloud front */
     const cfUserPrincipal = new CanonicalUserPrincipal(cloudFrontOAI.attrS3CanonicalUserId)
 
-    /** name of code bucket */
+    /** name of private code bucket */
     const codeBucketName = new CfnParameter(this, "codeBucketName", {
       type: "String",
       description: "Private Code Bucket Name",
       allowedPattern: "^[a-z0-9\.-]{1,63}$"
     })
 
-    /** code bucket construct */
+    /** private code bucket construct */
     const codeBucket = Bucket.fromBucketName(this, "codeBucket", Fn.ref(codeBucketName.toString()))
 
     /** bucket for public web content */

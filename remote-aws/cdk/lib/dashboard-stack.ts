@@ -11,6 +11,17 @@ export class DashboardStack extends Stack {
       allowedPattern: "^[a-z0-9-]{1,32}$"
     });
 
+    /** name of private code bucket */
+    const codeBucketName = new CfnParameter(this, "codeBucketName", {
+      type: "String",
+      description: "Private Code Bucket Name",
+      allowedPattern: "^[a-z0-9\.-]{1,63}$"
+    })
+
+    /** private code bucket construct */
+    const codeBucket = Bucket.fromBucketName(this, "codeBucket", Fn.ref(codeBucketName.toString()))
+
+    /** video clip storage bucket */
     new Bucket(this, "videoBucket", {
       bucketName: Fn.sub("vid-dash-video-${uniqueId}")
     })

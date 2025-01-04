@@ -16,7 +16,7 @@ def remove_kvp(dictionary: dict, keys: list):
     """
     if keys[0] in dictionary:
         if len(keys) == 1:
-            dictionary.pop(keys)
+            dictionary.pop(keys[0])
         else:
             dictionary[keys[0]] = remove_kvp(dictionary[keys[0]], keys[1:])
     return dictionary

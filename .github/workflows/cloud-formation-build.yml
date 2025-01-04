@@ -79,4 +79,4 @@ jobs:
           --stack-name InstructionsStack
           --parameter-overrides publicUniqueId=${{ secrets.PUBLIC_UNIQUE_ID }}
           uniqueId=${{ secrets.UNIQUE_ID }}
-        
+          codeBucketName=${{ vars.codeBucket }}
