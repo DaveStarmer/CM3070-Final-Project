@@ -61,7 +61,7 @@ jobs:
         run: >
           aws cloudformation deploy
           --template-file remote-aws/DeploymentStack.template.json
-          --stack-name DashboardStack
+          --stack-name DeploymentStack
           --parameter-overrides codeBucketName=${{ vars.codeBucket }}
       - name: Copy Public CloudFormation Template
         run: aws s3 cp remote-aws/DashboardStack.template.json s3://${{ vars.codeBucket }}
