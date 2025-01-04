@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 import * as cdk from 'aws-cdk-lib';
-import { DashboardStack } from '../lib/stacks/dashboard-stack';
-import { InstructionsStack } from '../lib/stacks/instructions-stack';
-import { CloudFrontStack } from '../lib/stacks/cloudfront-stack';
-import { DeploymentStack } from '../lib/stacks/deployment-stack';
+import { DashboardStack } from '../lib/dashboard-stack';
+import { InstructionsStack } from '../lib/instructions-stack';
+import { CloudFrontStack } from '../lib/cloudfront-stack';
+import { DeploymentStack } from '../lib/deployment-stack';
 
 const app = new cdk.App();
 
