@@ -70,7 +70,10 @@ jobs:
           aws --region us-east-1 cloudformation deploy
           --template-file remote-aws/CloudFrontStack.template.json
           --stack-name CloudFrontStack
-          --parameter-overrides uniqueId=${{ secrets.UNIQUE_ID }} codeBucketName=${{ secrets.PRIVATE_CODE_BUCKET }}
+          --parameter-overrides uniqueId=${{ secrets.UNIQUE_ID }}
+          codeBucketName=${{ secrets.PRIVATE_CODE_BUCKET }}
+          domainName=${{ vars.DOMAIN }}
+          certificateArn=${{ secrets.CERTIFICATE_ARN }}
       - name: Deploy Dashboard CloudFormation Template
         run: >
           aws cloudformation deploy
