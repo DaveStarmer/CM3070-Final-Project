@@ -23,7 +23,7 @@ export class CloudFrontStack extends Stack {
     /** name of code bucket */
     const codeBucketName = new CfnParameter(this, "codeBucketName", {
       type: "String",
-      description: "Private Code Bucket Name",
+      description: "Code bucket name",
       allowedPattern: "^[a-z0-9\.-]{1,63}$",
       default: "instruct-code-2560df37ccbefd6b43eeb50fdc8abe7f"
     }).toString()

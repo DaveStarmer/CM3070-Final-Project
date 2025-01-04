@@ -64,7 +64,7 @@ jobs:
           --stack-name DeploymentStack
           --parameter-overrides uniqueId=${{ secrets.UNIQUE_ID }}
       - name: Copy Code to Private Code Bucket
-        run: aws s3 cp remote-aws/*.template.json s3://${{ secrets.PRIVATE_CODE_BUCKET }}/CloudFormation/ --recursive
+        run: aws s3 cp --recursive remote-aws/*.template.json s3://${{ secrets.PRIVATE_CODE_BUCKET }}/CloudFormation/
       - name: Deploy Instructions CloudFormation Template
         run: >
           aws cloudformation deploy
