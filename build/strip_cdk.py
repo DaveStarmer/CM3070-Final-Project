@@ -42,7 +42,10 @@ def remove_cdk_requirements(filename: str):
 
 
 template_files = (
-    Path(__file__).parents[1].joinpath("remote-aws").glob("*.template.json")
+    Path(__file__)
+    .parents[1]
+    .joinpath("remote-aws", "cf-templates")
+    .glob("*.template.json")
 )
 for template_file in template_files:
     remove_cdk_requirements(template_file)
