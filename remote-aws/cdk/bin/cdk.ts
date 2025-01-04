@@ -12,7 +12,8 @@ new DeploymentStack(app, "DeploymentStack")
 new CloudFrontStack(app, 'CloudFrontStack', {
   env: {
     region: 'us-east-1'
-  }
+  },
+  crossRegionReferences: true
 })
 
 new DashboardStack(app, 'DashboardStack', {})
