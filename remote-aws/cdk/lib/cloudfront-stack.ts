@@ -23,7 +23,7 @@ export class CloudFrontStack extends Stack {
 
     /** CloudFront User */
     const cloudFrontOAI = new CfnCloudFrontOriginAccessIdentity(this, "cloudFrontOAI", {
-      cloudFrontOriginAccessIdentityConfig: {comment: "CloudFrontOAI"}
+      cloudFrontOriginAccessIdentityConfig: { comment: "CloudFrontOAI" }
     })
 
     /** user principal for cloud front */
@@ -32,12 +32,12 @@ export class CloudFrontStack extends Stack {
     /** name of code bucket */
     const codeBucketName = new CfnParameter(this, "codeBucketName", {
       type: "String",
-      description: "Unique element for bucket naming",
-      allowedPattern: "^[a-z0-9-]{1,32}$"
+      description: "Private Code Bucket Name",
+      allowedPattern: "^[a-z0-9\.-]{1,63}$"
     })
 
     /** code bucket construct */
-    const codeBucket = Bucket.fromBucketName(this, "codeBucket", codeBucketName.toString())
+    const codeBucket = Bucket.fromBucketName(this, "codeBucket", Fn.ref(codeBucketName.toString()))
 
     /** bucket for public web content */
     const publicWebBucket = new Bucket(this, "publicWebBucket", {
@@ -69,6 +69,6 @@ export class CloudFrontStack extends Stack {
       }
     })
 
-    const domain = new Domain ()
+    const domain = new Domain()
   }
 }
