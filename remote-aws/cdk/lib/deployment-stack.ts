@@ -12,6 +12,7 @@ export class DeploymentStack extends Stack {
       allowedPattern: "^[a-z0-9\.-]{1,63}$"
     })
 
+    /** Private Code Bucket */
     new Bucket(this, "codeBucket", {
       bucketName: Fn.ref("codeBucketName")
     })
