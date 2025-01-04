@@ -1,6 +1,6 @@
 {
  "Parameters": {
-  "codeBucketName": {
+  "uniqueId": {
    "Type": "String",
    "AllowedPattern": "^[a-z0-9.-]{1,63}$",
    "Description": "Private Code Bucket Name"
@@ -11,7 +11,7 @@
    "Type": "AWS::S3::Bucket",
    "Properties": {
     "BucketName": {
-     "Ref": "codeBucketName"
+     "Fn::Sub": "deployment-code-${uniqueId}"
     }
    },
    "UpdateReplacePolicy": "Retain",

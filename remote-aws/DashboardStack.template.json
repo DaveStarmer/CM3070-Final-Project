@@ -7,6 +7,7 @@
   },
   "codeBucketName": {
    "Type": "String",
+   "Default": "instruct-code-2560df37ccbefd6b43eeb50fdc8abe7f",
    "AllowedPattern": "^[a-z0-9.-]{1,63}$",
    "Description": "Private Code Bucket Name"
   }

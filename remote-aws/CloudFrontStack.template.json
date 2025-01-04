@@ -5,20 +5,21 @@
    "AllowedPattern": "^[a-z0-9-]{1,32}$",
    "Description": "Unique element for bucket naming"
   },
-  "certificateArn": {
-   "Type": "String",
-   "AllowedPattern": "^[a-z0-9\\.\\/\\:-]{1,2048}$",
-   "Description": "ARN of certificate"
-  },
   "codeBucketName": {
    "Type": "String",
+   "Default": "instruct-code-2560df37ccbefd6b43eeb50fdc8abe7f",
    "AllowedPattern": "^[a-z0-9.-]{1,63}$",
-   "Description": "Private Code Bucket Name"
+   "Description": "Code bucket name"
   },
   "domainName": {
    "Type": "String",
    "AllowedPattern": "[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)",
    "Description": "Registered Domain Name"
+  },
+  "certificateArn": {
+   "Type": "String",
+   "AllowedPattern": "^[a-z0-9\\.\\/\\:-]{1,2048}$",
+   "Description": "ARN of certificate"
   }
  },
  "Resources": {
