@@ -1,1 +1,2 @@
 opencv-python-headless==4.10.0.84
+ffmpeg-python==0.2.0

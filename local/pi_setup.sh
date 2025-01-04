@@ -2,6 +2,9 @@ USER_HOME="/home/$USER"
 
 echo Installing requirements
 
+sudo apt update
+sudo apt install -y ffmpeg
+
 python3 -m venv --system-site-packages ~/.venv
 . ~/.venv/bin/activate
 pip install --upgrade pip

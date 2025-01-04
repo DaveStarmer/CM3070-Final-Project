@@ -1,6 +1,8 @@
-import logging
 from datetime import datetime
+import json
+import os
 import cv2
+import ffmpeg
 from movement_detection import MovementDetection
 
 VIDEO_LENGTH = 20
@@ -9,7 +11,11 @@ DEFAULT_FRAME_WIDTH = 640
 DEFAULT_FRAME_RATE = 30
 BUFFER_TIME = 2
 
-CAMERA_NUMBERS_LIST = [0]
+# load config - or have default empty config
+# default config
+config = {"cameras": {0: "Camera_1"}}
+with open("config.json") as f:
+    config = json.load(f)
 
 
 def start_camera():
@@ -19,15 +25,20 @@ def start_camera():
         RuntimeError: Camera failure
     """
     cameras = []
+    camera_names = []
     frame_shapes = []
     frame_rates = []
     detections = []
-    for camera_number in CAMERA_NUMBERS_LIST:
+
+    camera_numbers_list = [int(x) for x in config.get("cameras", {"0": ""}).keys()]
+
+    for camera_number in camera_numbers_list:
         camera, frame_shape, frame_rate = initialise_camera(0)
         print(
             f"Capturing at {frame_shape[camera_number]}x{frame_shape[1]} @ {frame_rate}fps"
         )
         cameras.append(camera)
+        camera_names.append(config["cameras"].get(str(camera_number)))
         frame_shapes.append(frame_shapes)
         frame_rates.append(frame_rate)
 
@@ -44,8 +55,12 @@ def start_camera():
 
             # add frame to detector - which will return true if a complete video has been captured
             if detection.add_frame(frame):
+                video, activation_dt = detection.get_video()
                 video_file = write_video(
-                    detection.get_video(), frame_rates[i], frame_shapes[i]
+                    video,
+                    frame_rates[i],
+                    activation_dt,
+                    camera_names[i],
                 )
                 upload_video(video_file)
                 clean_up_video(video_file)
@@ -87,13 +102,15 @@ def initialise_camera(camera_number):
     return camera, frame_shape, frame_rate
 
 
-def write_video(video, frame_rate, frame_shape):
+def write_video(video, frame_rate, activation_dt, camera_name):
     """Output Video file
 
     Args:
         video (nparray): Video
         frame_rate (int): frame rate of video
         frame_shape (tuple): shape of frame (width, height)
+        activation_dt(string): datetime in the format %Y%m%d%H%M%S
+        camera_name(string): name of camera
 
     Returns:
         str: filename of output file
@@ -103,12 +120,24 @@ def write_video(video, frame_rate, frame_shape):
     fourcc = cv2.VideoWriter_fourcc(*"avc1")
     # output file
     frame_shape = (video[0].shape[1], video[0].shape[0])
-    filename = f"output_{datetime.now().strftime('%Y%m%d%H%M%S')}.mp4"
-    out_vid = cv2.VideoWriter(filename, fourcc, frame_rate, frame_shape)
-    print(f"Outputting video of {len(video)} frames to {filename}")
+    filename = f"output_{activation_dt}_{camera_name}.mp4"
+    tmp_filename = filename.replace(".mp4", "_temp.mp4")
+    out_vid = cv2.VideoWriter(tmp_filename, fourcc, frame_rate, frame_shape)
+    print(f"Outputting video of {len(video)} frames to {tmp_filename}")
     for frame in video:
         out_vid.write(frame)
     out_vid.release()
+
+    print("Adding metadata")
+    formatted_dt = datetime.strptime(activation_dt, "%Y%m%d%H%M%S").strftime(
+        "%d-%m-%Y %H:%M:%S"
+    )
+    ffmpeg.input(tmp_filename).output(
+        filename, metadata=f"title={camera_name} at {formatted_dt}"
+    ).overwrite_output().run()
+
+    # remove temporary file
+    os.remove(tmp_filename)
     print("Video writing complete")
 
     return filename
