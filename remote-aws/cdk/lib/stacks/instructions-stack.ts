@@ -17,8 +17,8 @@ export class InstructionsStack extends Stack {
       allowedPattern: "^[a-z0-9-]{1,32}$"
     })
       
-    /** Bucket for code upload for sharing and  */
-    const codeBucket = new Bucket(this, "codeBucket", {
+    /** Bucket for public code sharing  */
+    const publicCodeBucket = new Bucket(this, "codeBucket", {
       bucketName: Fn.sub("instruct-code-${publicUniqueId}")
     })
   }

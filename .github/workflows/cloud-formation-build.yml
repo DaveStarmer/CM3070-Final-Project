@@ -58,13 +58,14 @@ jobs:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE }}
           aws-region: ${{ env.AWS_REGION }}
       - name: Copy Public CloudFormation Template
-        run: aws s3 cp remote-aws/DashboardStack.template.json ${{ vars.codeBucket }}
+        run: aws s3 cp remote-aws/DashboardStack.template.json s3://${{ vars.codeBucket }}
       - name: Deploy Dashboard CloudFormation Template
         run: >
           aws cloudformation deploy
           --template-file remote-aws/DashboardStack.template.json
           --stack-name DashboardStack
           --parameter-overrides uniqueId=${{ secrets.UNIQUE_ID }}
+          codeBucketName=${{ vars.codeBucket }}
       - name: Deploy Instructions CloudFormation Template
         run: >
           aws cloudformation deploy

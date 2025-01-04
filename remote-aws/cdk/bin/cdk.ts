@@ -1,9 +1,19 @@
 #!/usr/bin/env node
 import * as cdk from 'aws-cdk-lib';
-import { DashboardStack } from '../lib/dashboard-stack';
-import { InstructionsStack } from '../lib/instructions-stack';
+import { DashboardStack } from '../lib/stacks/dashboard-stack';
+import { InstructionsStack } from '../lib/stacks/instructions-stack';
+import { CloudFrontStack } from '../lib/stacks/cloudfront-stack';
+import { DeploymentStack } from '../lib/stacks/deployment-stack';
 
 const app = new cdk.App();
+
+new DeploymentStack(app, "DeploymentStack")
+
+new CloudFrontStack(app, 'CloudFrontStack', {
+  env: {
+    region: 'us-east-1'
+}})
+
 new DashboardStack(app, 'DashboardStack', {
   /* If you don't specify 'env', this stack will be environment-agnostic.
    * Account/Region-dependent features and context lookups will not work,
@@ -20,4 +30,4 @@ new DashboardStack(app, 'DashboardStack', {
   /* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
 })
 
-new InstructionsStack(app, 'InstructionsStack', {})
+new InstructionsStack(app, 'InstructionsStack')

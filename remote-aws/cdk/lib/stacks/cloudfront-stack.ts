@@ -1,7 +1,7 @@
-import { CfnCondition, CfnParameter, Fn, Stack, StackProps } from "aws-cdk-lib";
+import { CfnParameter, Fn, Stack, StackProps } from "aws-cdk-lib";
 import { CfnCloudFrontOriginAccessIdentity, Distribution } from "aws-cdk-lib/aws-cloudfront";
-import { S3BucketOrigin, S3Origin } from "aws-cdk-lib/aws-cloudfront-origins";
-import { CanonicalUserPrincipal, PolicyStatement } from "aws-cdk-lib/aws-iam";
+import { S3BucketOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
+import { CanonicalUserPrincipal } from "aws-cdk-lib/aws-iam";
 import { HostedZone } from "aws-cdk-lib/aws-route53";
 import { Bucket, HttpMethods } from "aws-cdk-lib/aws-s3";
 import { Construct } from "constructs";
