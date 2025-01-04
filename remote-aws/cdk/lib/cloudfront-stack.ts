@@ -27,7 +27,7 @@ export class CloudFrontStack extends Stack {
     const certificateArn = new CfnParameter(this, "certificateArn", {
       type: "String",
       description: "ARN of certificate",
-      allowedPattern: "^[a-z0-9\.-]{1,2048}"
+      allowedPattern: "^[a-z0-9\\.-]{1,2048}"
     }).toString()
 
     /** Certificate */
@@ -48,7 +48,7 @@ export class CloudFrontStack extends Stack {
       type: "String",
       description: "Registered Domain Name",
       // pattern taken from https://stackoverflow.com/a/3809435
-      allowedPattern: "[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)"
+      allowedPattern: "[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)"
     }).toString()
 
     // Create Resources
