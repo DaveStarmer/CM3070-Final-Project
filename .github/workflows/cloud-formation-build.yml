@@ -29,7 +29,7 @@ jobs:
             AWS_DEFAULT_REGION: 'eu-west-2'
       - name: Copy and Cleanse CloudFormation Template of CDK
         run: |
-          cp remote-aws/cdk/cdk.out/*.template.json remote-aws
+          cp remote-aws/cdk/cdk.out/*.template.json remote-aws/cf-templates/
           python3 build/strip_cdk.py
       - name: Commit CloudFormation Template if necessary
         run: |
@@ -43,7 +43,7 @@ jobs:
           echo git diff exit code = $DIFFERENCE
           if [ $DIFFERENCE -ne 0 ]
           then
-            git add remote-aws/*.template.json
+            git add remote-aws/cf-templates/*.template.json
             git status
             git commit -m "chore: generate CloudFormation templates"
             git push
@@ -60,11 +60,11 @@ jobs:
       - name: Deploy Deployment CloudFormation Template
         run: >
           aws cloudformation deploy
-          --template-file remote-aws/DeploymentStack.template.json
+          --template-file remote-aws/cf-templates/DeploymentStack.template.json
           --stack-name DeploymentStack
           --parameter-overrides uniqueId=${{ secrets.UNIQUE_ID }}
       - name: Copy Code to Private Code Bucket
-        run: aws s3 cp --recursive remote-aws/*.template.json s3://${{ secrets.PRIVATE_CODE_BUCKET }}/CloudFormation/
+        run: aws s3 cp remote-aws/cf-templates/ s3://deployment-code-a102dbccb12364e0866af88472c9da91/CloudFormation/ --recursive
       - name: Deploy Instructions CloudFormation Template
         run: >
           aws cloudformation deploy
@@ -74,11 +74,12 @@ jobs:
           --parameter-overrides publicUniqueId=${{ secrets.PUBLIC_UNIQUE_ID }}
           uniqueId=${{ secrets.UNIQUE_ID }}
       - name: Copy Code to Public Code Bucket
-        run: aws s3 cp remote-aws/DashboardStack.template.json s3://${{ vars.PUBLIC_CODE_BUCKET }}/CloudFormation/
+        run: aws s3 cp remote-aws/cf-templates/DashboardStack.template.json s3://${{ vars.PUBLIC_CODE_BUCKET }}/CloudFormation/
       - name: Deploy CloudFront CloudFormation Template
         run: >
           aws --region us-east-1 cloudformation deploy
-          --template-file remote-aws/CloudFrontStack.template.json
+          --s3-bucket ${{ vars.PUBLIC_CODE_BUCKET }}
+          --template-file CloudFormation/CloudFrontStack.template.json
           --stack-name CloudFrontStack
           --parameter-overrides uniqueId=${{ secrets.UNIQUE_ID }}
           codeBucketName=${{ secrets.PRIVATE_CODE_BUCKET }}
@@ -87,7 +88,8 @@ jobs:
       - name: Deploy Dashboard CloudFormation Template
         run: >
           aws cloudformation deploy
-          --template-file remote-aws/DashboardStack.template.json
+          --s3-bucket ${{ vars.PUBLIC_CODE_BUCKET }}
+          --template-file CloudFormation/DashboardStack.template.json
           --stack-name DashboardStack
           --parameter-overrides uniqueId=${{ secrets.UNIQUE_ID }}
           codeBucketName=${{ secrets.PRIVATE_CODE_BUCKET }}
