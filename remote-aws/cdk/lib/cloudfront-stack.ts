@@ -27,7 +27,7 @@ export class CloudFrontStack extends Stack {
     const certificateArn = new CfnParameter(this, "certificateArn", {
       type: "String",
       description: "ARN of certificate",
-      allowedPattern: "^[a-z0-9\\.-]{1,2048}"
+      allowedPattern: "^[a-z0-9\\.\\/\\:-]{1,2048}$"
     }).toString()
 
     /** Certificate */
