@@ -57,14 +57,14 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE }}
           aws-region: ${{ env.AWS_REGION }}
-      - name: Deploy Deployment CloudFormation Template
-        run: >
-          aws cloudformation deploy
-          --template-file remote-aws/DeploymentStack.template.json
-          --stack-name DeploymentStack
-          --parameter-overrides codeBucketName=${{ secrets.PRIVATE_CODE_BUCKET }}
-      - name: Copy Public CloudFormation Template
-        run: aws s3 cp remote-aws/DashboardStack.template.json s3://${{ secrets.PRIVATE_CODE_BUCKET }}
+      # - name: Deploy Deployment CloudFormation Template
+      #   run: >
+      #     aws cloudformation deploy
+      #     --template-file remote-aws/DeploymentStack.template.json
+      #     --stack-name DeploymentStack
+      #     --parameter-overrides codeBucketName=${{ secrets.PRIVATE_CODE_BUCKET }}
+      - name: Copy Code to Private Code Bucket
+        run: aws s3 cp remote-aws/*.template.json s3://${{ secrets.PRIVATE_CODE_BUCKET }}/CloudFormation
       - name: Deploy CloudFront CloudFormation Template
         run: >
           aws --region us-east-1 cloudformation deploy
@@ -88,3 +88,5 @@ jobs:
           codeBucketName=${{ secrets.PRIVATE_CODE_BUCKET }}
           certificateArn=${{ secrets.CERTIFICATE_ARN }}
           domain=${{ vars.DOMAIN }}
+      - name: Copy Code to Private Code Bucket
+        run: aws s3 cp remote-aws/DashboardStack.template.json s3://${{ secrets.PRIVATE_CODE_BUCKET }}/CloudFormation
