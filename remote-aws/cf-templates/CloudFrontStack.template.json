@@ -20,11 +20,6 @@
    "Type": "String",
    "AllowedPattern": "^[a-z0-9\\.\\/\\:-]{1,2048}$",
    "Description": "ARN of certificate"
-  },
-  "BootstrapVersion": {
-   "Type": "AWS::SSM::Parameter::Value<String>",
-   "Default": "/cdk-bootstrap/hnb659fds/version",
-   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
   }
  },
  "Resources": {
@@ -226,42 +221,7 @@
    "Metadata": {
     "aws:cdk:path": "CloudFrontStack/CloudFrontDistribution/Resource"
    }
-  },
-  "CDKMetadata": {
-   "Type": "AWS::CDK::Metadata",
-   "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/02MywrCMBBFv6X7dLQq6NYHgitL/QCJyVTG1gQyiSIh/25DFV3dc+YOdwbVcg6LQj65VLore7pAPHmpOrFtTS2dvKNHJ4b+HHkOcRNUh34jGcWI+e9DY9S2J/X6nUdPQvU26NZZ4yEO5TbrPuvR0ZXMWilkPmg0nvxL7Ii9o0vwZE3e+veURINsg1OYqy8nYaxGuPHkUa1gNoWquDFR6cIweUdoxnwDXDNqw/MAAAA="
-   },
-   "Metadata": {
-    "aws:cdk:path": "CloudFrontStack/CDKMetadata/Default"
-   }
   }
  },
- "Rules": {
-  "CheckBootstrapVersion": {
-   "Assertions": [
-    {
-     "Assert": {
-      "Fn::Not": [
-       {
-        "Fn::Contains": [
-         [
-          "1",
-          "2",
-          "3",
-          "4",
-          "5"
-         ],
-         {
-          "Ref": "BootstrapVersion"
-         }
-        ]
-       }
-      ]
-     },
-     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
-    }
-   ]
-  }
- }
+ "Rules": {}
 }
