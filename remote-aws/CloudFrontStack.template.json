@@ -7,7 +7,7 @@
   },
   "certificateArn": {
    "Type": "String",
-   "AllowedPattern": "^[a-z0-9\\.-]{1,2048}",
+   "AllowedPattern": "^[a-z0-9\\.\\/\\:-]{1,2048}$",
    "Description": "ARN of certificate"
   },
   "codeBucketName": {
