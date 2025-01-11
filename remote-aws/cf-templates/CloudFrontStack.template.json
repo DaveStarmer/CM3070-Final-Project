@@ -15,14 +15,31 @@
    "Type": "String",
    "AllowedPattern": "[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)",
    "Description": "Registered Domain Name"
-  },
-  "certificateArn": {
-   "Type": "String",
-   "AllowedPattern": "^[a-z0-9\\.\\/\\:-]{1,2048}$",
-   "Description": "ARN of certificate"
   }
  },
  "Resources": {
+  "dashboardCertificateC86CDF1D": {
+   "Type": "AWS::CertificateManager::Certificate",
+   "Properties": {
+    "DomainName": "CloudFrontStack/domainName",
+    "DomainValidationOptions": [
+     {
+      "DomainName": "CloudFrontStack/domainName",
+      "ValidationDomain": "CloudFrontStack/domainName"
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "Name",
+      "Value": "dashboardCertificate"
+     }
+    ],
+    "ValidationMethod": "EMAIL"
+   },
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/dashboardCertificate/Resource"
+   }
+  },
   "cloudFrontOAI": {
    "Type": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
    "Properties": {
@@ -191,6 +208,9 @@
    "Type": "AWS::CloudFront::Distribution",
    "Properties": {
     "DistributionConfig": {
+     "Aliases": [
+      "CloudFrontStack/domainName"
+     ],
      "Comment": "CF Distro",
      "DefaultCacheBehavior": {
       "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
@@ -215,7 +235,14 @@
         "OriginAccessIdentity": ""
        }
       }
-     ]
+     ],
+     "ViewerCertificate": {
+      "AcmCertificateArn": {
+       "Ref": "dashboardCertificateC86CDF1D"
+      },
+      "MinimumProtocolVersion": "TLSv1.2_2021",
+      "SslSupportMethod": "sni-only"
+     }
     }
    },
    "Metadata": {
