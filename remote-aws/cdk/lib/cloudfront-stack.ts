@@ -110,7 +110,7 @@ export class CloudFrontStack extends Stack {
       },
       userVerification: {
         emailSubject: "Verify your email for your new Private Camera System",
-        emailBody: "Your account has been created. Your verification code is {####}",
+        emailBody: "Hello {username}. Your account has been created. Your verification code is {####}",
         emailStyle: VerificationEmailStyle.CODE,
       },
       userInvitation: {
