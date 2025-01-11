@@ -115,8 +115,7 @@ export class CloudFrontStack extends Stack {
       },
       userInvitation: {
         emailSubject: "Invite to Surveillance System",
-        emailBody: "You have been invited to join the Surveillance System. Your temporary password is {####}",
-        smsMessage: "You have been invited to join the Surveillance System. Your temporary password is {####}"
+        emailBody: "You have been invited to join the Surveillance System. Your temporary password is {####}"
       }
     })
   }
