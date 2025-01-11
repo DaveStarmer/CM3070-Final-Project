@@ -44,10 +44,10 @@ export class CloudFrontStack extends Stack {
       type: "String",
       description: "ARN of certificate",
       allowedPattern: "^[a-z0-9\\.\\/\\:-]{1,2048}$"
-    }).toString()
+    })
 
     /** Certificate */
-    const certificate = Certificate.fromCertificateArn(this, "dashboardCertificate", certificateArn)
+    const certificate = Certificate.fromCertificateArn(this, "dashboardCertificate", certificateArn.toString())
 
     // Create Resources
     /** CloudFront User */
