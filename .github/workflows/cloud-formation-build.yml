@@ -69,7 +69,7 @@ jobs:
         run: >
           aws cloudformation deploy
           --s3-bucket ${{ secrets.PRIVATE_CODE_BUCKET }}
-          --template-file CloudFormation/InstructionsStack.template.json
+          --template-file remote-aws/cf-templates/InstructionsStack.template.json
           --stack-name InstructionsStack
           --parameter-overrides publicUniqueId=${{ secrets.PUBLIC_UNIQUE_ID }}
           uniqueId=${{ secrets.UNIQUE_ID }}
@@ -79,7 +79,7 @@ jobs:
         run: >
           aws --region us-east-1 cloudformation deploy
           --s3-bucket ${{ vars.PUBLIC_CODE_BUCKET }}
-          --template-file CloudFormation/CloudFrontStack.template.json
+          --template-file remote-aws/cf-templates/CloudFrontStack.template.json
           --stack-name CloudFrontStack
           --parameter-overrides uniqueId=${{ secrets.UNIQUE_ID }}
           codeBucketName=${{ secrets.PRIVATE_CODE_BUCKET }}
@@ -89,7 +89,7 @@ jobs:
         run: >
           aws cloudformation deploy
           --s3-bucket ${{ vars.PUBLIC_CODE_BUCKET }}
-          --template-file CloudFormation/DashboardStack.template.json
+          --template-file remote-aws/cf-templates/DashboardStack.template.json
           --stack-name DashboardStack
           --parameter-overrides uniqueId=${{ secrets.UNIQUE_ID }}
           codeBucketName=${{ secrets.PRIVATE_CODE_BUCKET }}
