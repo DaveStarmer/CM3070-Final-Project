@@ -21,10 +21,10 @@
   "dashboardCertificateC86CDF1D": {
    "Type": "AWS::CertificateManager::Certificate",
    "Properties": {
-    "DomainName": "CloudFrontStack/domainName",
+    "DomainName": "*.CloudFrontStack/domainName",
     "DomainValidationOptions": [
      {
-      "DomainName": "CloudFrontStack/domainName",
+      "DomainName": "*.CloudFrontStack/domainName",
       "ValidationDomain": "CloudFrontStack/domainName"
      }
     ],
