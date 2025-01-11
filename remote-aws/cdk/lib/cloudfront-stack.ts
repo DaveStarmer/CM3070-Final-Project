@@ -86,7 +86,8 @@ export class CloudFrontStack extends Stack {
       defaultBehavior: {
         origin: S3BucketOrigin.withBucketDefaults(publicWebBucket),
       },
-
+      domainNames: [domainName.toString()],
+      certificate: certificate,
     })
 
     const domain = new Domain()
