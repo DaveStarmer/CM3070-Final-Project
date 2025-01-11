@@ -2,6 +2,7 @@ import { CfnParameter, Fn, Stack, StackProps } from "aws-cdk-lib";
 import { Certificate } from "aws-cdk-lib/aws-certificatemanager";
 import { CfnCloudFrontOriginAccessIdentity, Distribution } from "aws-cdk-lib/aws-cloudfront";
 import { S3BucketOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
+import { UserPool, VerificationEmailStyle } from "aws-cdk-lib/aws-cognito";
 import { CanonicalUserPrincipal } from "aws-cdk-lib/aws-iam";
 import { HostedZone } from "aws-cdk-lib/aws-route53";
 import { Bucket, HttpMethods } from "aws-cdk-lib/aws-s3";
@@ -92,10 +93,31 @@ export class CloudFrontStack extends Stack {
       defaultBehavior: {
         origin: S3BucketOrigin.withBucketDefaults(publicWebBucket),
       },
-      domainNames: [Fn.sub("*.${domainName}")],
+      domainNames: [Fn.sub("www.${domainName}")],
       certificate
     })
 
-
+    const userPool = new UserPool(this, "userPool", {
+      userPoolName: "vid-user-pool",
+      signInAliases: {
+        email: true
+      },
+      selfSignUpEnabled: false,
+      autoVerify: {
+        email: true,
+        // in a production system, phone would also be required verification
+        // phone: true
+      },
+      userVerification: {
+        emailSubject: "Verify your email for your new Private Camera System",
+        emailBody: "Your account has been created. Your verification code is {####}",
+        emailStyle: VerificationEmailStyle.CODE,
+      },
+      userInvitation: {
+        emailSubject: "Invite to Surveillance System",
+        emailBody: "You have been invited to join the Surveillance System. Your temporary password is {####}",
+        smsMessage: "You have been invited to join the Surveillance System. Your temporary password is {####}"
+      }
+    })
   }
 }
