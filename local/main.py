@@ -3,6 +3,7 @@ import json
 import os
 import cv2
 import ffmpeg
+import boto3
 from movement_detection import MovementDetection
 
 VIDEO_LENGTH = 20
@@ -120,7 +121,7 @@ def write_video(video, frame_rate, activation_dt, camera_name):
     fourcc = cv2.VideoWriter_fourcc(*"avc1")
     # output file
     frame_shape = (video[0].shape[1], video[0].shape[0])
-    filename = f"output_{activation_dt}_{camera_name}.mp4"
+    filename = f"{activation_dt}_{camera_name}.mp4"
     tmp_filename = filename.replace(".mp4", "_temp.mp4")
     out_vid = cv2.VideoWriter(tmp_filename, fourcc, frame_rate, frame_shape)
     print(f"Outputting video of {len(video)} frames to {tmp_filename}")
@@ -144,11 +145,25 @@ def write_video(video, frame_rate, activation_dt, camera_name):
 
 
 def upload_video(filename):
-    pass
+    try:
+        access_key = config["aws"]["accessKey"]
+        secret_access_key = config["aws"]["secretAccessKey"]
+        bucket = config["aws"]["bucket"]
+    except KeyError:
+        raise RuntimeError("AWS Connection not properly configured")
+
+    # connect to AWS using boto3
+    print("Connecting to AWS")
+    s3_client = boto3.client(
+        "s3", aws_access_key_id=access_key, aws_secret_access_key=secret_access_key
+    )
+
+    s3_client.upload_file(filename, bucket, filename)
+    print("Video clip uploaded")
 
 
 def clean_up_video(filename):
-    pass
+    os.remove(filename)
 
 
 start_camera()
