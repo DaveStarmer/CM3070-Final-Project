@@ -40,15 +40,19 @@ export class CloudFrontStack extends Stack {
       allowedPattern: "[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)"
     })
 
-    /** Parameter for Certificate ARN */
-    const certificateArn = new CfnParameter(this, "certificateArn", {
-      type: "String",
-      description: "ARN of certificate",
-      allowedPattern: "^[a-z0-9\\.\\/\\:-]{1,2048}$"
-    })
+    // /** Parameter for Certificate ARN */
+    // const certificateArn = new CfnParameter(this, "certificateArn", {
+    //   type: "String",
+    //   description: "ARN of certificate",
+    //   allowedPattern: "^[a-z0-9\\.\\/\\:-]{1,2048}$"
+    // })
 
-    /** Certificate */
+    // /** Certificate */
     // const certificate = Certificate.fromCertificateArn(this, "dashboardCertificate", certificateArn.toString())
+    const certificate = new Certificate(this, 'dashboardCertificate', {
+      domainName: domainName.toString(),
+      certificateName: "dashboardCertificate",
+    })
 
     // Create Resources
     /** CloudFront User */
@@ -88,9 +92,9 @@ export class CloudFrontStack extends Stack {
         origin: S3BucketOrigin.withBucketDefaults(publicWebBucket),
       },
       domainNames: [domainName.toString()],
-      certificate: Certificate.fromCertificateArn(this, "dashboardCertificate", certificateArn.toString()),
+      certificate
     })
 
-    const domain = new Domain()
+
   }
 }
