@@ -38,7 +38,7 @@ export class CloudFrontStack extends Stack {
       description: "Registered Domain Name",
       // pattern taken from https://stackoverflow.com/a/3809435
       allowedPattern: "[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)"
-    }).toString()
+    })
 
     /** Parameter for Certificate ARN */
     const certificateArn = new CfnParameter(this, "certificateArn", {
@@ -48,7 +48,7 @@ export class CloudFrontStack extends Stack {
     })
 
     /** Certificate */
-    const certificate = Certificate.fromCertificateArn(this, "dashboardCertificate", certificateArn.toString())
+    // const certificate = Certificate.fromCertificateArn(this, "dashboardCertificate", certificateArn.toString())
 
     // Create Resources
     /** CloudFront User */
@@ -88,7 +88,7 @@ export class CloudFrontStack extends Stack {
         origin: S3BucketOrigin.withBucketDefaults(publicWebBucket),
       },
       domainNames: [domainName.toString()],
-      certificate: certificate,
+      certificate: Certificate.fromCertificateArn(this, "dashboardCertificate", certificateArn.toString()),
     })
 
     const domain = new Domain()

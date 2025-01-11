@@ -17,8 +17,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
-      - name: ARN
-        run: echo '${{ secrets.CERTIFICATE_ARN}}'
       - name: Run cdk synth
         uses: youyo/aws-cdk-github-actions@v2
         with:
