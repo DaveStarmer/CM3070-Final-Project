@@ -253,8 +253,7 @@
      "AllowAdminCreateUserOnly": true,
      "InviteMessageTemplate": {
       "EmailMessage": "You have been invited to join the Surveillance System. Your temporary password is {####}",
-      "EmailSubject": "Invite to Surveillance System",
-      "SMSMessage": "You have been invited to join the Surveillance System. Your temporary password is {####}"
+      "EmailSubject": "Invite to Surveillance System"
      }
     },
     "AutoVerifiedAttributes": [
