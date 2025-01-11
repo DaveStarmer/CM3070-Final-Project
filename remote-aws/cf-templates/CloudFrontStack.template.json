@@ -15,31 +15,14 @@
    "Type": "String",
    "AllowedPattern": "[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)",
    "Description": "Registered Domain Name"
+  },
+  "certificateArn": {
+   "Type": "String",
+   "AllowedPattern": "^[a-z0-9\\.\\/\\:-]{1,2048}$",
+   "Description": "ARN of certificate"
   }
  },
  "Resources": {
-  "dashboardCertificateC86CDF1D": {
-   "Type": "AWS::CertificateManager::Certificate",
-   "Properties": {
-    "DomainName": "*.CloudFrontStack/domainName",
-    "DomainValidationOptions": [
-     {
-      "DomainName": "*.CloudFrontStack/domainName",
-      "ValidationDomain": "CloudFrontStack/domainName"
-     }
-    ],
-    "Tags": [
-     {
-      "Key": "Name",
-      "Value": "dashboardCertificate"
-     }
-    ],
-    "ValidationMethod": "EMAIL"
-   },
-   "Metadata": {
-    "aws:cdk:path": "CloudFrontStack/dashboardCertificate/Resource"
-   }
-  },
   "cloudFrontOAI": {
    "Type": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
    "Properties": {
@@ -238,7 +221,7 @@
      ],
      "ViewerCertificate": {
       "AcmCertificateArn": {
-       "Ref": "dashboardCertificateC86CDF1D"
+       "Ref": "certificateArn"
       },
       "MinimumProtocolVersion": "TLSv1.2_2021",
       "SslSupportMethod": "sni-only"
