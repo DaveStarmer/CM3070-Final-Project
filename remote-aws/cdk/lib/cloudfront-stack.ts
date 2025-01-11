@@ -49,8 +49,9 @@ export class CloudFrontStack extends Stack {
 
     // /** Certificate */
     // const certificate = Certificate.fromCertificateArn(this, "dashboardCertificate", certificateArn.toString())
+
     const certificate = new Certificate(this, 'dashboardCertificate', {
-      domainName: `*.${domainName.toString()}`,
+      domainName: Fn.sub("*.domainName"),
       certificateName: "dashboardCertificate",
     })
 
