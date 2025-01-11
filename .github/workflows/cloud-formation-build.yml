@@ -17,6 +17,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
+      - name: ARN
+        run: echo '${{ secrets.CERTIFICATE_ARN}}'
       - name: Run cdk synth
         uses: youyo/aws-cdk-github-actions@v2
         with:
@@ -75,8 +77,6 @@ jobs:
           uniqueId=${{ secrets.UNIQUE_ID }}
       - name: Copy Code to Public Code Bucket
         run: aws s3 cp remote-aws/cf-templates/DashboardStack.template.json s3://${{ vars.PUBLIC_CODE_BUCKET }}/CloudFormation/
-      - name: ARN
-        run: echo '${{ secrets.CERTIFICATE_ARN}}'
       - name: Deploy CloudFront CloudFormation Template
         run: >
           aws --region us-east-1 cloudformation deploy
