@@ -78,7 +78,6 @@ jobs:
       - name: Deploy CloudFront CloudFormation Template
         run: >
           aws --region us-east-1 cloudformation deploy
-          --s3-bucket ${{ vars.PUBLIC_CODE_BUCKET }}
           --template-file remote-aws/cf-templates/CloudFrontStack.template.json
           --stack-name CloudFrontStack
           --parameter-overrides uniqueId=${{ secrets.UNIQUE_ID }}
