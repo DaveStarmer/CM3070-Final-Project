@@ -4,7 +4,6 @@ on:
   push:
     paths:
       - remote-aws/cdk/** # only run on changes to cdk
-      - .github/wokflows/cloud-formation-build.yml # changes to this script
 env:
   AWS_REGION: 'eu-west-2'
 jobs:
