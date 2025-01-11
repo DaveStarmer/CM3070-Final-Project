@@ -41,19 +41,19 @@ export class CloudFrontStack extends Stack {
     })
 
     // /** Parameter for Certificate ARN */
-    // const certificateArn = new CfnParameter(this, "certificateArn", {
-    //   type: "String",
-    //   description: "ARN of certificate",
-    //   allowedPattern: "^[a-z0-9\\.\\/\\:-]{1,2048}$"
-    // })
+    const certificateArn = new CfnParameter(this, "certificateArn", {
+      type: "String",
+      description: "ARN of certificate",
+      allowedPattern: "^[a-z0-9\\.\\/\\:-]{1,2048}$"
+    })
 
     // /** Certificate */
-    // const certificate = Certificate.fromCertificateArn(this, "dashboardCertificate", certificateArn.toString())
+    const certificate = Certificate.fromCertificateArn(this, "dashboardCertificate", Fn.ref("certificateArn"))
 
-    const certificate = new Certificate(this, 'dashboardCertificate', {
-      domainName: Fn.sub("*.${domainName}"),
-      certificateName: "dashboardCertificate",
-    })
+    // const certificate = new Certificate(this, 'dashboardCertificate', {
+    //   domainName: Fn.sub("*.${domainName}"),
+    //   certificateName: "dashboardCertificate",
+    // })
 
     // Create Resources
     /** CloudFront User */
