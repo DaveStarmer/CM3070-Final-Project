@@ -5,13 +5,13 @@ import cv2
 import numpy as np
 
 # frames to compare back against
-FRAME_HISTORY = 20
+FRAME_HISTORY = 40
 # additional time to process video
 ADDITIONAL_PROCESSING_SECS = 0
 # threshold under which to merge or dispose of bounding rectangles which overlap
 IOU_THRESHOLD = 0.2
 # maximum difference in average brightness before it is assumed lights have been turned on or off
-MAX_BRIGHT_DIFF = 20
+MAX_BRIGHT_DIFF = 50
 
 
 class MovementDetection:
