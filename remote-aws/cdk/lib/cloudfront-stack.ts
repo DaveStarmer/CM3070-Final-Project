@@ -11,6 +11,9 @@ import { Domain } from "domain";
 
 
 export class CloudFrontStack extends Stack {
+  publicWebBucket: Bucket;
+  privateWebBucket: Bucket;
+  certificate: any;
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props)
 
@@ -49,24 +52,17 @@ export class CloudFrontStack extends Stack {
     })
 
     // /** Certificate */
-    const certificate = Certificate.fromCertificateArn(this, "dashboardCertificate", Fn.ref("certificateArn"))
-
-    // const certificate = new Certificate(this, 'dashboardCertificate', {
-    //   domainName: Fn.sub("*.${domainName}"),
-    //   certificateName: "dashboardCertificate",
-    // })
+    this.certificate = Certificate.fromCertificateArn(this, "dashboardCertificate", Fn.ref("certificateArn"))
 
     // Create Resources
-    /** CloudFront User */
-    const cloudFrontOAI = new CfnCloudFrontOriginAccessIdentity(this, "cloudFrontOAI", {
-      cloudFrontOriginAccessIdentityConfig: { comment: "CloudFrontOAI" }
+
+    /** bucket for private web content - dashboard */
+    this.privateWebBucket = new Bucket(this, "privateWebBucket", {
+      bucketName: Fn.sub("vid-dash-private-web-${uniqueId}")
     })
 
-    /** user principal for cloud front */
-    const cfUserPrincipal = new CanonicalUserPrincipal(cloudFrontOAI.attrS3CanonicalUserId)
-
     /** bucket for public web content */
-    const publicWebBucket = new Bucket(this, "publicWebBucket", {
+    this.publicWebBucket = new Bucket(this, "publicWebBucket", {
       bucketName: Fn.sub("vid-dash-public-web-${uniqueId}"),
       cors: [{
         allowedOrigins: ["http*"],
@@ -75,15 +71,27 @@ export class CloudFrontStack extends Stack {
         exposedHeaders: ["Etag", "x-amx-meta-custom-header"]
       }]
     })
-    // grant read rights to CloudFront User
-    publicWebBucket.grantRead(cfUserPrincipal)
 
-    /** bucket for private web content - dashboard */
-    const privateWebBucket = new Bucket(this, "privateWebBucket", {
-      bucketName: Fn.sub("vid-dash-private-web-${uniqueId}")
+    this.createCloudFrontDistro()
+
+  }
+
+  /** create CloudFront resources, and assign correct rights to buckets */
+  createCloudFrontDistro() {
+    /** CloudFront User */
+    const cloudFrontOAI = new CfnCloudFrontOriginAccessIdentity(this, "cloudFrontOAI", {
+      cloudFrontOriginAccessIdentityConfig: { comment: "CloudFrontOAI" }
     })
+
+    /** user principal for cloud front */
+    const cfUserPrincipal = new CanonicalUserPrincipal(cloudFrontOAI.attrS3CanonicalUserId)
+
+
     // grant read rights to CloudFront User
-    privateWebBucket.grantRead(cfUserPrincipal)
+    this.publicWebBucket.grantRead(cfUserPrincipal)
+
+    // grant read rights to CloudFront User
+    this.privateWebBucket.grantRead(cfUserPrincipal)
 
     /** CloudFront Distribution */
     const dfDist = new Distribution(this, "CloudFrontDistribution", {
@@ -91,10 +99,10 @@ export class CloudFrontStack extends Stack {
       comment: "CF Distro",
       defaultRootObject: "index.html",
       defaultBehavior: {
-        origin: S3BucketOrigin.withBucketDefaults(publicWebBucket),
+        origin: S3BucketOrigin.withBucketDefaults(this.publicWebBucket),
       },
       domainNames: [Fn.sub("www.${domainName}")],
-      certificate
+      certificate: this.certificate
     })
 
     const userPool = new UserPool(this, "userPool", {
