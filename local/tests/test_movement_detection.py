@@ -1,8 +1,8 @@
+"""Tests for Movement Detection Code"""
+
 from unittest import TestCase
-from unittest.mock import Mock, patch
 
 from pathlib import Path
-import json
 import cv2
 
 from ..movement_detection import MovementDetection, FRAME_HISTORY
@@ -15,11 +15,7 @@ TEST_FOLDER = Path(__file__).parent
 
 
 class TestMovementDetection(TestCase):
-    def setUp(self):
-        pass
-
-    def tearDown(self):
-        pass
+    """TestCase to test movement detection"""
 
     def test_movement_detected(self):
         """Ensure movement is detected when it should be"""
