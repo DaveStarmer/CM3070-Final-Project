@@ -56,6 +56,9 @@ class MovementDetection:
             boolean: movement has been detected and there is a full length video clip available
         Raises:
         """
+        # ignore null frames
+        if frame is None:
+            return False
         # add video to list to produce final video
         self._video.append(frame)
         # calculate the average illumination of the frame
