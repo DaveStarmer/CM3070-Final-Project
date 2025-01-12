@@ -1,3 +1,5 @@
+#!/bin/bash
+
 USER_HOME="/home/$USER"
 
 echo Installing requirements
