@@ -5,6 +5,8 @@ on:
     paths:
       - remote-aws/private-web/** # run automatically on changes to web code
       - remote-aws/public-web/** # run automatically on changes to web code
+env:
+  AWS_REGION: 'eu-west-2'
 jobs:
   web-upload:
     runs-on: ubuntu-latest
@@ -19,6 +21,6 @@ jobs:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE }}
           aws-region: ${{ env.AWS_REGION }}
       - name: Upload Public web to web bucket
-        run: aws s3 cp remote-dashboard/public-web/ s3://${{ vars.PUBLIC_WEB_BUCKET }}
+        run: aws s3 cp remote-dashboard/public-web/ s3://${{ secrets.PUBLIC_WEB_BUCKET }}
       - name: Upload Private web to web bucket
-        run: aws s3 cp remote-dashboard/private-web/ s3://${{ vars.PRIVATE_WEB_BUCKET }}
+        run: aws s3 cp remote-dashboard/private-web/ s3://${{ secrets.PRIVATE_WEB_BUCKET }}
