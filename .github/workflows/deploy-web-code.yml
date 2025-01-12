@@ -1,0 +1,24 @@
+name: Upload Web Content
+run-name: Uploading Web Content
+on:
+  push:
+    paths:
+      - remote-aws/private-web/** # run automatically on changes to web code
+      - remote-aws/public-web/** # run automatically on changes to web code
+jobs:
+  web-upload:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Upload Public web to web bucket
+        run: aws s3 cp remote-dashboard/public-web/ s3://${{ vars.PUBLIC_WEB_BUCKET }}
+      - name: Upload Private web to web bucket
+        run: aws s3 cp remote-dashboard/private-web/ s3://${{ vars.PRIVATE_WEB_BUCKET }}
