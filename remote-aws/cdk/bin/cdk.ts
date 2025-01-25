@@ -4,6 +4,7 @@ import { DashboardStack } from '../lib/dashboard-stack';
 import { InstructionsStack } from '../lib/instructions-stack';
 import { CloudFrontStack } from '../lib/cloudfront-stack';
 import { DeploymentStack } from '../lib/deployment-stack';
+import { InstructionsCloudFrontStack } from '../lib/instructions-cloudfront-stack';
 
 const app = new cdk.App();
 
@@ -19,6 +20,12 @@ new CloudFrontStack(app, 'CloudFrontStack', {
 new DashboardStack(app, 'DashboardStack', {})
 
 new InstructionsStack(app, 'InstructionsStack')
+new InstructionsCloudFrontStack(app, 'InstructionsCloudFrontStack', {
+  env: {
+    region: 'us-east-1'
+  },
+  crossRegionReferences: true
+})
 
 /* Notes for stack environments - delete before submission */
 /* If you don't specify 'env', this stack will be environment-agnostic.

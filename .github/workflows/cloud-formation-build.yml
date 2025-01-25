@@ -64,38 +64,49 @@ jobs:
           --template-file remote-aws/cf-templates/DeploymentStack.template.json
           --stack-name DeploymentStack
           --parameter-overrides uniqueId=${{ secrets.UNIQUE_ID }}
-      - name: Copy Code to Private Code Bucket
+      - name: Build and Upload Lambda Deployment Zips
         run: |
-          aws s3 cp remote-aws/cf-templates/ s3://${{ secrets.PRIVATE_CODE_BUCKET }}/CloudFormation/ --recursive
-          echo Zip Lambdas
           for filename in remote-aws/lambdas/*; do
-            lambda_name=$(basename ${filename})
-            dir_name=$(dirname ${filename})
-            echo $lambda_name
-            cd $filename
-            zip -r ../${lambda_name}.zip * -x tests/*
-            aws s3 cp ../${lambda_name}.zip s3://${{ secrets.PRIVATE_CODE_BUCKET }}/Lambdas/
-            cd -
+            source build/build_lambda_zip.sh $filename ${{ secrets.PRIVATE_CODE_BUCKET }}
           done
+      - name: Copy Templates to Private Code Bucket
+        run: aws s3 cp remote-aws/cf-templates/ s3://${{ secrets.PRIVATE_CODE_BUCKET }}/cloudFormation/ --recursive
+      - name: Copy Web Code to Private Code Bucket
+        run: |
+          aws s3 cp remote-dashboard/public-web/ s3://${{ secrets.PRIVATE_CODE_BUCKET }}/public-web --recursive
+          aws s3 cp remote-dashboard/private-web/ s3://${{ secrets.PRIVATE_CODE_BUCKET }}/private-web --recursive
       - name: Deploy Instructions CloudFormation Template
         run: >
           aws cloudformation deploy
-          --s3-bucket ${{ secrets.PRIVATE_CODE_BUCKET }}
           --template-file remote-aws/cf-templates/InstructionsStack.template.json
           --stack-name InstructionsStack
           --parameter-overrides publicUniqueId=${{ secrets.PUBLIC_UNIQUE_ID }}
           uniqueId=${{ secrets.UNIQUE_ID }}
-      - name: Copy Code to Public Code Bucket
+          codeBucketName=${{ secrets.PRIVATE_CODE_BUCKET }}
+      - name: Deploy Instructions-CloudFront CloudFormation Template
+        run: >
+          aws --region us-east-1 cloudformation deploy
+          --template-file remote-aws/cf-templates/InstructionsCloudFrontStack.template.json
+          --stack-name InstructionsCloudFrontStack
+          --parameter-overrides publicUniqueId=${{ secrets.PUBLIC_UNIQUE_ID }}
+          uniqueId=${{ secrets.UNIQUE_ID }}
+      - name: Copy Code to Public Code Buckets
         run: |
           aws s3 cp remote-aws/cf-templates/DashboardStack.template.json s3://${{ vars.PUBLIC_CODE_BUCKET }}/CloudFormation/
-          aws s3 cp remote-aws/cf-templates/CloudFrontStack.template.json s3://${{ vars.PUBLIC_CODE_BUCKET }}/CloudFormation/
+          aws s3 cp remote-aws/cf-templates/CloudFrontStack.template.json s3://${{ vars.PUBLIC_CODE_BUCKET }}/cloudformation/
+          aws s3 cp s3://${{ secrets.PRIVATE_CODE_BUCKET }}/lambdas s3://${{ vars.PUBLIC_CODE_BUCKET }}/lambdas/ --recursive
+          aws s3 cp s3://${{ secrets.PRIVATE_CODE_BUCKET }}/lambdas/copy-web-code.zip s3://${{ vars.PUBLIC_CODE_BUCKET_CF }}/lambdas/copy-web-code.zip
+          aws s3 cp s3://${{ secrets.PRIVATE_CODE_BUCKET }}/private-web s3://${{ vars.PUBLIC_CODE_BUCKET_CF }}/private-web --recursive
+          aws s3 cp s3://${{ secrets.PRIVATE_CODE_BUCKET }}/public-web s3://${{ vars.PUBLIC_CODE_BUCKET_CF }}/public-web --recursive
       - name: Deploy CloudFront CloudFormation Template
         run: >
           aws --region us-east-1 cloudformation deploy
           --template-file remote-aws/cf-templates/CloudFrontStack.template.json
           --stack-name CloudFrontStack
+          --capabilities CAPABILITY_NAMED_IAM
           --parameter-overrides uniqueId=${{ secrets.UNIQUE_ID }}
-          codeBucketName=${{ secrets.PRIVATE_CODE_BUCKET }}
+          codeBucketName=${{ vars.PUBLIC_CODE_BUCKET_CF }}
+          codeBucketRegion="us-east-1"
           domainName=${{ vars.DOMAIN }}
           certificateArn=${{ secrets.CERTIFICATE_ARN }}
       - name: Deploy Dashboard CloudFormation Template

@@ -103,5 +103,5 @@ def create_signin_url(request: dict) -> str:
 
     # return url to redirect to including the encoded original destination
     return (
-        f"https://www.{os.environ['domain']}/signin?redirect_url={original_url_encoded}"
+        f"https://www.{os.environ['DOMAIN']}/signin?redirect_url={original_url_encoded}"
     )

@@ -1,5 +1,6 @@
 import { CfnParameter, Fn, Stack, StackProps } from 'aws-cdk-lib';
-import { Bucket } from 'aws-cdk-lib/aws-s3';
+import { Bucket, CfnMultiRegionAccessPoint } from 'aws-cdk-lib/aws-s3';
+import { BucketDeployment, Source } from 'aws-cdk-lib/aws-s3-deployment';
 import { Construct } from 'constructs';
 
 export class InstructionsStack extends Stack {
@@ -31,5 +32,12 @@ export class InstructionsStack extends Stack {
     const publicCodeBucket = new Bucket(this, "publicCodeBucket", {
       bucketName: Fn.sub("instruct-code-${publicUniqueId}")
     })
+
+    // const multiRegionCodeBucketAP = new CfnMultiRegionAccessPoint(this, "multiRegionCode", {
+    //   regions: [{
+    //     bucket: publicCodeBucket.bucketName
+    //   }]
+    // })
+
   }
 }
