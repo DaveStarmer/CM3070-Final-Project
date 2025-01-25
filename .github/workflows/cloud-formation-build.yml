@@ -2,8 +2,9 @@ name: Generate CloudFormation Scripts and Deploy
 run-name: Generating and Deploying CloudFormation Scripts
 on:
   push:
-    paths:
-      - remote-aws/cdk/** # only run on changes to cdk
+    paths: # limit when action runs
+      - remote-aws/cdk/** # changes to cdk
+      - remote-aws/lambdas/** # changes to CloudFront Lambdas
 env:
   AWS_REGION: 'eu-west-2'
 jobs:
@@ -64,7 +65,18 @@ jobs:
           --stack-name DeploymentStack
           --parameter-overrides uniqueId=${{ secrets.UNIQUE_ID }}
       - name: Copy Code to Private Code Bucket
-        run: aws s3 cp remote-aws/cf-templates/ s3://deployment-code-a102dbccb12364e0866af88472c9da91/CloudFormation/ --recursive
+        run: |
+          aws s3 cp remote-aws/cf-templates/ s3://${{ secrets.PRIVATE_CODE_BUCKET }}/CloudFormation/ --recursive
+          echo Zip Lambdas
+          for filename in remote-aws/lambdas/*; do
+            lambda_name=$(basename ${filename})
+            dir_name=$(dirname ${filename})
+            echo $lambda_name
+            cd $filename
+            zip -r ../${lambda_name}.zip * -x tests/*
+            aws s3 cp ../${lambda_name}.zip s3://${{ secrets.PRIVATE_CODE_BUCKET }}/Lambdas/
+            cd -
+          done
       - name: Deploy Instructions CloudFormation Template
         run: >
           aws cloudformation deploy
@@ -74,7 +86,9 @@ jobs:
           --parameter-overrides publicUniqueId=${{ secrets.PUBLIC_UNIQUE_ID }}
           uniqueId=${{ secrets.UNIQUE_ID }}
       - name: Copy Code to Public Code Bucket
-        run: aws s3 cp remote-aws/cf-templates/DashboardStack.template.json s3://${{ vars.PUBLIC_CODE_BUCKET }}/CloudFormation/
+        run: |
+          aws s3 cp remote-aws/cf-templates/DashboardStack.template.json s3://${{ vars.PUBLIC_CODE_BUCKET }}/CloudFormation/
+          aws s3 cp remote-aws/cf-templates/CloudFrontStack.template.json s3://${{ vars.PUBLIC_CODE_BUCKET }}/CloudFormation/
       - name: Deploy CloudFront CloudFormation Template
         run: >
           aws --region us-east-1 cloudformation deploy

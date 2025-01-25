@@ -1,9 +1,10 @@
-import { CfnParameter, Fn, Stack, StackProps } from "aws-cdk-lib";
+import { CfnCustomResource, CfnParameter, Fn, Stack, StackProps } from "aws-cdk-lib";
 import { Certificate } from "aws-cdk-lib/aws-certificatemanager";
 import { CfnCloudFrontOriginAccessIdentity, Distribution } from "aws-cdk-lib/aws-cloudfront";
 import { S3BucketOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
 import { UserPool, VerificationEmailStyle } from "aws-cdk-lib/aws-cognito";
 import { CanonicalUserPrincipal } from "aws-cdk-lib/aws-iam";
+import { Code, Function, Runtime } from "aws-cdk-lib/aws-lambda";
 import { HostedZone } from "aws-cdk-lib/aws-route53";
 import { Bucket, HttpMethods } from "aws-cdk-lib/aws-s3";
 import { Construct } from "constructs";
@@ -14,6 +15,7 @@ export class CloudFrontStack extends Stack {
   publicWebBucket: Bucket;
   privateWebBucket: Bucket;
   certificate: any;
+  codeBucket: any;
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props)
 
@@ -34,7 +36,7 @@ export class CloudFrontStack extends Stack {
     }).toString()
 
     /** code bucket construct */
-    const codeBucket = Bucket.fromBucketName(this, "codeBucket", Fn.ref(codeBucketName))
+    this.codeBucket = Bucket.fromBucketName(this, "codeBucket", Fn.ref("codeBucketName"))
 
     /** Registered Domain Name */
     const domainName = new CfnParameter(this, "domainName", {
@@ -126,5 +128,25 @@ export class CloudFrontStack extends Stack {
         emailBody: "Hello {username}. You have been invited to join the Surveillance System. Your temporary password is {####}"
       }
     })
+  }
+
+  /** Code to web buckets */
+  copyCodeToWebBuckets() {
+    const copyLambda = new Function(this, "copyWebPages", {
+      runtime: Runtime.PYTHON_3_13,
+      handler: "handler.handler_function",
+      code: Code.fromBucketV2(this.codeBucket, "copy-web-code.zip")
+    })
+
+    const copyResource = new CfnCustomResource(this, "copyWebCode", {
+      serviceToken: Fn.getAtt("AWSLambdaFunction", "Arn").toString(),
+    })
+
+    copyResource
+  }
+
+  /** Deploy Edge Lambdas */
+  createEdgeLambda() {
+
   }
 }

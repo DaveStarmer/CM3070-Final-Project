@@ -2,3 +2,4 @@
 .structurizr/
 docs/c4/structurizr/images/
 non_vcs_video/
+__pycache__/
