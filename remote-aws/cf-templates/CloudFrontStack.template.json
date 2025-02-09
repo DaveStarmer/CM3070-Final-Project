@@ -11,6 +11,12 @@
    "AllowedPattern": "^[a-z0-9.-]{1,63}$",
    "Description": "Code bucket name"
   },
+  "codeBucketRegion": {
+   "Type": "String",
+   "Default": "us-east-1",
+   "AllowedPattern": "^[a-z0-9-]{1,12}$",
+   "Description": "Code Bucket Region"
+  },
   "domainName": {
    "Type": "String",
    "AllowedPattern": "[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)",
@@ -23,15 +29,71 @@
   }
  },
  "Resources": {
-  "cloudFrontOAI": {
-   "Type": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+  "privateWebBucketDEC03662": {
+   "Type": "AWS::S3::Bucket",
    "Properties": {
-    "CloudFrontOriginAccessIdentityConfig": {
-     "Comment": "CloudFrontOAI"
+    "BucketName": {
+     "Fn::Sub": "vid-dash-private-web-${uniqueId}"
+    }
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/privateWebBucket/Resource"
+   }
+  },
+  "privateWebBucketPolicy5939BD04": {
+   "Type": "AWS::S3::BucketPolicy",
+   "Properties": {
+    "Bucket": {
+     "Ref": "privateWebBucketDEC03662"
+    },
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "s3:GetBucket*",
+        "s3:GetObject*",
+        "s3:List*"
+       ],
+       "Effect": "Allow",
+       "Principal": {
+        "CanonicalUser": {
+         "Fn::GetAtt": [
+          "cloudFrontOAI",
+          "S3CanonicalUserId"
+         ]
+        }
+       },
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "privateWebBucketDEC03662",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "privateWebBucketDEC03662",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
     }
    },
    "Metadata": {
-    "aws:cdk:path": "CloudFrontStack/cloudFrontOAI"
+    "aws:cdk:path": "CloudFrontStack/privateWebBucket/Policy/Resource"
    }
   },
   "publicWebBucket98286A44": {
@@ -120,71 +182,15 @@
     "aws:cdk:path": "CloudFrontStack/publicWebBucket/Policy/Resource"
    }
   },
-  "privateWebBucketDEC03662": {
-   "Type": "AWS::S3::Bucket",
+  "cloudFrontOAI": {
+   "Type": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
    "Properties": {
-    "BucketName": {
-     "Fn::Sub": "vid-dash-private-web-${uniqueId}"
-    }
-   },
-   "UpdateReplacePolicy": "Retain",
-   "DeletionPolicy": "Retain",
-   "Metadata": {
-    "aws:cdk:path": "CloudFrontStack/privateWebBucket/Resource"
-   }
-  },
-  "privateWebBucketPolicy5939BD04": {
-   "Type": "AWS::S3::BucketPolicy",
-   "Properties": {
-    "Bucket": {
-     "Ref": "privateWebBucketDEC03662"
-    },
-    "PolicyDocument": {
-     "Statement": [
-      {
-       "Action": [
-        "s3:GetBucket*",
-        "s3:GetObject*",
-        "s3:List*"
-       ],
-       "Effect": "Allow",
-       "Principal": {
-        "CanonicalUser": {
-         "Fn::GetAtt": [
-          "cloudFrontOAI",
-          "S3CanonicalUserId"
-         ]
-        }
-       },
-       "Resource": [
-        {
-         "Fn::GetAtt": [
-          "privateWebBucketDEC03662",
-          "Arn"
-         ]
-        },
-        {
-         "Fn::Join": [
-          "",
-          [
-           {
-            "Fn::GetAtt": [
-             "privateWebBucketDEC03662",
-             "Arn"
-            ]
-           },
-           "/*"
-          ]
-         ]
-        }
-       ]
-      }
-     ],
-     "Version": "2012-10-17"
+    "CloudFrontOriginAccessIdentityConfig": {
+     "Comment": "CloudFrontOAI"
     }
    },
    "Metadata": {
-    "aws:cdk:path": "CloudFrontStack/privateWebBucket/Policy/Resource"
+    "aws:cdk:path": "CloudFrontStack/cloudFrontOAI"
    }
   },
   "CloudFrontDistributionBA64CE3A": {
@@ -277,6 +283,189 @@
    "DeletionPolicy": "Retain",
    "Metadata": {
     "aws:cdk:path": "CloudFrontStack/userPool/Resource"
+   }
+  },
+  "copyWebPagesServiceRoleA3C3E42A": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/copyWebPages/ServiceRole/Resource"
+   }
+  },
+  "copyWebPagesServiceRoleDefaultPolicyCFD3DADA": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "s3:GetBucket*",
+        "s3:GetObject*",
+        "s3:List*"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::Join": [
+          "",
+          [
+           "arn:aws:s3:::",
+           {
+            "Ref": "codeBucketName"
+           },
+           "/*"
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           "arn:aws:s3:::",
+           {
+            "Ref": "codeBucketName"
+           }
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "s3:Abort*",
+        "s3:PutObject",
+        "s3:PutObjectLegalHold",
+        "s3:PutObjectRetention",
+        "s3:PutObjectTagging",
+        "s3:PutObjectVersionTagging"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "privateWebBucketDEC03662",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "publicWebBucket98286A44",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "copyWebPagesServiceRoleDefaultPolicyCFD3DADA",
+    "Roles": [
+     {
+      "Ref": "copyWebPagesServiceRoleA3C3E42A"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/copyWebPages/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "copyWebPagesF5E6C2FB": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": {
+      "Ref": "codeBucketName"
+     },
+     "S3Key": "lambdas/copy-web-code.zip"
+    },
+    "Handler": "handler.handler_function",
+    "Role": {
+     "Fn::GetAtt": [
+      "copyWebPagesServiceRoleA3C3E42A",
+      "Arn"
+     ]
+    },
+    "Runtime": "python3.13",
+    "Timeout": 900
+   },
+   "DependsOn": [
+    "copyWebPagesServiceRoleDefaultPolicyCFD3DADA",
+    "copyWebPagesServiceRoleA3C3E42A"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/copyWebPages/Resource"
+   }
+  },
+  "copyWebCode": {
+   "Type": "AWS::CloudFormation::CustomResource",
+   "Properties": {
+    "ServiceToken": {
+     "Fn::GetAtt": [
+      "copyWebPagesF5E6C2FB",
+      "Arn"
+     ]
+    },
+    "sourceBucket": {
+     "Ref": "codeBucketName"
+    },
+    "sourceRegion": {
+     "Ref": "codeBucketRegion"
+    },
+    "destinationBucket": {
+     "Ref": "publicWebBucket98286A44"
+    },
+    "destinationRegion": "us-east-1"
+   },
+   "DependsOn": [
+    "copyWebPagesServiceRoleDefaultPolicyCFD3DADA"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/copyWebCode/Default"
    }
   }
  },

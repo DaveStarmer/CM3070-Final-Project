@@ -147,15 +147,7 @@ export class CloudFrontStack extends Stack {
 
   /** Code to web buckets */
   copyCodeToWebBuckets() {
-    // const copyLambda = new Function(this, "copyWebPages", {
-    //   timeout: Duration.minutes(15),
-    //   runtime: Runtime.PYTHON_3_13,
-    //   handler: "index.handler_function",
-    //   // code is present in lambdas/copy-web-code/handler.py with additional annotation, which is 
-    //   // not present here due to size limits
-    //   // code: Code.fromBucketV2(this.codeBucket,)
-    // })
-    const copyLambda = new Function(this, "copyWebPages", {
+    const copyLambda = new Function(this, "copyBetweenBuckets", {
       timeout: Duration.minutes(15),
       runtime: Runtime.PYTHON_3_13,
       handler: "handler.handler_function",
@@ -166,18 +158,27 @@ export class CloudFrontStack extends Stack {
     const grantToPublicBucket = this.publicWebBucket.grantPut(copyLambda)
     const grantToPrivateBucket = this.privateWebBucket.grantPut(copyLambda)
 
-    const copyResource = new CustomResource(this, "copyWebCode", {
+    const copyPublicWebResources = new CustomResource(this, "copyPublicWebResources", {
       serviceToken: copyLambda.functionArn,
       properties: {
         sourceBucket: this.codeBucket.bucketName,
-        sourceRegion: this.codeBucket.env.region,
         destinationBucket: this.publicWebBucket.bucketName,
-        destinationRegion: this.publicWebBucket.env.region,
+        keys: ["public-web", "rubbish"]
       }
     })
-    copyResource.node.addDependency(grantToCodeBucket)
-    copyResource.node.addDependency(grantToPrivateBucket)
-    copyResource.node.addDependency(grantToPublicBucket)
+    copyPublicWebResources.node.addDependency(grantToCodeBucket)
+    copyPublicWebResources.node.addDependency(grantToPublicBucket)
+
+    const copyPrivateWebResources = new CustomResource(this, "copyPrivateWebResources", {
+      serviceToken: copyLambda.functionArn,
+      properties: {
+        sourceBucket: this.codeBucket.bucketName,
+        destinationBucket: this.privateWebBucket.bucketName,
+        keys: ["private-web"]
+      }
+    })
+    copyPrivateWebResources.node.addDependency(grantToCodeBucket)
+    copyPrivateWebResources.node.addDependency(grantToPrivateBucket)
   }
 
   /** Deploy Edge Lambdas */
