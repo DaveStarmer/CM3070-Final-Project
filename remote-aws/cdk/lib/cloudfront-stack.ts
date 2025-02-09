@@ -2,13 +2,14 @@ import { CfnCustomResource, CfnParameter, CustomResource, Duration, Fn, Stack, S
 import { Certificate } from "aws-cdk-lib/aws-certificatemanager"
 import { CfnCloudFrontOriginAccessIdentity, Distribution } from "aws-cdk-lib/aws-cloudfront"
 import { S3BucketOrigin } from "aws-cdk-lib/aws-cloudfront-origins"
-import { UserPool, VerificationEmailStyle } from "aws-cdk-lib/aws-cognito"
+import { CfnUserPoolUser, UserPool, VerificationEmailStyle } from "aws-cdk-lib/aws-cognito"
 import { CanonicalUserPrincipal } from "aws-cdk-lib/aws-iam"
 import { Code, Function, Runtime } from "aws-cdk-lib/aws-lambda"
 import { HostedZone } from "aws-cdk-lib/aws-route53"
 import { Bucket, HttpMethods } from "aws-cdk-lib/aws-s3"
 import { Construct } from "constructs"
 import { Domain } from "domain"
+import { UserPoolUser } from "./constructs/UserPoolUser"
 
 
 export class CloudFrontStack extends Stack {
@@ -69,6 +70,19 @@ export class CloudFrontStack extends Stack {
 
     /** Certificate */
     this.certificate = Certificate.fromCertificateArn(this, "dashboardCertificate", Fn.ref("certificateArn"))
+
+    // User Email
+    new CfnParameter(this, "userEmail", {
+      type: "String",
+      description: "Email of root user"
+    })
+
+    /** User Password */
+    new CfnParameter(this, "userPassword", {
+      type: "String",
+      description: "Email of root user",
+      default: "Pa55word!"
+    })
 
     // Create Resources
 
@@ -143,6 +157,7 @@ export class CloudFrontStack extends Stack {
         emailBody: "Hello {username}. You have been invited to join the Surveillance System. Your temporary password is {####}"
       }
     })
+
   }
 
   /** Code to web buckets */

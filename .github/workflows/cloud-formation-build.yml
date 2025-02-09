@@ -109,6 +109,7 @@ jobs:
           codeBucketRegion="us-east-1"
           domainName=${{ vars.DOMAIN }}
           certificateArn=${{ secrets.CERTIFICATE_ARN }}
+          userEmail="test.diy.cam.user@outlook.com"
       - name: Deploy Dashboard CloudFormation Template
         run: >
           aws cloudformation deploy
