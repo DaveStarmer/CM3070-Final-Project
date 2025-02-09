@@ -1,0 +1,25 @@
+{
+ "Parameters": {
+  "publicUniqueId": {
+   "Type": "String",
+   "AllowedPattern": "^[a-z0-9-]{1,32}$",
+   "Description": "Unique element for bucket naming"
+  }
+ },
+ "Resources": {
+  "publicCodeBucket7DECA10E": {
+   "Type": "AWS::S3::Bucket",
+   "Properties": {
+    "BucketName": {
+     "Fn::Sub": "instruct-cf-code-${publicUniqueId}"
+    }
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "InstructionsCloudFrontStack/publicCodeBucket/Resource"
+   }
+  }
+ },
+ "Rules": {}
+}
