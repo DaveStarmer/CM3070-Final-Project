@@ -1,15 +1,16 @@
 import { CfnCustomResource, CfnParameter, CustomResource, Duration, Fn, Stack, StackProps } from "aws-cdk-lib"
 import { Certificate } from "aws-cdk-lib/aws-certificatemanager"
-import { CfnCloudFrontOriginAccessIdentity, Distribution } from "aws-cdk-lib/aws-cloudfront"
-import { S3BucketOrigin } from "aws-cdk-lib/aws-cloudfront-origins"
+import { CfnCloudFrontOriginAccessIdentity, Distribution, LambdaEdgeEventType } from "aws-cdk-lib/aws-cloudfront"
+import { HttpOrigin, S3BucketOrigin } from "aws-cdk-lib/aws-cloudfront-origins"
 import { CfnUserPoolUser, UserPool, VerificationEmailStyle } from "aws-cdk-lib/aws-cognito"
 import { CanonicalUserPrincipal } from "aws-cdk-lib/aws-iam"
 import { Code, Function, Runtime } from "aws-cdk-lib/aws-lambda"
 import { HostedZone } from "aws-cdk-lib/aws-route53"
-import { Bucket, HttpMethods } from "aws-cdk-lib/aws-s3"
+import { Bucket, EventType, HttpMethods } from "aws-cdk-lib/aws-s3"
 import { Construct } from "constructs"
 import { Domain } from "domain"
 import { UserPoolUser } from "./constructs/UserPoolUser"
+import { EdgeFunction } from "aws-cdk-lib/aws-cloudfront/lib/experimental"
 
 
 export class CloudFrontStack extends Stack {
@@ -17,7 +18,7 @@ export class CloudFrontStack extends Stack {
   privateWebBucket: Bucket
   certificate: any
   codeBucket: any
-  authLambda: Function
+  authLambda: EdgeFunction
 
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props)
@@ -102,8 +103,11 @@ export class CloudFrontStack extends Stack {
       }]
     })
 
+    // create authorisation at edge lambda
+    this.createEdgeLambda
+    // create CloudFront distro
     this.createCloudFrontDistro()
-
+    // copy appropriate code to web buckets
     this.copyCodeToWebBuckets()
   }
 
@@ -130,7 +134,12 @@ export class CloudFrontStack extends Stack {
       comment: "CF Distro",
       defaultRootObject: "index.html",
       defaultBehavior: {
-        origin: S3BucketOrigin.withBucketDefaults(this.publicWebBucket),
+        // origin: S3BucketOrigin.withBucketDefaults(this.publicWebBucket),
+        origin: new HttpOrigin(Fn.ref("domainName")),
+        edgeLambdas: [{
+          eventType: LambdaEdgeEventType.VIEWER_REQUEST,
+          functionVersion: this.authLambda.currentVersion
+        }]
       },
       domainNames: [Fn.sub("www.${domainName}")],
       certificate: this.certificate
@@ -157,7 +166,6 @@ export class CloudFrontStack extends Stack {
         emailBody: "Hello {username}. You have been invited to join the Surveillance System. Your temporary password is {####}"
       }
     })
-
   }
 
   /** Code to web buckets */
@@ -196,9 +204,9 @@ export class CloudFrontStack extends Stack {
     copyPrivateWebResources.node.addDependency(grantToPrivateBucket)
   }
 
-  /** Deploy Edge Lambdas */
+  /** Deploy Edge Lambda */
   createEdgeLambda(props: StackProps) {
-    this.authLambda = new Function(this, "edgeAuthLambda", {
+    this.authLambda = new EdgeFunction(this, "edgeAuthLambda", {
       ...props,
       runtime: Runtime.PYTHON_3_13,
       code: Code.fromBucketV2(this.codeBucket, "auth-lambda.zip"),

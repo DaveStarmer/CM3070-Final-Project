@@ -3,6 +3,10 @@
 
 import os
 import urllib
+import logging
+import json
+
+logger = logging.getLogger(__name__)
 
 
 def handler_function(event: dict, _) -> dict:
@@ -15,7 +19,12 @@ def handler_function(event: dict, _) -> dict:
     Returns:
         dict: HTTP Response
     """
+    logger.info("Request recieved")
     response = check_sign_in(event["Records"][0]["cf"]["request"])
+
+    logger.debug("Response: %s", json.dumps(response))
+
+    logger.info("Processing complete")
 
     return response
 
@@ -31,16 +40,20 @@ def check_sign_in(request: dict) -> dict:
     Returns:
         dict: HTTP request - either the original request (signed in) or a redirect (not signed in)
     """
+    logger.info("Checking sign in")
+    logger.debug(request)
     headers = request["headers"]
 
     # Check for session-id in cookie, if present, then proceed with request
     cookies = parse_cookies_from_header(headers)
     if cookies and "session-id" in cookies:
         # already authenticated - return initial request
+        logger.debug("Session ID found: %s", cookies["session-id"])
         return request
 
     # create sign in URL with requested URL encoded in the querystring
     signin_url = create_signin_url(request)
+    logger.debug("Sign in URL generated: %s", signin_url)
 
     # return redirect response
     return {
