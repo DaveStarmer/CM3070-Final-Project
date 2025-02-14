@@ -191,6 +191,73 @@
     "aws:cdk:path": "CloudFrontStack/publicWebBucket/Policy/Resource"
    }
   },
+  "ssmgetparameterpolicyDCC10BAA": {
+   "Type": "AWS::IAM::ManagedPolicy",
+   "Properties": {
+    "Description": "",
+    "ManagedPolicyName": "ssm-get-parameter-policy",
+    "Path": "/",
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "ssm:GetParameter",
+       "Effect": "Allow",
+       "Resource": "*"
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/ssm-get-parameter-policy/Resource"
+   }
+  },
+  "cloudwatchLogsPolicy70D2E599": {
+   "Type": "AWS::IAM::ManagedPolicy",
+   "Properties": {
+    "Description": "",
+    "ManagedPolicyName": "cloudwatch-logs-policy",
+    "Path": "/",
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+       ],
+       "Effect": "Allow",
+       "Resource": "arn:aws:logs:*:*:*"
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/cloudwatchLogsPolicy/Resource"
+   }
+  },
+  "secretsmanagerpolicyFD222707": {
+   "Type": "AWS::IAM::ManagedPolicy",
+   "Properties": {
+    "Description": "",
+    "ManagedPolicyName": "secrets-manager-policy",
+    "Path": "/",
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "secretsmanager:GetSecretValue",
+       "Effect": "Allow",
+       "Resource": "*"
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/secrets-manager-policy/Resource"
+   }
+  },
   "edgeAuthLambdaRoleCEBFF37D": {
    "Type": "AWS::IAM::Role",
    "Properties": {
@@ -209,7 +276,18 @@
      ],
      "Version": "2012-10-17"
     },
-    "RoleName": "edge-auth-lambda-role"
+    "ManagedPolicyArns": [
+     {
+      "Ref": "cloudwatchLogsPolicy70D2E599"
+     },
+     {
+      "Ref": "ssmgetparameterpolicyDCC10BAA"
+     },
+     {
+      "Ref": "secretsmanagerpolicyFD222707"
+     }
+    ],
+    "RoleName": "edge-auth-role"
    },
    "Metadata": {
     "aws:cdk:path": "CloudFrontStack/edgeAuthLambdaRole/Resource"
