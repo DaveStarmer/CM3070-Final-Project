@@ -3,7 +3,7 @@ import { Certificate } from "aws-cdk-lib/aws-certificatemanager"
 import { CfnCloudFrontOriginAccessIdentity, Distribution, LambdaEdgeEventType, experimental } from "aws-cdk-lib/aws-cloudfront"
 import { HttpOrigin, S3BucketOrigin } from "aws-cdk-lib/aws-cloudfront-origins"
 import { CfnUserPoolUser, LambdaVersion, UserPool, VerificationEmailStyle } from "aws-cdk-lib/aws-cognito"
-import { CanonicalUserPrincipal, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam"
+import { CanonicalUserPrincipal, CompositePrincipal, Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam"
 import { Code, Function, IVersion, Runtime, Version } from "aws-cdk-lib/aws-lambda"
 import { HostedZone } from "aws-cdk-lib/aws-route53"
 import { Bucket, EventType, HttpMethods } from "aws-cdk-lib/aws-s3"
@@ -210,36 +210,100 @@ export class CloudFrontStack extends Stack {
 
   /** Deploy Edge Lambda */
   createEdgeLambda(props?: StackProps) {
-    // this.authLambda = new Function(this, "edgeAuthLambda", {
-    //   ...props,
-    //   runtime: Runtime.PYTHON_3_13,
-    //   code: Code.fromBucketV2(this.codeBucket, "auth-lambda.zip"),
-    //   handler: "handler.handler_function",
-    //   environment: {
-    //     "DOMAIN": Fn.ref("domainName")
-    //   }
-    // })
+    const lambdaRole = this.createEdgeLambdaRole()
 
-    const edgeLambdaRole = new Role(this, "edgeAuthLambdaRole", {
-      roleName: "edge-auth-lambda-role",
-      assumedBy: new ServicePrincipal("lambda.amazonaws.com"),
-      managedPolicies: []
-    })
     this.authLambda = new experimental.EdgeFunction(this, "edgeAuthLambda", {
       ...props,
       functionName: "edge-auth-lambda",
       runtime: Runtime.PYTHON_3_13,
       code: Code.fromBucketV2(this.codeBucket, "lambdas/auth-edge.zip"),
       handler: "handler.handler_function",
-      role: edgeLambdaRole
+      role: lambdaRole,
       // environment: {
       //   "DOMAIN": Fn.ref("domainName")
       // },
     })
 
-    // this.authLambdaVersion = new Version(this, "edgeAuthLambdaVersion", {
-    //   lambda: this.authLambda
-    // })
     this.authLambdaVersion = this.authLambda.currentVersion
+  }
+
+  createEdgeLambdaRole() {
+    const ssmGetParameterPolicy = new ManagedPolicy(
+      this,
+      "ssm-get-parameter-policy",
+      {
+        managedPolicyName: `ssm-get-parameter-policy`,
+        statements: [
+          new PolicyStatement({
+            effect: Effect.ALLOW,
+            actions: [
+              "ssm:GetParameter"
+            ],
+            resources: [
+              "*"
+            ]
+          })
+        ]
+      }
+    )
+
+    const cloudWatchLogsPolicy = new ManagedPolicy(
+      this,
+      "cloudwatchLogsPolicy",
+      {
+        managedPolicyName: `cloudwatch-logs-policy`,
+        statements: [
+          new PolicyStatement({
+            effect: Effect.ALLOW,
+            actions: [
+              "logs:CreateLogGroup",
+              "logs:CreateLogStream",
+              "logs:PutLogEvents"
+            ],
+            resources: [
+              `arn:${this.partition}:logs:*:*:*`
+            ]
+          })
+        ]
+      }
+    )
+
+    const secretsManagerPolicy = new ManagedPolicy(
+      this,
+      "secrets-manager-policy",
+      {
+        managedPolicyName: `secrets-manager-policy`,
+        statements: [
+          new PolicyStatement({
+            effect: Effect.ALLOW,
+            actions: [
+              "secretsmanager:GetSecretValue",
+            ],
+            resources: ["*"
+              // `arn:${this.partition}:secretsmanager:${this.region}:${this.account}:secret:${props.envName}/${props.appName}*`
+            ]
+          })
+        ]
+      }
+    )
+
+    const edgeLambdaRole = new Role(
+      this,
+      "edgeAuthLambdaRole",
+      {
+        roleName: `edge-auth-role`,
+        assumedBy: new CompositePrincipal(
+          new ServicePrincipal("lambda.amazonaws.com"),
+          new ServicePrincipal("edgelambda.amazonaws.com")
+        ),
+        managedPolicies: [
+          cloudWatchLogsPolicy,
+          ssmGetParameterPolicy,
+          secretsManagerPolicy
+        ],
+      }
+    )
+
+    return edgeLambdaRole
   }
 }
