@@ -1,16 +1,16 @@
 import { CfnCustomResource, CfnParameter, CustomResource, Duration, Fn, Stack, StackProps } from "aws-cdk-lib"
 import { Certificate } from "aws-cdk-lib/aws-certificatemanager"
-import { CfnCloudFrontOriginAccessIdentity, Distribution, LambdaEdgeEventType } from "aws-cdk-lib/aws-cloudfront"
+import { CfnCloudFrontOriginAccessIdentity, Distribution, LambdaEdgeEventType, experimental } from "aws-cdk-lib/aws-cloudfront"
 import { HttpOrigin, S3BucketOrigin } from "aws-cdk-lib/aws-cloudfront-origins"
-import { CfnUserPoolUser, UserPool, VerificationEmailStyle } from "aws-cdk-lib/aws-cognito"
-import { CanonicalUserPrincipal } from "aws-cdk-lib/aws-iam"
-import { Code, Function, Runtime } from "aws-cdk-lib/aws-lambda"
+import { CfnUserPoolUser, LambdaVersion, UserPool, VerificationEmailStyle } from "aws-cdk-lib/aws-cognito"
+import { CanonicalUserPrincipal, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam"
+import { Code, Function, IVersion, Runtime, Version } from "aws-cdk-lib/aws-lambda"
 import { HostedZone } from "aws-cdk-lib/aws-route53"
 import { Bucket, EventType, HttpMethods } from "aws-cdk-lib/aws-s3"
 import { Construct } from "constructs"
 import { Domain } from "domain"
 import { UserPoolUser } from "./constructs/UserPoolUser"
-import { EdgeFunction } from "aws-cdk-lib/aws-cloudfront/lib/experimental"
+// import { EdgeFunction } from "aws-cdk-lib/aws-cloudfront/lib/experimental"
 
 
 export class CloudFrontStack extends Stack {
@@ -18,7 +18,8 @@ export class CloudFrontStack extends Stack {
   privateWebBucket: Bucket
   certificate: any
   codeBucket: any
-  authLambda: EdgeFunction
+  authLambda: experimental.EdgeFunction
+  authLambdaVersion: IVersion
 
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props)
@@ -104,7 +105,7 @@ export class CloudFrontStack extends Stack {
     })
 
     // create authorisation at edge lambda
-    this.createEdgeLambda
+    this.createEdgeLambda(props)
     // create CloudFront distro
     this.createCloudFrontDistro()
     // copy appropriate code to web buckets
@@ -138,12 +139,15 @@ export class CloudFrontStack extends Stack {
         origin: new HttpOrigin(Fn.ref("domainName")),
         edgeLambdas: [{
           eventType: LambdaEdgeEventType.VIEWER_REQUEST,
-          functionVersion: this.authLambda.currentVersion
+          functionVersion: this.authLambdaVersion,
         }]
       },
       domainNames: [Fn.sub("www.${domainName}")],
-      certificate: this.certificate
+      certificate: this.certificate,
+      enableLogging: true
     })
+
+    dfDist.node.addDependency(this.authLambda)
 
     const userPool = new UserPool(this, "userPool", {
       userPoolName: "vid-user-pool",
@@ -205,15 +209,37 @@ export class CloudFrontStack extends Stack {
   }
 
   /** Deploy Edge Lambda */
-  createEdgeLambda(props: StackProps) {
-    this.authLambda = new EdgeFunction(this, "edgeAuthLambda", {
-      ...props,
-      runtime: Runtime.PYTHON_3_13,
-      code: Code.fromBucketV2(this.codeBucket, "auth-lambda.zip"),
-      handler: "handler.handler_function",
-      environment: {
-        "DOMAIN": Fn.ref("domainName")
-      }
+  createEdgeLambda(props?: StackProps) {
+    // this.authLambda = new Function(this, "edgeAuthLambda", {
+    //   ...props,
+    //   runtime: Runtime.PYTHON_3_13,
+    //   code: Code.fromBucketV2(this.codeBucket, "auth-lambda.zip"),
+    //   handler: "handler.handler_function",
+    //   environment: {
+    //     "DOMAIN": Fn.ref("domainName")
+    //   }
+    // })
+
+    const edgeLambdaRole = new Role(this, "edgeAuthLambdaRole", {
+      roleName: "edge-auth-lambda-role",
+      assumedBy: new ServicePrincipal("lambda.amazonaws.com"),
+      managedPolicies: []
     })
+    this.authLambda = new experimental.EdgeFunction(this, "edgeAuthLambda", {
+      ...props,
+      functionName: "edge-auth-lambda",
+      runtime: Runtime.PYTHON_3_13,
+      code: Code.fromBucketV2(this.codeBucket, "lambdas/auth-edge.zip"),
+      handler: "handler.handler_function",
+      role: edgeLambdaRole
+      // environment: {
+      //   "DOMAIN": Fn.ref("domainName")
+      // },
+    })
+
+    // this.authLambdaVersion = new Version(this, "edgeAuthLambdaVersion", {
+    //   lambda: this.authLambda
+    // })
+    this.authLambdaVersion = this.authLambda.currentVersion
   }
 }
