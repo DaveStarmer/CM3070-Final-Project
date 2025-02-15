@@ -60,42 +60,48 @@
     "PolicyDocument": {
      "Statement": [
       {
-       "Action": [
-        "s3:GetBucket*",
-        "s3:GetObject*",
-        "s3:List*"
-       ],
-       "Effect": "Allow",
-       "Principal": {
-        "CanonicalUser": {
-         "Fn::GetAtt": [
-          "cloudFrontOAI",
-          "S3CanonicalUserId"
-         ]
+       "Action": "s3:GetObject",
+       "Condition": {
+        "StringEquals": {
+         "AWS:SourceArn": {
+          "Fn::Join": [
+           "",
+           [
+            "arn:",
+            {
+             "Ref": "AWS::Partition"
+            },
+            ":cloudfront::",
+            {
+             "Ref": "AWS::AccountId"
+            },
+            ":distribution/",
+            {
+             "Ref": "CloudFrontDistributionBA64CE3A"
+            }
+           ]
+          ]
+         }
         }
        },
-       "Resource": [
-        {
-         "Fn::GetAtt": [
-          "privateWebBucketDEC03662",
-          "Arn"
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "cloudfront.amazonaws.com"
+       },
+       "Resource": {
+        "Fn::Join": [
+         "",
+         [
+          {
+           "Fn::GetAtt": [
+            "privateWebBucketDEC03662",
+            "Arn"
+           ]
+          },
+          "/*"
          ]
-        },
-        {
-         "Fn::Join": [
-          "",
-          [
-           {
-            "Fn::GetAtt": [
-             "privateWebBucketDEC03662",
-             "Arn"
-            ]
-           },
-           "/*"
-          ]
-         ]
-        }
-       ]
+        ]
+       }
       }
      ],
      "Version": "2012-10-17"
@@ -137,81 +143,6 @@
     "aws:cdk:path": "CloudFrontStack/publicWebBucket/Resource"
    }
   },
-  "publicWebBucketPolicyF511513F": {
-   "Type": "AWS::S3::BucketPolicy",
-   "Properties": {
-    "Bucket": {
-     "Ref": "publicWebBucket98286A44"
-    },
-    "PolicyDocument": {
-     "Statement": [
-      {
-       "Action": [
-        "s3:GetBucket*",
-        "s3:GetObject*",
-        "s3:List*"
-       ],
-       "Effect": "Allow",
-       "Principal": {
-        "CanonicalUser": {
-         "Fn::GetAtt": [
-          "cloudFrontOAI",
-          "S3CanonicalUserId"
-         ]
-        }
-       },
-       "Resource": [
-        {
-         "Fn::GetAtt": [
-          "publicWebBucket98286A44",
-          "Arn"
-         ]
-        },
-        {
-         "Fn::Join": [
-          "",
-          [
-           {
-            "Fn::GetAtt": [
-             "publicWebBucket98286A44",
-             "Arn"
-            ]
-           },
-           "/*"
-          ]
-         ]
-        }
-       ]
-      }
-     ],
-     "Version": "2012-10-17"
-    }
-   },
-   "Metadata": {
-    "aws:cdk:path": "CloudFrontStack/publicWebBucket/Policy/Resource"
-   }
-  },
-  "ssmgetparameterpolicyDCC10BAA": {
-   "Type": "AWS::IAM::ManagedPolicy",
-   "Properties": {
-    "Description": "",
-    "ManagedPolicyName": "ssm-get-parameter-policy",
-    "Path": "/",
-    "PolicyDocument": {
-     "Statement": [
-      {
-       "Action": "ssm:GetParameter",
-       "Effect": "Allow",
-       "Resource": "*"
-      }
-     ],
-     "Version": "2012-10-17"
-    }
-   },
-   "Metadata": {
-    "aws:cdk:path": "CloudFrontStack/ssm-get-parameter-policy/Resource"
-   }
-  },
   "cloudwatchLogsPolicy70D2E599": {
    "Type": "AWS::IAM::ManagedPolicy",
    "Properties": {
@@ -237,27 +168,6 @@
     "aws:cdk:path": "CloudFrontStack/cloudwatchLogsPolicy/Resource"
    }
   },
-  "secretsmanagerpolicyFD222707": {
-   "Type": "AWS::IAM::ManagedPolicy",
-   "Properties": {
-    "Description": "",
-    "ManagedPolicyName": "secrets-manager-policy",
-    "Path": "/",
-    "PolicyDocument": {
-     "Statement": [
-      {
-       "Action": "secretsmanager:GetSecretValue",
-       "Effect": "Allow",
-       "Resource": "*"
-      }
-     ],
-     "Version": "2012-10-17"
-    }
-   },
-   "Metadata": {
-    "aws:cdk:path": "CloudFrontStack/secrets-manager-policy/Resource"
-   }
-  },
   "edgeAuthLambdaRoleCEBFF37D": {
    "Type": "AWS::IAM::Role",
    "Properties": {
@@ -279,18 +189,49 @@
     "ManagedPolicyArns": [
      {
       "Ref": "cloudwatchLogsPolicy70D2E599"
-     },
-     {
-      "Ref": "ssmgetparameterpolicyDCC10BAA"
-     },
-     {
-      "Ref": "secretsmanagerpolicyFD222707"
      }
     ],
     "RoleName": "edge-auth-role"
    },
    "Metadata": {
     "aws:cdk:path": "CloudFrontStack/edgeAuthLambdaRole/Resource"
+   }
+  },
+  "edgeAuthLambdaFnServiceRoleBF0BC58A": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": [
+         "edgelambda.amazonaws.com",
+         "lambda.amazonaws.com"
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/edgeAuthLambda/Fn/ServiceRole/Resource"
    }
   },
   "edgeAuthLambdaFnD43D9B1D": {
@@ -306,20 +247,21 @@
     "Handler": "handler.handler_function",
     "Role": {
      "Fn::GetAtt": [
-      "edgeAuthLambdaRoleCEBFF37D",
+      "edgeAuthLambdaFnServiceRoleBF0BC58A",
       "Arn"
      ]
     },
-    "Runtime": "python3.13"
+    "Runtime": "python3.13",
+    "Timeout": 5
    },
    "DependsOn": [
-    "edgeAuthLambdaRoleCEBFF37D"
+    "edgeAuthLambdaFnServiceRoleBF0BC58A"
    ],
    "Metadata": {
     "aws:cdk:path": "CloudFrontStack/edgeAuthLambda/Fn/Resource"
    }
   },
-  "edgeAuthLambdaFnCurrentVersionCFA71D383695b119fd7788b9d1e0bac20c086e8c": {
+  "edgeAuthLambdaFnCurrentVersionCFA71D38a087ccda01b5e6bde97be5065c47064d": {
    "Type": "AWS::Lambda::Version",
    "Properties": {
     "FunctionName": {
@@ -330,45 +272,19 @@
     "aws:cdk:path": "CloudFrontStack/edgeAuthLambda/Fn/CurrentVersion/Resource"
    }
   },
-  "cloudFrontOAI": {
-   "Type": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+  "CameraOACB9926B44": {
+   "Type": "AWS::CloudFront::OriginAccessControl",
    "Properties": {
-    "CloudFrontOriginAccessIdentityConfig": {
-     "Comment": "CloudFrontOAI"
+    "OriginAccessControlConfig": {
+     "Description": "Camera CloudFront Origin Access Control",
+     "Name": "Camera CF OAC",
+     "OriginAccessControlOriginType": "s3",
+     "SigningBehavior": "no-override",
+     "SigningProtocol": "sigv4"
     }
    },
    "Metadata": {
-    "aws:cdk:path": "CloudFrontStack/cloudFrontOAI"
-   }
-  },
-  "CloudFrontDistributionLoggingBucket0F015D0B": {
-   "Type": "AWS::S3::Bucket",
-   "Properties": {
-    "BucketEncryption": {
-     "ServerSideEncryptionConfiguration": [
-      {
-       "ServerSideEncryptionByDefault": {
-        "SSEAlgorithm": "AES256"
-       }
-      }
-     ]
-    },
-    "OwnershipControls": {
-     "Rules": [
-      {
-       "ObjectOwnership": "ObjectWriter"
-      }
-     ]
-    }
-   },
-   "DependsOn": [
-    "edgeAuthLambdaFnCurrentVersionCFA71D383695b119fd7788b9d1e0bac20c086e8c",
-    "edgeAuthLambdaFnD43D9B1D"
-   ],
-   "UpdateReplacePolicy": "Retain",
-   "DeletionPolicy": "Retain",
-   "Metadata": {
-    "aws:cdk:path": "CloudFrontStack/CloudFrontDistribution/LoggingBucket/Resource"
+    "aws:cdk:path": "CloudFrontStack/CameraOAC/Resource"
    }
   },
   "CloudFrontDistributionBA64CE3A": {
@@ -388,37 +304,43 @@
        {
         "EventType": "viewer-request",
         "LambdaFunctionARN": {
-         "Ref": "edgeAuthLambdaFnCurrentVersionCFA71D383695b119fd7788b9d1e0bac20c086e8c"
+         "Ref": "edgeAuthLambdaFnCurrentVersionCFA71D38a087ccda01b5e6bde97be5065c47064d"
         }
        }
       ],
       "TargetOriginId": "CloudFrontStackCloudFrontDistributionOrigin1E5559293",
-      "ViewerProtocolPolicy": "allow-all"
+      "ViewerProtocolPolicy": "redirect-to-https"
      },
      "DefaultRootObject": "index.html",
      "Enabled": true,
      "HttpVersion": "http2",
      "IPV6Enabled": true,
-     "Logging": {
-      "Bucket": {
-       "Fn::GetAtt": [
-        "CloudFrontDistributionLoggingBucket0F015D0B",
-        "RegionalDomainName"
-       ]
-      }
-     },
      "Origins": [
       {
-       "CustomOriginConfig": {
-        "OriginProtocolPolicy": "https-only",
-        "OriginSSLProtocols": [
-         "TLSv1.2"
+       "DomainName": {
+        "Fn::GetAtt": [
+         "privateWebBucketDEC03662",
+         "RegionalDomainName"
         ]
        },
-       "DomainName": {
-        "Ref": "domainName"
+       "Id": "CloudFrontStackCloudFrontDistributionOrigin1E5559293",
+       "OriginAccessControlId": {
+        "Fn::GetAtt": [
+         "CameraOACB9926B44",
+         "Id"
+        ]
        },
-       "Id": "CloudFrontStackCloudFrontDistributionOrigin1E5559293"
+       "OriginCustomHeaders": [
+        {
+         "HeaderName": "DomainName",
+         "HeaderValue": {
+          "Ref": "domainName"
+         }
+        }
+       ],
+       "S3OriginConfig": {
+        "OriginAccessIdentity": ""
+       }
       }
      ],
      "ViewerCertificate": {
@@ -431,8 +353,9 @@
     }
    },
    "DependsOn": [
-    "edgeAuthLambdaFnCurrentVersionCFA71D383695b119fd7788b9d1e0bac20c086e8c",
-    "edgeAuthLambdaFnD43D9B1D"
+    "edgeAuthLambdaFnCurrentVersionCFA71D38a087ccda01b5e6bde97be5065c47064d",
+    "edgeAuthLambdaFnD43D9B1D",
+    "edgeAuthLambdaFnServiceRoleBF0BC58A"
    ],
    "Metadata": {
     "aws:cdk:path": "CloudFrontStack/CloudFrontDistribution/Resource"
@@ -653,8 +576,7 @@
      "Ref": "publicWebBucket98286A44"
     },
     "keys": [
-     "public-web",
-     "rubbish"
+     "public-web"
     ]
    },
    "DependsOn": [
