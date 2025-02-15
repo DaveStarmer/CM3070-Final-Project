@@ -111,11 +111,14 @@ def create_signin_url(request: dict) -> str:
     host = request["headers"]["host"][0]["value"]
     uri = request["uri"]
     querystring = request["querystring"]
+    original_url = f"https://{host}{uri}?{querystring}"
 
-    logger.debug("Request Host: %s   URI: %s   QueryString: %s", host, url, querystring)
+    logger.debug("Request Host: %s   URI: %s   QueryString: %s", host, uri, querystring)
+
+    if "signin" in uri:
+        return original_url
 
     # encode the original request url to pass as query parameter in sign in request
-    original_url = f"https://{host}{uri}?{querystring}"
     original_url_encoded = quote_plus(original_url.encode("utf-8"))
 
     # return url to redirect to including the encoded original destination

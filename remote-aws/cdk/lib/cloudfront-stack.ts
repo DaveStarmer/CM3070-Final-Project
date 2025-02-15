@@ -1,4 +1,4 @@
-import { CfnCustomResource, CfnParameter, CustomResource, Duration, Fn, Stack, StackProps } from "aws-cdk-lib"
+import { CfnCustomResource, CfnOutput, CfnParameter, CustomResource, Duration, Fn, Stack, StackProps } from "aws-cdk-lib"
 import { Certificate } from "aws-cdk-lib/aws-certificatemanager"
 import { CfnCloudFrontOriginAccessIdentity, Distribution, LambdaEdgeEventType, OriginAccessIdentity, S3OriginAccessControl, experimental, Signing, ViewerProtocolPolicy } from "aws-cdk-lib/aws-cloudfront"
 import { HttpOrigin, S3BucketOrigin, S3Origin } from "aws-cdk-lib/aws-cloudfront-origins"
@@ -165,6 +165,9 @@ export class CloudFrontStack extends Stack {
 
     dfDist.node.addDependency(this.authLambda)
 
+    // output CloudFront Distribution name
+    new CfnOutput(this, "CloudFront-Distribution-Name", { value: dfDist.distributionDomainName })
+
     const userPool = new UserPool(this, "userPool", {
       userPoolName: "vid-user-pool",
       signInAliases: {
@@ -184,6 +187,13 @@ export class CloudFrontStack extends Stack {
       userInvitation: {
         emailSubject: "Invite to Surveillance System",
         emailBody: "Hello {username}. You have been invited to join the Surveillance System. Your temporary password is {####}"
+      }
+    })
+
+    userPool.addDomain("PersonalDomain", {
+      customDomain: {
+        domainName: Fn.sub("www.${domainName}"),
+        certificate: this.certificate
       }
     })
   }
@@ -235,7 +245,7 @@ export class CloudFrontStack extends Stack {
       code: Code.fromBucketV2(this.codeBucket, "lambdas/auth-edge.zip"),
       timeout: Duration.seconds(5),
       handler: "handler.handler_function",
-      // role: lambdaRole,
+      role: lambdaRole,
     })
 
     this.authLambdaVersion = this.authLambda.currentVersion
