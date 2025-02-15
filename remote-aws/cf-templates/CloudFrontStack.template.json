@@ -197,43 +197,6 @@
     "aws:cdk:path": "CloudFrontStack/edgeAuthLambdaRole/Resource"
    }
   },
-  "edgeAuthLambdaFnServiceRoleBF0BC58A": {
-   "Type": "AWS::IAM::Role",
-   "Properties": {
-    "AssumeRolePolicyDocument": {
-     "Statement": [
-      {
-       "Action": "sts:AssumeRole",
-       "Effect": "Allow",
-       "Principal": {
-        "Service": [
-         "edgelambda.amazonaws.com",
-         "lambda.amazonaws.com"
-        ]
-       }
-      }
-     ],
-     "Version": "2012-10-17"
-    },
-    "ManagedPolicyArns": [
-     {
-      "Fn::Join": [
-       "",
-       [
-        "arn:",
-        {
-         "Ref": "AWS::Partition"
-        },
-        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-       ]
-      ]
-     }
-    ]
-   },
-   "Metadata": {
-    "aws:cdk:path": "CloudFrontStack/edgeAuthLambda/Fn/ServiceRole/Resource"
-   }
-  },
   "edgeAuthLambdaFnD43D9B1D": {
    "Type": "AWS::Lambda::Function",
    "Properties": {
@@ -247,7 +210,7 @@
     "Handler": "handler.handler_function",
     "Role": {
      "Fn::GetAtt": [
-      "edgeAuthLambdaFnServiceRoleBF0BC58A",
+      "edgeAuthLambdaRoleCEBFF37D",
       "Arn"
      ]
     },
@@ -255,13 +218,13 @@
     "Timeout": 5
    },
    "DependsOn": [
-    "edgeAuthLambdaFnServiceRoleBF0BC58A"
+    "edgeAuthLambdaRoleCEBFF37D"
    ],
    "Metadata": {
     "aws:cdk:path": "CloudFrontStack/edgeAuthLambda/Fn/Resource"
    }
   },
-  "edgeAuthLambdaFnCurrentVersionCFA71D38a087ccda01b5e6bde97be5065c47064d": {
+  "edgeAuthLambdaFnCurrentVersionCFA71D384eec2ff65fba335aa7961071118732db": {
    "Type": "AWS::Lambda::Version",
    "Properties": {
     "FunctionName": {
@@ -304,7 +267,7 @@
        {
         "EventType": "viewer-request",
         "LambdaFunctionARN": {
-         "Ref": "edgeAuthLambdaFnCurrentVersionCFA71D38a087ccda01b5e6bde97be5065c47064d"
+         "Ref": "edgeAuthLambdaFnCurrentVersionCFA71D384eec2ff65fba335aa7961071118732db"
         }
        }
       ],
@@ -353,9 +316,8 @@
     }
    },
    "DependsOn": [
-    "edgeAuthLambdaFnCurrentVersionCFA71D38a087ccda01b5e6bde97be5065c47064d",
-    "edgeAuthLambdaFnD43D9B1D",
-    "edgeAuthLambdaFnServiceRoleBF0BC58A"
+    "edgeAuthLambdaFnCurrentVersionCFA71D384eec2ff65fba335aa7961071118732db",
+    "edgeAuthLambdaFnD43D9B1D"
    ],
    "Metadata": {
     "aws:cdk:path": "CloudFrontStack/CloudFrontDistribution/Resource"
@@ -404,6 +366,25 @@
    "DeletionPolicy": "Retain",
    "Metadata": {
     "aws:cdk:path": "CloudFrontStack/userPool/Resource"
+   }
+  },
+  "userPoolPersonalDomainC0F49828": {
+   "Type": "AWS::Cognito::UserPoolDomain",
+   "Properties": {
+    "CustomDomainConfig": {
+     "CertificateArn": {
+      "Ref": "certificateArn"
+     }
+    },
+    "Domain": {
+     "Fn::Sub": "www.${domainName}"
+    },
+    "UserPoolId": {
+     "Ref": "userPoolDC9497E0"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/userPool/PersonalDomain/Resource"
    }
   },
   "copyBetweenBucketsServiceRole8D6854A0": {
@@ -614,6 +595,16 @@
    "DeletionPolicy": "Delete",
    "Metadata": {
     "aws:cdk:path": "CloudFrontStack/copyPrivateWebResources/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "CloudFrontDistributionName": {
+   "Value": {
+    "Fn::GetAtt": [
+     "CloudFrontDistributionBA64CE3A",
+     "DomainName"
+    ]
    }
   }
  },
