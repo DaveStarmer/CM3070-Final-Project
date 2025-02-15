@@ -1,6 +1,6 @@
 import { CfnCustomResource, CfnParameter, CustomResource, Duration, Fn, Stack, StackProps } from "aws-cdk-lib"
 import { Certificate } from "aws-cdk-lib/aws-certificatemanager"
-import { CfnCloudFrontOriginAccessIdentity, Distribution, LambdaEdgeEventType, OriginAccessIdentity, S3OriginAccessControl, experimental, Signing } from "aws-cdk-lib/aws-cloudfront"
+import { CfnCloudFrontOriginAccessIdentity, Distribution, LambdaEdgeEventType, OriginAccessIdentity, S3OriginAccessControl, experimental, Signing, ViewerProtocolPolicy } from "aws-cdk-lib/aws-cloudfront"
 import { HttpOrigin, S3BucketOrigin, S3Origin } from "aws-cdk-lib/aws-cloudfront-origins"
 import { CfnUserPoolUser, LambdaVersion, UserPool, VerificationEmailStyle } from "aws-cdk-lib/aws-cognito"
 import { CanonicalUserPrincipal, CompositePrincipal, Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam"
@@ -151,17 +151,16 @@ export class CloudFrontStack extends Stack {
       comment: "CF Distro",
       defaultRootObject: "index.html",
       defaultBehavior: {
-        // origin: S3BucketOrigin.withBucketDefaults(this.publicWebBucket),
-        // origin: new HttpOrigin(Fn.ref("domainName")),
         origin: s3Origin,
         edgeLambdas: [{
           eventType: LambdaEdgeEventType.VIEWER_REQUEST,
           functionVersion: this.authLambdaVersion,
-        }]
+        }],
+        viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS
       },
       domainNames: [Fn.sub("www.${domainName}")],
       certificate: this.certificate,
-      enableLogging: true
+      enableLogging: false,
     })
 
     dfDist.node.addDependency(this.authLambda)
@@ -207,7 +206,7 @@ export class CloudFrontStack extends Stack {
       properties: {
         sourceBucket: this.codeBucket.bucketName,
         destinationBucket: this.publicWebBucket.bucketName,
-        keys: ["public-web", "rubbish"]
+        keys: ["public-web"]
       }
     })
     copyPublicWebResources.node.addDependency(grantToCodeBucket)
@@ -234,35 +233,33 @@ export class CloudFrontStack extends Stack {
       functionName: "edge-auth-lambda",
       runtime: Runtime.PYTHON_3_13,
       code: Code.fromBucketV2(this.codeBucket, "lambdas/auth-edge.zip"),
+      timeout: Duration.seconds(5),
       handler: "handler.handler_function",
-      role: lambdaRole,
-      // environment: {
-      //   "DOMAIN": Fn.ref("domainName")
-      // },
+      // role: lambdaRole,
     })
 
     this.authLambdaVersion = this.authLambda.currentVersion
   }
 
   createEdgeLambdaRole() {
-    const ssmGetParameterPolicy = new ManagedPolicy(
-      this,
-      "ssm-get-parameter-policy",
-      {
-        managedPolicyName: `ssm-get-parameter-policy`,
-        statements: [
-          new PolicyStatement({
-            effect: Effect.ALLOW,
-            actions: [
-              "ssm:GetParameter"
-            ],
-            resources: [
-              "*"
-            ]
-          })
-        ]
-      }
-    )
+    // const ssmGetParameterPolicy = new ManagedPolicy(
+    //   this,
+    //   "ssm-get-parameter-policy",
+    //   {
+    //     managedPolicyName: `ssm-get-parameter-policy`,
+    //     statements: [
+    //       new PolicyStatement({
+    //         effect: Effect.ALLOW,
+    //         actions: [
+    //           "ssm:GetParameter"
+    //         ],
+    //         resources: [
+    //           "*"
+    //         ]
+    //       })
+    //     ]
+    //   }
+    // )
 
     const cloudWatchLogsPolicy = new ManagedPolicy(
       this,
@@ -285,24 +282,24 @@ export class CloudFrontStack extends Stack {
       }
     )
 
-    const secretsManagerPolicy = new ManagedPolicy(
-      this,
-      "secrets-manager-policy",
-      {
-        managedPolicyName: `secrets-manager-policy`,
-        statements: [
-          new PolicyStatement({
-            effect: Effect.ALLOW,
-            actions: [
-              "secretsmanager:GetSecretValue",
-            ],
-            resources: ["*"
-              // `arn:${this.partition}:secretsmanager:${this.region}:${this.account}:secret:${props.envName}/${props.appName}*`
-            ]
-          })
-        ]
-      }
-    )
+    // const secretsManagerPolicy = new ManagedPolicy(
+    //   this,
+    //   "secrets-manager-policy",
+    //   {
+    //     managedPolicyName: `secrets-manager-policy`,
+    //     statements: [
+    //       new PolicyStatement({
+    //         effect: Effect.ALLOW,
+    //         actions: [
+    //           "secretsmanager:GetSecretValue",
+    //         ],
+    //         resources: ["*"
+    //           // `arn:${this.partition}:secretsmanager:${this.region}:${this.account}:secret:${props.envName}/${props.appName}*`
+    //         ]
+    //       })
+    //     ]
+    //   }
+    // )
 
     const edgeLambdaRole = new Role(
       this,
@@ -315,8 +312,8 @@ export class CloudFrontStack extends Stack {
         ),
         managedPolicies: [
           cloudWatchLogsPolicy,
-          ssmGetParameterPolicy,
-          secretsManagerPolicy
+          // ssmGetParameterPolicy,
+          // secretsManagerPolicy
         ],
       }
     )

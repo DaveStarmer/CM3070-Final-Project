@@ -2,11 +2,12 @@
 """
 
 import os
-import urllib
+from urllib.parse import quote_plus
 import logging
 import json
 
 logger = logging.getLogger(__name__)
+logger.setLevel("DEBUG")  # set during development for full logging
 
 
 def handler_function(event: dict, _) -> dict:
@@ -20,6 +21,7 @@ def handler_function(event: dict, _) -> dict:
         dict: HTTP Response
     """
     logger.info("Request recieved")
+    logger.debug(event)
     response = check_sign_in(event["Records"][0]["cf"]["request"])
 
     logger.debug("Response: %s", json.dumps(response))
@@ -110,11 +112,11 @@ def create_signin_url(request: dict) -> str:
     uri = request["uri"]
     querystring = request["querystring"]
 
+    logger.debug("Request Host: %s   URI: %s   QueryString: %s", host, url, querystring)
+
     # encode the original request url to pass as query parameter in sign in request
     original_url = f"https://{host}{uri}?{querystring}"
-    original_url_encoded = urllib.parse.quote_plus(original_url.encode("utf-8"))
+    original_url_encoded = quote_plus(original_url.encode("utf-8"))
 
     # return url to redirect to including the encoded original destination
-    return (
-        f"https://www.{os.environ['DOMAIN']}/signin?redirect_url={original_url_encoded}"
-    )
+    return f"https://{host}/signin?redirect_url={original_url_encoded}"
