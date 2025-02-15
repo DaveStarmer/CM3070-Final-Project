@@ -1,7 +1,7 @@
 import { CfnCustomResource, CfnParameter, CustomResource, Duration, Fn, Stack, StackProps } from "aws-cdk-lib"
 import { Certificate } from "aws-cdk-lib/aws-certificatemanager"
-import { CfnCloudFrontOriginAccessIdentity, Distribution, LambdaEdgeEventType, experimental } from "aws-cdk-lib/aws-cloudfront"
-import { HttpOrigin, S3BucketOrigin } from "aws-cdk-lib/aws-cloudfront-origins"
+import { CfnCloudFrontOriginAccessIdentity, Distribution, LambdaEdgeEventType, OriginAccessIdentity, S3OriginAccessControl, experimental, Signing } from "aws-cdk-lib/aws-cloudfront"
+import { HttpOrigin, S3BucketOrigin, S3Origin } from "aws-cdk-lib/aws-cloudfront-origins"
 import { CfnUserPoolUser, LambdaVersion, UserPool, VerificationEmailStyle } from "aws-cdk-lib/aws-cognito"
 import { CanonicalUserPrincipal, CompositePrincipal, Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam"
 import { Code, Function, IVersion, Runtime, Version } from "aws-cdk-lib/aws-lambda"
@@ -113,7 +113,7 @@ export class CloudFrontStack extends Stack {
   }
 
   /** create CloudFront resources, and assign correct rights to buckets */
-  createCloudFrontDistro() {
+  oldcreateCloudFrontDistro() {
     /** CloudFront User */
     const cloudFrontOAI = new CfnCloudFrontOriginAccessIdentity(this, "cloudFrontOAI", {
       cloudFrontOriginAccessIdentityConfig: { comment: "CloudFrontOAI" }
@@ -122,12 +122,28 @@ export class CloudFrontStack extends Stack {
     /** user principal for cloud front */
     const cfUserPrincipal = new CanonicalUserPrincipal(cloudFrontOAI.attrS3CanonicalUserId)
 
-
     // grant read rights to CloudFront User
     this.publicWebBucket.grantRead(cfUserPrincipal)
 
     // grant read rights to CloudFront User
     this.privateWebBucket.grantRead(cfUserPrincipal)
+
+  }
+  createCloudFrontDistro() {
+
+    const originAccessControl = new S3OriginAccessControl(this, 'CameraOAC', {
+      originAccessControlName: "Camera CF OAC",
+      description: "Camera CloudFront Origin Access Control",
+      signing: Signing.SIGV4_NO_OVERRIDE
+    })
+
+    const s3Origin = S3BucketOrigin.withOriginAccessControl(this.privateWebBucket, {
+      originAccessControl,
+      customHeaders: {
+        DomainName: Fn.ref("domainName")
+      }
+    })
+
 
     /** CloudFront Distribution */
     const dfDist = new Distribution(this, "CloudFrontDistribution", {
@@ -136,7 +152,8 @@ export class CloudFrontStack extends Stack {
       defaultRootObject: "index.html",
       defaultBehavior: {
         // origin: S3BucketOrigin.withBucketDefaults(this.publicWebBucket),
-        origin: new HttpOrigin(Fn.ref("domainName")),
+        // origin: new HttpOrigin(Fn.ref("domainName")),
+        origin: s3Origin,
         edgeLambdas: [{
           eventType: LambdaEdgeEventType.VIEWER_REQUEST,
           functionVersion: this.authLambdaVersion,
