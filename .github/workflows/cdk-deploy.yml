@@ -1,0 +1,36 @@
+name: Deploy CDK
+run-name: Deploying CDK
+on:
+  push:
+    paths:
+      - remote-aws/cdk/** # only run on changes to cdk
+env:
+  AWS_REGION: 'eu-west-2' # CDK will automatically deploy CloudFront stack to us-east-1
+jobs:
+  deploy-cdk:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1.7.0
+        with:
+          role-to-assume: ${{ secrets.DASH_DEPLOY_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Deploy Dashboard CDK
+        uses: youyo/aws-cdk-github-actions@v2
+        with:
+            cdk_subcommand: 'deploy'
+            working_dir: 'remote-aws/cdk'
+            # cdk_args: '* --parameters domainName=${{ vars.DASH_DOMAIN }} certificateArn=${{ secrets.DASH_DOMAIN_CERT }}'
+            cdk_args: >
+              *
+              --parameters uniqueId=${{ secrets.DASH_AWS_ACCOUNT }}
+              --parameters CloudFrontStack:domainName=${{ vars.DASH_DOMAIN }}
+              --parameters CloudFrontStack:certificateArn=${{ secrets.DASH_DOMAIN_CERT }}
+              --parameters CloudFrontStack:adminUser=${{ secrets.DASH_ADMIN_USER }}
