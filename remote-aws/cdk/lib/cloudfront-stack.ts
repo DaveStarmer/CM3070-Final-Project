@@ -2,8 +2,8 @@ import { CfnCustomResource, CfnOutput, CfnParameter, CustomResource, Duration, F
 import { Certificate } from "aws-cdk-lib/aws-certificatemanager"
 import { CfnCloudFrontOriginAccessIdentity, Distribution, LambdaEdgeEventType, OriginAccessIdentity, S3OriginAccessControl, experimental, Signing, ViewerProtocolPolicy } from "aws-cdk-lib/aws-cloudfront"
 import { HttpOrigin, S3BucketOrigin, S3Origin } from "aws-cdk-lib/aws-cloudfront-origins"
-import { CfnUserPoolUser, LambdaVersion, UserPool, UserPoolDomain, VerificationEmailStyle } from "aws-cdk-lib/aws-cognito"
-import { CanonicalUserPrincipal, CompositePrincipal, Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam"
+import { CfnUserPoolUser, LambdaVersion, UserPool, UserPoolClient, UserPoolDomain, VerificationEmailStyle } from "aws-cdk-lib/aws-cognito"
+import { CanonicalUserPrincipal, CompositePrincipal, Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal, User } from "aws-cdk-lib/aws-iam"
 import { Code, Function, IVersion, Runtime, Version } from "aws-cdk-lib/aws-lambda"
 import { ARecord, HostedZone, RecordTarget } from "aws-cdk-lib/aws-route53"
 import { Bucket, EventType, HttpMethods } from "aws-cdk-lib/aws-s3"
@@ -21,6 +21,9 @@ export class CloudFrontStack extends Stack {
     codeBucket: any
     authLambda: experimental.EdgeFunction
     authLambdaVersion: IVersion
+    userPool: UserPool
+    userPoolDomain: UserPoolDomain
+    userPoolClient: UserPoolClient
 
     constructor(scope: Construct, id: string, props?: StackProps) {
         super(scope, id, props)
@@ -112,6 +115,8 @@ export class CloudFrontStack extends Stack {
 
         // create authorisation at edge lambda
         this.createEdgeLambda(props)
+        // create User Pool
+        this.createUserPool()
         // create CloudFront distro
         this.createCloudFrontDistro()
         // copy appropriate code to web buckets
@@ -135,45 +140,7 @@ export class CloudFrontStack extends Stack {
         this.privateWebBucket.grantRead(cfUserPrincipal)
 
     }
-    createCloudFrontDistro() {
-
-        const originAccessControl = new S3OriginAccessControl(this, 'CameraOAC', {
-            originAccessControlName: "Camera CF OAC",
-            description: "Camera CloudFront Origin Access Control",
-            signing: Signing.SIGV4_NO_OVERRIDE
-        })
-
-        const s3Origin = S3BucketOrigin.withOriginAccessControl(this.privateWebBucket, {
-            originAccessControl,
-            customHeaders: {
-                DomainName: Fn.ref("domainName")
-            }
-        })
-
-
-        /** CloudFront Distribution */
-        const dfDist = new Distribution(this, "CloudFrontDistribution", {
-            enabled: true,
-            comment: "CF Distro",
-            defaultRootObject: "index.html",
-            defaultBehavior: {
-                origin: s3Origin,
-                edgeLambdas: [{
-                    eventType: LambdaEdgeEventType.VIEWER_REQUEST,
-                    functionVersion: this.authLambdaVersion,
-                }],
-                viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS
-            },
-            domainNames: [Fn.sub("www.${domainName}")],
-            certificate: this.certificate,
-            enableLogging: false,
-        })
-
-        dfDist.node.addDependency(this.authLambda)
-
-        // output CloudFront Distribution name
-        new CfnOutput(this, "CloudFront-Distribution-Name", { value: dfDist.distributionDomainName })
-
+    createUserPool() {
         const userPool = new UserPool(this, "userPool", {
             userPoolName: "vid-user-pool",
             signInAliases: {
@@ -196,13 +163,6 @@ export class CloudFrontStack extends Stack {
             }
         })
 
-        // userPool.addDomain("PersonalDomain", {
-        //     customDomain: {
-        //         domainName: Fn.sub("auth.${domainName}"),
-        //         certificate: this.certificate
-        //     }
-        // })
-
         userPool.node.addDependency(this.certificate)
 
         const userPoolDomain = new UserPoolDomain(this, "UserPoolDomain", {
@@ -213,8 +173,65 @@ export class CloudFrontStack extends Stack {
             }
         })
 
+        const userPoolClient = userPool.addClient('DashUserPoolClient', {
+            generateSecret: true,
+            oAuth: {
+                flows: {
+                    authorizationCodeGrant: true
+                }
+            },
+            preventUserExistenceErrors: false
+        })
+
         // output CloudFront Distribution name
-        new CfnOutput(this, "Route53-Hosted-Zone-Id", { value: userPoolDomain.cloudFrontEndpoint })
+        new CfnOutput(this, "Cognito-Endpoint", { value: userPoolDomain.cloudFrontEndpoint })
+
+        this.userPool = userPool
+        this.userPoolDomain = userPoolDomain
+        this.userPoolClient = userPoolClient
+    }
+
+    createCloudFrontDistro() {
+        const originAccessControl = new S3OriginAccessControl(this, 'CameraOAC', {
+            originAccessControlName: "Camera CF OAC",
+            description: "Camera CloudFront Origin Access Control",
+            signing: Signing.SIGV4_NO_OVERRIDE
+        })
+
+        const s3Origin = S3BucketOrigin.withOriginAccessControl(this.privateWebBucket, {
+            originAccessControl,
+            customHeaders: {
+                domainName: Fn.ref("domainName"),
+                loginSecret: this.userPoolClient.userPoolClientSecret.toString()
+            }
+        })
+
+
+        /** CloudFront Distribution */
+        const cfDist = new Distribution(this, "CloudFrontDistribution", {
+            enabled: true,
+            comment: "CF Distro",
+            defaultRootObject: "index.html",
+            defaultBehavior: {
+                origin: s3Origin,
+                edgeLambdas: [{
+                    eventType: LambdaEdgeEventType.VIEWER_REQUEST,
+                    functionVersion: this.authLambdaVersion,
+                }],
+                viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS
+            },
+            domainNames: [Fn.sub("www.${domainName}")],
+            certificate: this.certificate,
+            enableLogging: false,
+        })
+
+        cfDist.node.addDependency(this.authLambda)
+
+        // output CloudFront Distribution name
+        new CfnOutput(this, "CloudFront-Distribution-Name", { value: cfDist.distributionDomainName })
+
+
+
 
         // const hostedZone = HostedZone.fromLookup(this, 'HostedZone', { domainName: Fn.ref("domainName") })
         // const hostedZone = HostedZone.fromHostedZoneId(this, 'HostedZone', Fn.ref("hostedZoneId"))

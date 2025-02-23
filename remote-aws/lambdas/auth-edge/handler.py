@@ -115,7 +115,10 @@ def create_signin_url(request: dict) -> str:
 
     logger.debug("Request Host: %s   URI: %s   QueryString: %s", host, uri, querystring)
 
-    if "signin" in uri:
+    custom_headers = request.get("origin", {}).get("s3", {}).get("customHeaders", {})
+    logger.debug("Client Secret: %s", custom_headers.get("loginSecret"))
+
+    if uri.startswith("auth."):
         return original_url
 
     # encode the original request url to pass as query parameter in sign in request
