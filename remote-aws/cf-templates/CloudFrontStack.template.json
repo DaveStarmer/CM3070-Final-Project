@@ -17,6 +17,10 @@
    "AllowedPattern": "^[a-z0-9-]{1,12}$",
    "Description": "Code Bucket Region"
   },
+  "hostedZoneId": {
+   "Type": "String",
+   "Description": "ID of CloudFront Hosted Zone"
+  },
   "domainName": {
    "Type": "String",
    "AllowedPattern": "[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)",
@@ -368,7 +372,7 @@
     "aws:cdk:path": "CloudFrontStack/userPool/Resource"
    }
   },
-  "userPoolPersonalDomainC0F49828": {
+  "UserPoolDomain5479B217": {
    "Type": "AWS::Cognito::UserPoolDomain",
    "Properties": {
     "CustomDomainConfig": {
@@ -377,14 +381,14 @@
      }
     },
     "Domain": {
-     "Fn::Sub": "www.${domainName}"
+     "Fn::Sub": "auth.${domainName}"
     },
     "UserPoolId": {
      "Ref": "userPoolDC9497E0"
     }
    },
    "Metadata": {
-    "aws:cdk:path": "CloudFrontStack/userPool/PersonalDomain/Resource"
+    "aws:cdk:path": "CloudFrontStack/UserPoolDomain/Resource"
    }
   },
   "copyBetweenBucketsServiceRole8D6854A0": {
@@ -604,6 +608,14 @@
     "Fn::GetAtt": [
      "CloudFrontDistributionBA64CE3A",
      "DomainName"
+    ]
+   }
+  },
+  "Route53HostedZoneId": {
+   "Value": {
+    "Fn::GetAtt": [
+     "UserPoolDomain5479B217",
+     "CloudFrontDistribution"
     ]
    }
   }
