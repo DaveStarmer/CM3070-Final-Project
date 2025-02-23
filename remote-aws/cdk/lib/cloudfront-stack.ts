@@ -45,6 +45,11 @@ export class CloudFrontStack extends Stack {
             description: "ARN of certificate for domain"
         })
 
+        // new CfnParameter(this, "hostedZoneId", {
+        //     type: "String",
+        //     description: "ID of Route53 HostedZone"
+        // })
+
         /** user pool for dashboard */
         const userPool = new UserPool(this, "UserPool", {
             selfSignUpEnabled: false,
@@ -87,34 +92,57 @@ export class CloudFrontStack extends Stack {
         //     //     domainPrefix: "cam-dash"
         //     // }
         // })
+        const domainName = scope.node.tryGetContext("domainName") as string
+
         const userPoolDomain = new UserPoolDomain(this, "UserPoolDomain", {
             userPool,
-            customDomain: {
-                domainName: Fn.sub("auth.${domainName}"),
-                certificate
+            // customDomain: {
+            //     domainName: `auth.${domainName}`,
+            //     certificate
+            // }
+            cognitoDomain: {
+                domainPrefix: "hello"
             }
         })
+
+        // const hostedZoneIdZ = scope.node.tryGetContext("hostedZoneId") as string
+
         /** hosted zone for current domain */
-        const hostedZone = HostedZone.fromLookup(this, "HostedZoneLookup", {
-            domainName: Fn.ref("domainName")
+        const hostedZone = HostedZone.fromLookup(this, "DashboardHostedZone", {
+            domainName: domainName
         })
+        // const hostedZone = HostedZone.fromLookup(this, "HostedZoneLookup", {
+        //     domainName: Fn.ref("domainName"),
+        // })
 
         // create A Record for User Pool
-        new ARecord(this, 'UserPoolCloudFrontAliasRecord', {
+        // const userPoolARecord = new ARecord(this, 'UserPoolCloudFrontAliasRecord', {
+        //     zone: hostedZone,
+        //     recordName: Fn.sub("auth.${domainName}"),
+        //     target: RecordTarget.fromValues()
+        //     // target: RecordTarget.fromAlias(new UserPoolDomainTarget(userPoolDomain)),
+        // })
+
+
+        // solution found at: https://stackoverflow.com/questions/67623939/aws-cdk-how-can-i-create-an-alias-of-a-record-in-the-same-hosted-zone
+        const userPoolARecord = new ARecord(this, "UserPoolCloudFrontAliasRecord", {
             zone: hostedZone,
-            recordName: Fn.sub("auth.${domainName}"),
-            target: RecordTarget.fromAlias(),
-            // target: RecordTarget.fromAlias(new UserPoolDomainTarget(userPoolDomain)),
+            target: RecordTarget.fromAlias({
+                bind: () => ({
+                    dnsName: `auth.${domainName}`,
+                    hostedZoneId: hostedZone.hostedZoneId
+                })
+            })
         })
 
         // Create seed admin user if email supplied
-        const adminUser = new CfnUserPoolUser(this, "InitialAdminUser", {
-            userPoolId: userPool.userPoolId,
-            username: Fn.ref("adminUser")
-        })
-        adminUser.cfnOptions.condition = new CfnCondition(this, "CreateAdminUser", {
-            expression: Fn.conditionNot(Fn.conditionEquals(Fn.ref("adminUser"), ""))
-        })
+        // const adminUser = new CfnUserPoolUser(this, "InitialAdminUser", {
+        //     userPoolId: userPool.userPoolId,
+        //     username: Fn.ref("adminUser")
+        // })
+        // adminUser.cfnOptions.condition = new CfnCondition(this, "CreateAdminUser", {
+        //     expression: Fn.conditionNot(Fn.conditionEquals(Fn.ref("adminUser"), ""))
+        // })
 
         /** authorisation construct
          *  deals with authorisation of users

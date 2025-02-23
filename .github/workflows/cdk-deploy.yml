@@ -34,3 +34,5 @@ jobs:
               --parameters CloudFrontStack:domainName=${{ vars.DASH_DOMAIN }}
               --parameters CloudFrontStack:certificateArn=${{ secrets.DASH_DOMAIN_CERT }}
               --parameters CloudFrontStack:adminUser=${{ secrets.DASH_ADMIN_USER }}
+              -c domainName=${{ vars.DASH_DOMAIN }}
+              -c hostedZoneId=${{ secrets.DASH_HOSTED_ZONE_ID}}
