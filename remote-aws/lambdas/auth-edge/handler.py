@@ -121,5 +121,8 @@ def create_signin_url(request: dict) -> str:
     # encode the original request url to pass as query parameter in sign in request
     original_url_encoded = quote_plus(original_url.encode("utf-8"))
 
+    # remove 'www' from start of host name if present
+    root_host = host.replace("www.", "", 1) if host.startswith("www.") else host
+
     # return url to redirect to including the encoded original destination
-    return f"https://{host}/signin?redirect_url={original_url_encoded}"
+    return f"https://auth.{root_host}/?redirect_url={original_url_encoded}"
