@@ -183,8 +183,10 @@ export class CloudFrontStack extends Stack {
             preventUserExistenceErrors: false
         })
 
-        // output CloudFront Distribution name
+        // output Cognito Endpoint name
         new CfnOutput(this, "Cognito-Endpoint", { value: userPoolDomain.cloudFrontEndpoint })
+        // output UserPool Client name
+        new CfnOutput(this, "UserPool-ClientId", { value: userPoolClient.userPoolClientId })
 
         this.userPool = userPool
         this.userPoolDomain = userPoolDomain
@@ -202,7 +204,8 @@ export class CloudFrontStack extends Stack {
             originAccessControl,
             customHeaders: {
                 domainName: Fn.ref("domainName"),
-                loginSecret: this.userPoolClient.userPoolClientSecret.toString()
+                userPoolId: this.userPool.userPoolId,
+                userPoolClientId: this.userPoolClient.userPoolClientId
             }
         })
 

@@ -106,7 +106,7 @@ def create_signin_url(request: dict) -> str:
     Returns:
         str: return URL
     """
-
+    logger.info("Creating sign in URL")
     # elements of original URL to encode
     host = request["headers"]["host"][0]["value"]
     uri = request["uri"]
@@ -118,7 +118,7 @@ def create_signin_url(request: dict) -> str:
     custom_headers = request.get("origin", {}).get("s3", {}).get("customHeaders", {})
     logger.debug("Client Secret: %s", custom_headers.get("loginSecret"))
 
-    if uri.startswith("auth."):
+    if host.startswith("auth."):
         return original_url
 
     # encode the original request url to pass as query parameter in sign in request
@@ -126,6 +126,8 @@ def create_signin_url(request: dict) -> str:
 
     # remove 'www' from start of host name if present
     root_host = host.replace("www.", "", 1) if host.startswith("www.") else host
+
+    logger.debug("Root Host: %s", root_host)
 
     # return url to redirect to including the encoded original destination
     return f"https://auth.{root_host}/?redirect_url={original_url_encoded}"
