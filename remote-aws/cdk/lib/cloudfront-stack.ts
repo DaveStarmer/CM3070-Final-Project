@@ -185,7 +185,9 @@ export class CloudFrontStack extends Stack {
 
         // output Cognito Endpoint name
         new CfnOutput(this, "Cognito-Endpoint", { value: userPoolDomain.cloudFrontEndpoint })
-        // output UserPool Client name
+        // output UserPool ID
+        new CfnOutput(this, "UserPool-Id", { value: userPool.userPoolId })
+        // output UserPool Client ID
         new CfnOutput(this, "UserPool-ClientId", { value: userPoolClient.userPoolClientId })
 
         this.userPool = userPool

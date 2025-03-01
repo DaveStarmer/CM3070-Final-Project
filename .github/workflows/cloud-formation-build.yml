@@ -30,6 +30,7 @@ jobs:
             AWS_DEFAULT_REGION: 'eu-west-2'
       - name: Copy and Cleanse CloudFormation Template of CDK
         run: |
+          mkdir -p remote-aws/cf-templates
           cp remote-aws/cdk/cdk.out/*.template.json remote-aws/cf-templates/
           python3 build/strip_cdk.py
       - name: Commit CloudFormation Template if necessary
