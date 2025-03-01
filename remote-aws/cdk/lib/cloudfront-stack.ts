@@ -1,4 +1,4 @@
-import { CfnCustomResource, CfnOutput, CfnParameter, CustomResource, Duration, Fn, Stack, StackProps } from "aws-cdk-lib"
+import { CfnCustomResource, CfnOutput, CfnParameter, CustomResource, Duration, Fn, SecretValue, Stack, StackProps } from "aws-cdk-lib"
 import { Certificate } from "aws-cdk-lib/aws-certificatemanager"
 import { CfnCloudFrontOriginAccessIdentity, Distribution, LambdaEdgeEventType, OriginAccessIdentity, S3OriginAccessControl, experimental, Signing, ViewerProtocolPolicy } from "aws-cdk-lib/aws-cloudfront"
 import { HttpOrigin, S3BucketOrigin, S3Origin } from "aws-cdk-lib/aws-cloudfront-origins"
@@ -11,6 +11,7 @@ import { Construct } from "constructs"
 import { Domain } from "domain"
 import { UserPoolUser } from "./constructs/UserPoolUser"
 import { UserPoolDomainTarget } from "aws-cdk-lib/aws-route53-targets"
+import { Secret } from "aws-cdk-lib/aws-secretsmanager"
 // import { EdgeFunction } from "aws-cdk-lib/aws-cloudfront/lib/experimental"
 
 
@@ -24,6 +25,7 @@ export class CloudFrontStack extends Stack {
     userPool: UserPool
     userPoolDomain: UserPoolDomain
     userPoolClient: UserPoolClient
+    userPoolInfoSecret: Secret
 
     constructor(scope: Construct, id: string, props?: StackProps) {
         super(scope, id, props)
@@ -113,10 +115,10 @@ export class CloudFrontStack extends Stack {
             }]
         })
 
-        // create authorisation at edge lambda
-        this.createEdgeLambda(props)
         // create User Pool
         this.createUserPool()
+        // create authorisation at edge lambda
+        this.createEdgeLambda(props)
         // create CloudFront distro
         this.createCloudFrontDistro()
         // copy appropriate code to web buckets
@@ -190,6 +192,13 @@ export class CloudFrontStack extends Stack {
         // output UserPool Client ID
         new CfnOutput(this, "UserPool-ClientId", { value: userPoolClient.userPoolClientId })
 
+        this.userPoolInfoSecret = new Secret(this, "userPoolInfo", {
+            secretObjectValue: {
+                userPool: SecretValue.unsafePlainText(userPool.userPoolId),
+                userPoolClient: SecretValue.unsafePlainText(userPoolClient.userPoolClientId),
+            }
+        })
+
         this.userPool = userPool
         this.userPoolDomain = userPoolDomain
         this.userPoolClient = userPoolClient
@@ -204,11 +213,11 @@ export class CloudFrontStack extends Stack {
 
         const s3Origin = S3BucketOrigin.withOriginAccessControl(this.privateWebBucket, {
             originAccessControl,
-            customHeaders: {
-                domainName: Fn.ref("domainName"),
-                userPoolId: this.userPool.userPoolId,
-                userPoolClientId: this.userPoolClient.userPoolClientId
-            }
+            // customHeaders: {
+            //     domainName: Fn.ref("domainName"),
+            //     userPoolId: this.userPool.userPoolId,
+            //     userPoolClientId: this.userPoolClient.userPoolClientId
+            // }
         })
 
 
@@ -342,24 +351,25 @@ export class CloudFrontStack extends Stack {
             }
         )
 
-        // const secretsManagerPolicy = new ManagedPolicy(
-        //   this,
-        //   "secrets-manager-policy",
-        //   {
-        //     managedPolicyName: `secrets-manager-policy`,
-        //     statements: [
-        //       new PolicyStatement({
-        //         effect: Effect.ALLOW,
-        //         actions: [
-        //           "secretsmanager:GetSecretValue",
-        //         ],
-        //         resources: ["*"
-        //           // `arn:${this.partition}:secretsmanager:${this.region}:${this.account}:secret:${props.envName}/${props.appName}*`
-        //         ]
-        //       })
-        //     ]
-        //   }
-        // )
+        const secretsManagerPolicy = new ManagedPolicy(
+            this,
+            "secrets-manager-policy",
+            {
+                managedPolicyName: `secrets-manager-policy`,
+                statements: [
+                    new PolicyStatement({
+                        effect: Effect.ALLOW,
+                        actions: [
+                            "secretsmanager:GetSecretValue",
+                        ],
+                        resources: [
+                            this.userPoolInfoSecret.secretArn
+                            // `arn:${this.partition}:secretsmanager:${this.region}:${this.account}:secret:${props.envName}/${props.appName}*`
+                        ]
+                    })
+                ]
+            }
+        )
 
         const edgeLambdaRole = new Role(
             this,
