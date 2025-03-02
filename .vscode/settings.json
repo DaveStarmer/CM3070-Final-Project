@@ -2,5 +2,8 @@
     "pylint.args": [
         "--rcfile=.pylintrc"
     ],
-    "editor.defaultFormatter": "ms-python.black-formatter"
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "[typescript]": {
+        "editor.defaultFormatter": "vscode.typescript-language-features"
+    }
 }
