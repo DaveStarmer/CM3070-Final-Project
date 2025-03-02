@@ -198,13 +198,6 @@ export class CloudFrontStack extends Stack {
         // output UserPool Client ID
         new CfnOutput(this, "UserPool-ClientId", { value: userPoolClient.userPoolClientId })
 
-        // this.userPoolInfoSecret = new Secret(this, "userPoolInfo", {
-        //     secretObjectValue: {
-        //         userPool: SecretValue.unsafePlainText(userPool.userPoolId),
-        //         userPoolClient: SecretValue.unsafePlainText(userPoolClient.userPoolClientId),
-        //     }
-        // })
-
         new StringParameter(this, "cognitoEndpointParam", {
             description: "Cognito Endpoint",
             dataType: ParameterDataType.TEXT,
@@ -243,11 +236,6 @@ export class CloudFrontStack extends Stack {
 
         const s3Origin = S3BucketOrigin.withOriginAccessControl(this.privateWebBucket, {
             originAccessControl,
-            // customHeaders: {
-            //     domainName: Fn.ref("domainName"),
-            //     userPoolId: this.userPool.userPoolId,
-            //     userPoolClientId: this.userPoolClient.userPoolClientId
-            // }
         })
 
 
@@ -281,15 +269,6 @@ export class CloudFrontStack extends Stack {
             parameterName: "domain-name",
             stringValue: Fn.ref("domainName")
         })
-
-        // const hostedZone = HostedZone.fromLookup(this, 'HostedZone', { domainName: Fn.ref("domainName") })
-        // const hostedZone = HostedZone.fromHostedZoneId(this, 'HostedZone', Fn.ref("hostedZoneId"))
-
-        // new ARecord(this, "UserPoolARecord", {
-        //     zone: hostedZone,
-        //     recordName: "CognitoLogin",
-        //     target: RecordTarget.fromAlias(new UserPoolDomainTarget(userPoolDomain))
-        // })
     }
 
     /** Code to web buckets */
@@ -385,26 +364,6 @@ export class CloudFrontStack extends Stack {
                 ]
             }
         )
-
-        // const secretsManagerPolicy = new ManagedPolicy(
-        //     this,
-        //     "secrets-manager-policy",
-        //     {
-        //         managedPolicyName: `secrets-manager-policy`,
-        //         statements: [
-        //             new PolicyStatement({
-        //                 effect: Effect.ALLOW,
-        //                 actions: [
-        //                     "secretsmanager:GetSecretValue",
-        //                 ],
-        //                 resources: [
-        //                     this.userPoolInfoSecret.secretArn
-        //                     // `arn:${this.partition}:secretsmanager:${this.region}:${this.account}:secret:${props.envName}/${props.appName}*`
-        //                 ]
-        //             })
-        //         ]
-        //     }
-        // )
 
         const edgeLambdaRole = new Role(
             this,

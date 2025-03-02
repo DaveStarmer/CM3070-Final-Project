@@ -105,7 +105,16 @@ def check_sign_in(request: dict) -> dict:
     }
 
 
-def kvp_split(tokens: list, delimiter: str = "=") -> list:
+def kvp_split(tokens: list, delimiter: str = "=") -> dict:
+    """Split list of key=value strings into dictionary of key:value
+
+    Args:
+        tokens (list): list of strings in key=value format
+        delimiter (str, optional): delimiter between key and value. Defaults to "=".
+
+    Returns:
+        dict: key-value pair dictionary
+    """
     # nested comprehension to give cookies as a dictionary
     # the inner comprehension returns a list of key-value lists
     # the outer comprehension returns a dictionary with leading and trailing whitespace removed
