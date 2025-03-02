@@ -1,6 +1,6 @@
 import { CfnCustomResource, CfnOutput, CfnParameter, CustomResource, Duration, Fn, SecretValue, Stack, StackProps } from "aws-cdk-lib"
 import { Certificate } from "aws-cdk-lib/aws-certificatemanager"
-import { CfnCloudFrontOriginAccessIdentity, Distribution, LambdaEdgeEventType, OriginAccessIdentity, S3OriginAccessControl, experimental, Signing, ViewerProtocolPolicy } from "aws-cdk-lib/aws-cloudfront"
+import { CfnCloudFrontOriginAccessIdentity, Distribution, LambdaEdgeEventType, OriginAccessIdentity, S3OriginAccessControl, experimental, Signing, ViewerProtocolPolicy, CachePolicy } from "aws-cdk-lib/aws-cloudfront"
 import { HttpOrigin, S3BucketOrigin, S3Origin } from "aws-cdk-lib/aws-cloudfront-origins"
 import { CfnUserPoolUser, LambdaVersion, UserPool, UserPoolClient, UserPoolDomain, VerificationEmailStyle } from "aws-cdk-lib/aws-cognito"
 import { CanonicalUserPrincipal, CompositePrincipal, Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal, User } from "aws-cdk-lib/aws-iam"
@@ -126,23 +126,6 @@ export class CloudFrontStack extends Stack {
         this.copyCodeToWebBuckets()
     }
 
-    /** create CloudFront resources, and assign correct rights to buckets */
-    oldcreateCloudFrontDistro() {
-        /** CloudFront User */
-        const cloudFrontOAI = new CfnCloudFrontOriginAccessIdentity(this, "cloudFrontOAI", {
-            cloudFrontOriginAccessIdentityConfig: { comment: "CloudFrontOAI" }
-        })
-
-        /** user principal for cloud front */
-        const cfUserPrincipal = new CanonicalUserPrincipal(cloudFrontOAI.attrS3CanonicalUserId)
-
-        // grant read rights to CloudFront User
-        this.publicWebBucket.grantRead(cfUserPrincipal)
-
-        // grant read rights to CloudFront User
-        this.privateWebBucket.grantRead(cfUserPrincipal)
-
-    }
     createUserPool() {
         const userPool = new UserPool(this, "userPool", {
             userPoolName: "vid-user-pool",
@@ -250,7 +233,8 @@ export class CloudFrontStack extends Stack {
                     eventType: LambdaEdgeEventType.VIEWER_REQUEST,
                     functionVersion: this.authLambdaVersion,
                 }],
-                viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS
+                viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+                cachePolicy: CachePolicy.AMPLIFY
             },
             domainNames: [Fn.sub("www.${domainName}")],
             certificate: this.certificate,
