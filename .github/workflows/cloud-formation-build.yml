@@ -1,9 +1,10 @@
-name: Generate CloudFormation Script and Deploy
-run-name: Generating and Deploying CloudFormation Script
+name: Generate CloudFormation Scripts and Deploy
+run-name: Generating and Deploying CloudFormation Scripts
 on:
   push:
-    paths:
-      - remote-aws/cdk/** # only run on changes to cdk
+    paths: # limit when action runs
+      - remote-aws/cdk/** # changes to cdk
+      - remote-aws/lambdas/** # changes to CloudFront Lambdas
 env:
   AWS_REGION: 'eu-west-2'
 jobs:
@@ -17,12 +18,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
-      - name: cdk synth
+      - name: Run cdk synth
         uses: youyo/aws-cdk-github-actions@v2
         with:
             cdk_subcommand: 'synth'
             working_dir: 'remote-aws/cdk'
-            cdk_stack: 'DashboardStack'
             cdk_args: '-q'
         env:
             AWS_ACCESS_KEY_ID: "access_key"
@@ -30,7 +30,8 @@ jobs:
             AWS_DEFAULT_REGION: 'eu-west-2'
       - name: Copy and Cleanse CloudFormation Template of CDK
         run: |
-          cp remote-aws/cdk/cdk.out/*.template.json remote-aws
+          mkdir -p remote-aws/cf-templates
+          cp remote-aws/cdk/cdk.out/*.template.json remote-aws/cf-templates/
           python3 build/strip_cdk.py
       - name: Commit CloudFormation Template if necessary
         run: |
@@ -44,8 +45,9 @@ jobs:
           echo git diff exit code = $DIFFERENCE
           if [ $DIFFERENCE -ne 0 ]
           then
-            git add remote-aws/*.template.json
-            git commit -m "chore: generate CloudFormation template"
+            git add remote-aws/cf-templates/*.template.json
+            git status
+            git commit -m "chore: generate CloudFormation templates"
             git push
             echo "Changes committed"
           else
@@ -57,11 +59,65 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE }}
           aws-region: ${{ env.AWS_REGION }}
-      - name: Deploy CloudFormation Template
+      - name: Deploy Deployment CloudFormation Template
         run: >
           aws cloudformation deploy
-          --template-file remote-aws/DashboardStack.template.json
+          --template-file remote-aws/cf-templates/DeploymentStack.template.json
+          --stack-name DeploymentStack
+          --parameter-overrides uniqueId=${{ secrets.UNIQUE_ID }}
+      - name: Build and Upload Lambda Deployment Zips
+        run: |
+          for filename in remote-aws/lambdas/*; do
+            source build/build_lambda_zip.sh $filename ${{ secrets.PRIVATE_CODE_BUCKET }}
+          done
+      - name: Copy Templates to Private Code Bucket
+        run: aws s3 cp remote-aws/cf-templates/ s3://${{ secrets.PRIVATE_CODE_BUCKET }}/cloudFormation/ --recursive
+      - name: Copy Web Code to Private Code Bucket
+        run: |
+          aws s3 cp remote-dashboard/public-web/ s3://${{ secrets.PRIVATE_CODE_BUCKET }}/public-web --recursive
+          aws s3 cp remote-dashboard/private-web/ s3://${{ secrets.PRIVATE_CODE_BUCKET }}/private-web --recursive
+      - name: Deploy Instructions CloudFormation Template
+        run: >
+          aws cloudformation deploy
+          --template-file remote-aws/cf-templates/InstructionsStack.template.json
+          --stack-name InstructionsStack
+          --parameter-overrides publicUniqueId=${{ secrets.PUBLIC_UNIQUE_ID }}
+          uniqueId=${{ secrets.UNIQUE_ID }}
+          codeBucketName=${{ secrets.PRIVATE_CODE_BUCKET }}
+      - name: Deploy Instructions-CloudFront CloudFormation Template
+        run: >
+          aws --region us-east-1 cloudformation deploy
+          --template-file remote-aws/cf-templates/InstructionsCloudFrontStack.template.json
+          --stack-name InstructionsCloudFrontStack
+          --parameter-overrides publicUniqueId=${{ secrets.PUBLIC_UNIQUE_ID }}
+          uniqueId=${{ secrets.UNIQUE_ID }}
+      - name: Copy Code to Public Code Buckets
+        run: |
+          aws s3 cp remote-aws/cf-templates/DashboardStack.template.json s3://${{ vars.PUBLIC_CODE_BUCKET }}/CloudFormation/
+          aws s3 cp remote-aws/cf-templates/CloudFrontStack.template.json s3://${{ vars.PUBLIC_CODE_BUCKET }}/cloudformation/
+          aws s3 cp s3://${{ secrets.PRIVATE_CODE_BUCKET }}/lambdas s3://${{ vars.PUBLIC_CODE_BUCKET }}/lambdas/ --recursive
+          aws s3 cp s3://${{ secrets.PRIVATE_CODE_BUCKET }}/lambdas/copy-web-code.zip s3://${{ vars.PUBLIC_CODE_BUCKET_CF }}/lambdas/copy-web-code.zip
+          aws s3 cp s3://${{ secrets.PRIVATE_CODE_BUCKET }}/lambdas/auth-edge.zip s3://${{ vars.PUBLIC_CODE_BUCKET_CF }}/lambdas/auth-edge.zip
+          aws s3 cp s3://${{ secrets.PRIVATE_CODE_BUCKET }}/private-web s3://${{ vars.PUBLIC_CODE_BUCKET_CF }}/private-web --recursive
+          aws s3 cp s3://${{ secrets.PRIVATE_CODE_BUCKET }}/public-web s3://${{ vars.PUBLIC_CODE_BUCKET_CF }}/public-web --recursive
+      - name: Deploy CloudFront CloudFormation Template
+        run: >
+          aws --region us-east-1 cloudformation deploy
+          --template-file remote-aws/cf-templates/CloudFrontStack.template.json
+          --stack-name CloudFrontStack
+          --capabilities CAPABILITY_NAMED_IAM
+          --parameter-overrides uniqueId=${{ secrets.UNIQUE_ID }}
+          codeBucketName=${{ vars.PUBLIC_CODE_BUCKET_CF }}
+          codeBucketRegion="us-east-1"
+          domainName=${{ vars.DOMAIN }}
+          certificateArn=${{ secrets.CERTIFICATE_ARN }}
+          hostedZoneId=${{ secrets.HOSTED_ZONE_ID}}
+          userEmail="test.diy.cam.user@outlook.com"
+      - name: Deploy Dashboard CloudFormation Template
+        run: >
+          aws cloudformation deploy
+          --s3-bucket ${{ vars.PUBLIC_CODE_BUCKET }}
+          --template-file remote-aws/cf-templates/DashboardStack.template.json
           --stack-name DashboardStack
-          # parameter to make bucket names unique - hash, as using account number not considered secure
-          --parameter-overrides uniqueId=a102dbccb12364e0866af88472c9da91
-        
+          --parameter-overrides uniqueId=${{ secrets.UNIQUE_ID }}
+          codeBucketName=${{ secrets.PRIVATE_CODE_BUCKET }}
