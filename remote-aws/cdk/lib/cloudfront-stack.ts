@@ -180,8 +180,13 @@ export class CloudFrontStack extends Stack {
             generateSecret: true,
             oAuth: {
                 flows: {
-                    authorizationCodeGrant: true
-                }
+                    authorizationCodeGrant: true,
+                },
+                callbackUrls: [
+                    Fn.sub("https://www.${domainName}"),
+                    Fn.sub("https://www.${domainName}/")
+                ],
+                defaultRedirectUri: Fn.sub("https://www.${domainName}")
             },
             preventUserExistenceErrors: false
         })
