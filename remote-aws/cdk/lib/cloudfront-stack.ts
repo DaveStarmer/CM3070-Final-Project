@@ -12,6 +12,7 @@ import { Domain } from "domain"
 import { UserPoolUser } from "./constructs/UserPoolUser"
 import { UserPoolDomainTarget } from "aws-cdk-lib/aws-route53-targets"
 import { Secret } from "aws-cdk-lib/aws-secretsmanager"
+import { ParameterDataType, ParameterTier, StringParameter } from "aws-cdk-lib/aws-ssm"
 // import { EdgeFunction } from "aws-cdk-lib/aws-cloudfront/lib/experimental"
 
 
@@ -192,11 +193,35 @@ export class CloudFrontStack extends Stack {
         // output UserPool Client ID
         new CfnOutput(this, "UserPool-ClientId", { value: userPoolClient.userPoolClientId })
 
-        this.userPoolInfoSecret = new Secret(this, "userPoolInfo", {
-            secretObjectValue: {
-                userPool: SecretValue.unsafePlainText(userPool.userPoolId),
-                userPoolClient: SecretValue.unsafePlainText(userPoolClient.userPoolClientId),
-            }
+        // this.userPoolInfoSecret = new Secret(this, "userPoolInfo", {
+        //     secretObjectValue: {
+        //         userPool: SecretValue.unsafePlainText(userPool.userPoolId),
+        //         userPoolClient: SecretValue.unsafePlainText(userPoolClient.userPoolClientId),
+        //     }
+        // })
+
+        new StringParameter(this, "cognitoEndpointParam", {
+            description: "Cognito Endpoint",
+            dataType: ParameterDataType.TEXT,
+            tier: ParameterTier.STANDARD,
+            parameterName: "cognito-endpoint",
+            stringValue: userPoolDomain.cloudFrontEndpoint
+        })
+
+        new StringParameter(this, "userPoolIdParam", {
+            description: "Cognito User Pool ID",
+            dataType: ParameterDataType.TEXT,
+            tier: ParameterTier.STANDARD,
+            parameterName: "user-pool-id",
+            stringValue: userPool.userPoolId
+        })
+
+        new StringParameter(this, "userPoolClientIdParam", {
+            description: "Cognito User Pool Client ID",
+            dataType: ParameterDataType.TEXT,
+            tier: ParameterTier.STANDARD,
+            parameterName: "user-pool-client-id",
+            stringValue: userPoolClient.userPoolClientId
         })
 
         this.userPool = userPool
@@ -244,8 +269,13 @@ export class CloudFrontStack extends Stack {
         // output CloudFront Distribution name
         new CfnOutput(this, "CloudFront-Distribution-Name", { value: cfDist.distributionDomainName })
 
-
-
+        new StringParameter(this, "domainNameParam", {
+            description: "Domain Name",
+            dataType: ParameterDataType.TEXT,
+            tier: ParameterTier.STANDARD,
+            parameterName: "domain-name",
+            stringValue: Fn.ref("domainName")
+        })
 
         // const hostedZone = HostedZone.fromLookup(this, 'HostedZone', { domainName: Fn.ref("domainName") })
         // const hostedZone = HostedZone.fromHostedZoneId(this, 'HostedZone', Fn.ref("hostedZoneId"))
@@ -311,24 +341,24 @@ export class CloudFrontStack extends Stack {
     }
 
     createEdgeLambdaRole() {
-        // const ssmGetParameterPolicy = new ManagedPolicy(
-        //   this,
-        //   "ssm-get-parameter-policy",
-        //   {
-        //     managedPolicyName: `ssm-get-parameter-policy`,
-        //     statements: [
-        //       new PolicyStatement({
-        //         effect: Effect.ALLOW,
-        //         actions: [
-        //           "ssm:GetParameter"
-        //         ],
-        //         resources: [
-        //           "*"
-        //         ]
-        //       })
-        //     ]
-        //   }
-        // )
+        const ssmGetParameterPolicy = new ManagedPolicy(
+            this,
+            "ssm-get-parameter-policy",
+            {
+                managedPolicyName: `ssm-get-parameter-policy`,
+                statements: [
+                    new PolicyStatement({
+                        effect: Effect.ALLOW,
+                        actions: [
+                            "ssm:GetParameter"
+                        ],
+                        resources: [
+                            "*"
+                        ]
+                    })
+                ]
+            }
+        )
 
         const cloudWatchLogsPolicy = new ManagedPolicy(
             this,
@@ -351,25 +381,25 @@ export class CloudFrontStack extends Stack {
             }
         )
 
-        const secretsManagerPolicy = new ManagedPolicy(
-            this,
-            "secrets-manager-policy",
-            {
-                managedPolicyName: `secrets-manager-policy`,
-                statements: [
-                    new PolicyStatement({
-                        effect: Effect.ALLOW,
-                        actions: [
-                            "secretsmanager:GetSecretValue",
-                        ],
-                        resources: [
-                            this.userPoolInfoSecret.secretArn
-                            // `arn:${this.partition}:secretsmanager:${this.region}:${this.account}:secret:${props.envName}/${props.appName}*`
-                        ]
-                    })
-                ]
-            }
-        )
+        // const secretsManagerPolicy = new ManagedPolicy(
+        //     this,
+        //     "secrets-manager-policy",
+        //     {
+        //         managedPolicyName: `secrets-manager-policy`,
+        //         statements: [
+        //             new PolicyStatement({
+        //                 effect: Effect.ALLOW,
+        //                 actions: [
+        //                     "secretsmanager:GetSecretValue",
+        //                 ],
+        //                 resources: [
+        //                     this.userPoolInfoSecret.secretArn
+        //                     // `arn:${this.partition}:secretsmanager:${this.region}:${this.account}:secret:${props.envName}/${props.appName}*`
+        //                 ]
+        //             })
+        //         ]
+        //     }
+        // )
 
         const edgeLambdaRole = new Role(
             this,
@@ -382,7 +412,7 @@ export class CloudFrontStack extends Stack {
                 ),
                 managedPolicies: [
                     cloudWatchLogsPolicy,
-                    // ssmGetParameterPolicy,
+                    ssmGetParameterPolicy,
                     // secretsManagerPolicy
                 ],
             }

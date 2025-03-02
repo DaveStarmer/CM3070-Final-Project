@@ -6,6 +6,8 @@ from urllib.parse import quote_plus
 import logging
 import json
 
+import boto3
+
 logger = logging.getLogger(__name__)
 logger.setLevel("DEBUG")  # set during development for full logging
 
@@ -31,6 +33,25 @@ def handler_function(event: dict, _) -> dict:
     return response
 
 
+def get_parameters() -> dict:
+    """Get Stored values from SSM Parameter Store
+
+    Returns:
+        dict: parameter_key: value
+    """
+    ssm_client = boto3.client("ssm", region_name="us-east-1")
+    response = ssm_client.get_parameters(
+        Names=[
+            "domin-name",
+            "user-pool-id",
+            "user-pool-client-id",
+            "cognito-endpoint",
+        ]
+    )
+
+    return {param["Name"]: param["Value"] for param in response["Parameters"]}
+
+
 def check_sign_in(request: dict) -> dict:
     """Verify user is signed in and return appropriate response
 
@@ -53,8 +74,12 @@ def check_sign_in(request: dict) -> dict:
         logger.debug("Session ID found: %s", cookies["session-id"])
         return request
 
+    # get store parameters
+    parameters = get_parameters()
+    logger.debug(parameters)
+
     # create sign in URL with requested URL encoded in the querystring
-    signin_url = create_signin_url(request)
+    signin_url = create_signin_url(parameters, request)
     logger.debug("Sign in URL generated: %s", signin_url)
 
     # return redirect response
@@ -97,7 +122,27 @@ def parse_cookies_from_header(headers: dict) -> dict:
     return {}
 
 
-def create_signin_url(request: dict) -> str:
+def create_signin_url(params: dict, request: dict) -> str:
+    logger.info("Creating sign in URL")
+
+    # elements of original URL to encode
+    host = request["headers"]["host"][0]["value"]
+    uri = request["uri"]
+    querystring = request["querystring"]
+    original_url = f"https://{host}{uri}?{querystring}"
+
+    # if request is already an authorisation request, return
+    if host.startswith("auth."):
+        logger.info("already an authorisation url")
+        return original_url
+
+    # encode the original request url to pass as query parameter in sign in request
+    original_url_encoded = quote_plus(original_url.encode("utf-8"))
+
+    return f"https://auth.{params['domain-name']}/login/?client_id={params['client-id']}redirect_url={original_url_encoded}"
+
+
+def old_create_signin_url(request: dict) -> str:
     """Create signin URL with originally requested URL in querystring
 
     Args:
