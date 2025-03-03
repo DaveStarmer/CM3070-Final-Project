@@ -106,16 +106,16 @@ export class CloudFrontStack extends Stack {
             removalPolicy: RemovalPolicy.DESTROY
         })
 
-        // /** bucket for public web content */
-        // this.publicWebBucket = new Bucket(this, "publicWebBucket", {
-        //     bucketName: Fn.sub("vid-dash-public-web-${uniqueId}"),
-        //     cors: [{
-        //         allowedOrigins: ["http*"],
-        //         allowedMethods: [HttpMethods.GET],
-        //         allowedHeaders: ["*"],
-        //         exposedHeaders: ["Etag", "x-amx-meta-custom-header"]
-        //     }]
-        // })
+        /** bucket for public web content */
+        this.publicWebBucket = new Bucket(this, "publicWebBucket", {
+            bucketName: Fn.sub("vid-dash-public-web-${uniqueId}"),
+            cors: [{
+                allowedOrigins: ["http*"],
+                allowedMethods: [HttpMethods.GET],
+                allowedHeaders: ["*"],
+                exposedHeaders: ["Etag", "x-amx-meta-custom-header"]
+            }]
+        })
 
         // create User Pool
         this.createUserPool()
@@ -152,15 +152,15 @@ export class CloudFrontStack extends Stack {
 
         userPool.node.addDependency(this.certificate)
 
-        const userPoolDomain = new UserPoolDomain(this, "UserPoolDomain", {
-            userPool,
-            customDomain: {
-                domainName: Fn.sub("auth.${domainName}"),
-                certificate: this.certificate
-            }
-        })
+        // const userPoolDomain = new UserPoolDomain(this, "UserPoolDomain", {
+        //     userPool,
+        //     customDomain: {
+        //         domainName: Fn.sub("auth.${domainName}"),
+        //         certificate: this.certificate
+        //     }
+        // })
 
-        userPoolDomain.node.addDependency(userPoolDomain)
+        // userPoolDomain.node.addDependency(userPoolDomain)
 
         const userPoolClient = userPool.addClient('DashUserPoolClient', {
             generateSecret: true,
@@ -178,19 +178,19 @@ export class CloudFrontStack extends Stack {
         })
 
         // output Cognito Endpoint name
-        new CfnOutput(this, "Cognito-Endpoint", { value: userPoolDomain.cloudFrontEndpoint })
+        // new CfnOutput(this, "Cognito-Endpoint", { value: userPoolDomain.cloudFrontEndpoint })
         // output UserPool ID
         new CfnOutput(this, "UserPool-Id", { value: userPool.userPoolId })
         // output UserPool Client ID
         new CfnOutput(this, "UserPool-ClientId", { value: userPoolClient.userPoolClientId })
 
-        new StringParameter(this, "cognitoEndpointParam", {
-            description: "Cognito Endpoint",
-            dataType: ParameterDataType.TEXT,
-            tier: ParameterTier.STANDARD,
-            parameterName: "cognito-endpoint",
-            stringValue: userPoolDomain.cloudFrontEndpoint
-        })
+        // new StringParameter(this, "cognitoEndpointParam", {
+        //     description: "Cognito Endpoint",
+        //     dataType: ParameterDataType.TEXT,
+        //     tier: ParameterTier.STANDARD,
+        //     parameterName: "cognito-endpoint",
+        //     stringValue: userPoolDomain.cloudFrontEndpoint
+        // })
 
         new StringParameter(this, "userPoolIdParam", {
             description: "Cognito User Pool ID",
@@ -209,13 +209,13 @@ export class CloudFrontStack extends Stack {
         })
 
         this.userPool = userPool
-        this.userPoolDomain = userPoolDomain
+        // this.userPoolDomain = userPoolDomain
         this.userPoolClient = userPoolClient
     }
 
     createCloudFrontDistro() {
         const originAccessControl = new S3OriginAccessControl(this, 'CameraOAC', {
-            originAccessControlName: "Camera CF OAC",
+            originAccessControlName: "Camera CloudFront OAC",
             description: "Camera CloudFront Origin Access Control",
             signing: Signing.SIGV4_NO_OVERRIDE
         })
