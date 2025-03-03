@@ -1,4 +1,4 @@
-import { CfnCustomResource, CfnOutput, CfnParameter, CustomResource, Duration, Fn, SecretValue, Stack, StackProps } from "aws-cdk-lib"
+import { CfnCustomResource, CfnOutput, CfnParameter, CustomResource, Duration, Fn, RemovalPolicy, SecretValue, Stack, StackProps } from "aws-cdk-lib"
 import { Certificate } from "aws-cdk-lib/aws-certificatemanager"
 import { CfnCloudFrontOriginAccessIdentity, Distribution, LambdaEdgeEventType, OriginAccessIdentity, S3OriginAccessControl, experimental, Signing, ViewerProtocolPolicy, CachePolicy } from "aws-cdk-lib/aws-cloudfront"
 import { HttpOrigin, S3BucketOrigin, S3Origin } from "aws-cdk-lib/aws-cloudfront-origins"
@@ -102,19 +102,20 @@ export class CloudFrontStack extends Stack {
 
         /** bucket for private web content - dashboard */
         this.privateWebBucket = new Bucket(this, "privateWebBucket", {
-            bucketName: Fn.sub("vid-dash-private-web-${uniqueId}")
+            bucketName: Fn.sub("vid-dash-private-web-${uniqueId}"),
+            removalPolicy: RemovalPolicy.DESTROY
         })
 
-        /** bucket for public web content */
-        this.publicWebBucket = new Bucket(this, "publicWebBucket", {
-            bucketName: Fn.sub("vid-dash-public-web-${uniqueId}"),
-            cors: [{
-                allowedOrigins: ["http*"],
-                allowedMethods: [HttpMethods.GET],
-                allowedHeaders: ["*"],
-                exposedHeaders: ["Etag", "x-amx-meta-custom-header"]
-            }]
-        })
+        // /** bucket for public web content */
+        // this.publicWebBucket = new Bucket(this, "publicWebBucket", {
+        //     bucketName: Fn.sub("vid-dash-public-web-${uniqueId}"),
+        //     cors: [{
+        //         allowedOrigins: ["http*"],
+        //         allowedMethods: [HttpMethods.GET],
+        //         allowedHeaders: ["*"],
+        //         exposedHeaders: ["Etag", "x-amx-meta-custom-header"]
+        //     }]
+        // })
 
         // create User Pool
         this.createUserPool()
@@ -158,6 +159,8 @@ export class CloudFrontStack extends Stack {
                 certificate: this.certificate
             }
         })
+
+        userPoolDomain.node.addDependency(userPoolDomain)
 
         const userPoolClient = userPool.addClient('DashUserPoolClient', {
             generateSecret: true,
@@ -265,19 +268,19 @@ export class CloudFrontStack extends Stack {
         })
 
         const grantToCodeBucket = this.codeBucket.grantRead(copyLambda)
-        const grantToPublicBucket = this.publicWebBucket.grantPut(copyLambda)
+        // const grantToPublicBucket = this.publicWebBucket.grantPut(copyLambda)
         const grantToPrivateBucket = this.privateWebBucket.grantPut(copyLambda)
 
-        const copyPublicWebResources = new CustomResource(this, "copyPublicWebResources", {
-            serviceToken: copyLambda.functionArn,
-            properties: {
-                sourceBucket: this.codeBucket.bucketName,
-                destinationBucket: this.publicWebBucket.bucketName,
-                keys: ["public-web"]
-            }
-        })
-        copyPublicWebResources.node.addDependency(grantToCodeBucket)
-        copyPublicWebResources.node.addDependency(grantToPublicBucket)
+        // const copyPublicWebResources = new CustomResource(this, "copyPublicWebResources", {
+        //     serviceToken: copyLambda.functionArn,
+        //     properties: {
+        //         sourceBucket: this.codeBucket.bucketName,
+        //         destinationBucket: this.publicWebBucket.bucketName,
+        //         keys: ["public-web"]
+        //     }
+        // })
+        // copyPublicWebResources.node.addDependency(grantToCodeBucket)
+        // copyPublicWebResources.node.addDependency(grantToPublicBucket)
 
         const copyPrivateWebResources = new CustomResource(this, "copyPrivateWebResources", {
             serviceToken: copyLambda.functionArn,
