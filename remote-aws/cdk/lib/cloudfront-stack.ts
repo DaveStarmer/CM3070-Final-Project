@@ -225,7 +225,7 @@ export class CloudFrontStack extends Stack {
         /** CloudFront Distribution */
         const cfDist = new Distribution(this, "CloudFrontDistribution", {
             enabled: true,
-            comment: "CF Distro",
+            comment: "CloudFormation Distribution",
             defaultRootObject: "index.html",
             defaultBehavior: {
                 origin: s3Origin,
