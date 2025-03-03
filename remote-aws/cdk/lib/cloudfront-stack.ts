@@ -57,7 +57,7 @@ export class CloudFrontStack extends Stack {
 
         new CfnParameter(this, "hostedZoneId", {
             type: "String",
-            description: "ID of CloudFront Hosted Zone"
+            description: "ID of Route53 Hosted Zone"
         })
 
         /** code bucket construct */
@@ -114,7 +114,8 @@ export class CloudFrontStack extends Stack {
                 allowedMethods: [HttpMethods.GET],
                 allowedHeaders: ["*"],
                 exposedHeaders: ["Etag", "x-amx-meta-custom-header"]
-            }]
+            }],
+            removalPolicy: RemovalPolicy.DESTROY
         })
 
         // create User Pool
@@ -152,15 +153,6 @@ export class CloudFrontStack extends Stack {
 
         userPool.node.addDependency(this.certificate)
 
-        // const userPoolDomain = new UserPoolDomain(this, "UserPoolDomain", {
-        //     userPool,
-        //     customDomain: {
-        //         domainName: Fn.sub("auth.${domainName}"),
-        //         certificate: this.certificate
-        //     }
-        // })
-
-        // userPoolDomain.node.addDependency(userPoolDomain)
 
         const userPoolClient = userPool.addClient('DashUserPoolClient', {
             generateSecret: true,
@@ -176,6 +168,16 @@ export class CloudFrontStack extends Stack {
             },
             preventUserExistenceErrors: false
         })
+
+        const userPoolDomain = new UserPoolDomain(this, "UserPoolDomain", {
+            userPool,
+            customDomain: {
+                domainName: Fn.sub("auth.${domainName}"),
+                certificate: this.certificate
+            }
+        })
+
+        userPoolDomain.node.addDependency(userPoolClient)
 
         // output Cognito Endpoint name
         // new CfnOutput(this, "Cognito-Endpoint", { value: userPoolDomain.cloudFrontEndpoint })
