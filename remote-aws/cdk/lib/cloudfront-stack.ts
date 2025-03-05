@@ -16,6 +16,8 @@ import { ParameterDataType, ParameterTier, StringParameter } from "aws-cdk-lib/a
 // import { EdgeFunction } from "aws-cdk-lib/aws-cloudfront/lib/experimental"
 
 
+// orig version of cdk 2.173.4
+
 export class CloudFrontStack extends Stack {
     publicWebBucket: Bucket
     privateWebBucket: Bucket
@@ -153,6 +155,15 @@ export class CloudFrontStack extends Stack {
 
         userPool.node.addDependency(this.certificate)
 
+        const userPoolDomain = new UserPoolDomain(this, "UserPoolDomain", {
+            userPool,
+            customDomain: {
+                domainName: Fn.sub("auth.${domainName}"),
+                certificate: this.certificate
+            }
+        })
+
+        // userPoolDomain.node.addDependency(userPoolClient)
 
         const userPoolClient = userPool.addClient('DashUserPoolClient', {
             generateSecret: true,
@@ -169,15 +180,6 @@ export class CloudFrontStack extends Stack {
             preventUserExistenceErrors: false
         })
 
-        const userPoolDomain = new UserPoolDomain(this, "UserPoolDomain", {
-            userPool,
-            customDomain: {
-                domainName: Fn.sub("auth.${domainName}"),
-                certificate: this.certificate
-            }
-        })
-
-        userPoolDomain.node.addDependency(userPoolClient)
 
         // output Cognito Endpoint name
         // new CfnOutput(this, "Cognito-Endpoint", { value: userPoolDomain.cloudFrontEndpoint })
