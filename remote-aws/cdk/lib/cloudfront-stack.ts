@@ -157,13 +157,13 @@ export class CloudFrontStack extends Stack {
 
         const userPoolDomain = new UserPoolDomain(this, "UserPoolDomain", {
             userPool,
-            customDomain: {
-                domainName: Fn.sub("auth.${domainName}"),
-                certificate: this.certificate
-            }
-            // cognitoDomain: {
-            //     domainPrefix: 'ds-fyp',
-            // },
+            // customDomain: {
+            //     domainName: Fn.sub("auth.${domainName}"),
+            //     certificate: this.certificate
+            // }
+            cognitoDomain: {
+                domainPrefix: 'ds-fyp',
+            },
         })
         // userPool.addDomain("CamUserPoolDomain", {
         //     customDomain: {
