@@ -155,8 +155,14 @@ export class CloudFrontStack extends Stack {
 
         userPool.node.addDependency(this.certificate)
 
-        const userPoolDomain = new UserPoolDomain(this, "UserPoolDomain", {
-            userPool,
+        // const userPoolDomain = new UserPoolDomain(this, "UserPoolDomain", {
+        //     userPool,
+        //     customDomain: {
+        //         domainName: Fn.sub("auth.${domainName}"),
+        //         certificate: this.certificate
+        //     }
+        // })
+        userPool.addDomain("CamUserPoolDomain", {
             customDomain: {
                 domainName: Fn.sub("auth.${domainName}"),
                 certificate: this.certificate
