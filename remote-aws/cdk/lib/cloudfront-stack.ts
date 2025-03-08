@@ -105,12 +105,12 @@ export class CloudFrontStack extends Stack {
         /** bucket for private web content - dashboard */
         this.privateWebBucket = new Bucket(this, "privateWebBucket", {
             bucketName: Fn.sub("vid-dash-private-web-${uniqueId}"),
-            // cors: [{
-            //     allowedOrigins: ["http*"],
-            //     allowedMethods: [HttpMethods.GET],
-            //     allowedHeaders: ["*"],
-            //     exposedHeaders: ["Etag", "x-amx-meta-custom-header"]
-            // }],
+            cors: [{
+                allowedOrigins: ["https*"],
+                allowedMethods: [HttpMethods.GET, HttpMethods.POST],
+                allowedHeaders: ["*"],
+                exposedHeaders: ["Etag", "x-amx-meta-custom-header"]
+            }],
             removalPolicy: RemovalPolicy.DESTROY
         })
 
