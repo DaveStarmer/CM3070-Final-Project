@@ -335,10 +335,11 @@ export class CloudFrontStack extends Stack {
                     new PolicyStatement({
                         effect: Effect.ALLOW,
                         actions: [
-                            "ssm:GetParameter"
+                            "ssm:GetParameter",
+                            "ssm:GetParameters"
                         ],
                         resources: [
-                            "*"
+                            `arn:${this.partition}:ssm:*:*:*`
                         ]
                     })
                 ]
