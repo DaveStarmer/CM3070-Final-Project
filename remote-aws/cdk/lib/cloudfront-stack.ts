@@ -197,13 +197,13 @@ export class CloudFrontStack extends Stack {
         // output UserPool Client ID
         new CfnOutput(this, "UserPool-ClientId", { value: userPoolClient.userPoolClientId })
 
-        // new StringParameter(this, "cognitoEndpointParam", {
-        //     description: "Cognito Endpoint",
-        //     dataType: ParameterDataType.TEXT,
-        //     tier: ParameterTier.STANDARD,
-        //     parameterName: "cognito-endpoint",
-        //     stringValue: userPoolDomain.cloudFrontEndpoint
-        // })
+        new StringParameter(this, "cognitoEndpointParam", {
+            description: "Cognito Endpoint",
+            dataType: ParameterDataType.TEXT,
+            tier: ParameterTier.STANDARD,
+            parameterName: "cognito-endpoint",
+            stringValue: userPoolDomain.cloudFrontEndpoint
+        })
 
         new StringParameter(this, "userPoolIdParam", {
             description: "Cognito User Pool ID",
@@ -260,7 +260,8 @@ export class CloudFrontStack extends Stack {
         cfDist.node.addDependency(this.authLambda)
 
         // output CloudFront Distribution name
-        new CfnOutput(this, "CloudFront-Distribution-Name", { value: cfDist.distributionDomainName })
+        new CfnOutput(this, "CloudFront-Distribution-Id", { value: cfDist.distributionId })
+        new CfnOutput(this, "CloudFront-Distribution-Domain-Name", { value: cfDist.distributionDomainName })
 
         new StringParameter(this, "domainNameParam", {
             description: "Domain Name",
