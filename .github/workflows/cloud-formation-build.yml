@@ -89,8 +89,11 @@ jobs:
           aws --region us-east-1 cloudformation deploy
           --template-file remote-aws/cf-templates/InstructionsCloudFrontStack.template.json
           --stack-name InstructionsCloudFrontStack
-          --parameter-overrides publicUniqueId=${{ secrets.FYP_PUBLIC_UNIQUE_ID }}
+          --parameter-overrides uniqueId=${{ secrets.FYP_UNIQUE_ID }}
+          publicUniqueId=${{ secrets.FYP_PUBLIC_UNIQUE_ID }}
           uniqueId=${{ secrets.FYP_UNIQUE_ID }}
+          domainName=${{ secrets.INSTRUCT_DOMAIN_NAME }}
+          certificateArn=${{ secrets.INSTRUCT_CERT_ARN }}
       - name: Copy Code to Public Code Buckets
         run: |
           aws s3 cp remote-aws/cf-templates/DashboardStack.template.json s3://${{ vars.FYP_PUBLIC_CODE_BUCKET }}/CloudFormation/
