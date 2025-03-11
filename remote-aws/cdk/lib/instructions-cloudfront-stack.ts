@@ -2,6 +2,7 @@ import { CfnParameter, Fn, Stack, StackProps } from "aws-cdk-lib";
 import { Certificate } from "aws-cdk-lib/aws-certificatemanager";
 import { AccessLevel, Distribution } from "aws-cdk-lib/aws-cloudfront";
 import { S3BucketOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
+import { ServicePrincipal } from "aws-cdk-lib/aws-iam";
 import { Bucket } from "aws-cdk-lib/aws-s3";
 import { Construct } from "constructs";
 
@@ -46,15 +47,18 @@ export class InstructionsCloudFrontStack extends Stack {
             bucketName: Fn.sub("instructions-web-bucket-${uniqueId}")
         })
         const origin = S3BucketOrigin.withOriginAccessControl(webBucket, {
-            originAccessLevels: [AccessLevel.READ, AccessLevel.LIST]
+            originAccessLevels: [AccessLevel.READ, AccessLevel.LIST],
         })
 
         const cfDistro = new Distribution(this, "InstructionsCFDistro", {
             certificate,
+            // domainNames: [Fn.ref("domainName"), Fn.sub("www.${domainName}")],
             defaultBehavior: {
                 origin,
             },
             defaultRootObject: "index.html"
         })
+
+        webBucket.grantRead(ServicePrincipal.fromStaticServicePrincipleName('sts.amazonaws.com'))
     }
 }
