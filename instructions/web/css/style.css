@@ -1,0 +1,16 @@
+.cmd {
+    font-family: 'Courier New', Courier, monospace;
+    background-color: #eee;
+    padding: 2px 2px;
+}
+
+.screenshot {
+    display: block;
+    width: 80%;
+    min-width: 300px;
+    max-width: 800px;
+}
+
+ol li {
+    padding: 6px 0;
+}
