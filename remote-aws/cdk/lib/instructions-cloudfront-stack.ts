@@ -44,7 +44,7 @@ export class InstructionsCloudFrontStack extends Stack {
         const certificate = Certificate.fromCertificateArn(this, "InstructionsCertificate", Fn.ref("certificateArn"))
 
         const webBucket = new Bucket(this, "InstructionsWebBucket", {
-            bucketName: Fn.sub("instructions-web-bucket-${uniqueId}")
+            bucketName: Fn.sub("instruct-web-bucket-${uniqueId}")
         })
         const origin = S3BucketOrigin.withOriginAccessControl(webBucket, {
             originAccessLevels: [AccessLevel.READ, AccessLevel.LIST],
@@ -52,7 +52,7 @@ export class InstructionsCloudFrontStack extends Stack {
 
         const cfDistro = new Distribution(this, "InstructionsCFDistro", {
             certificate,
-            // domainNames: [Fn.ref("domainName"), Fn.sub("www.${domainName}")],
+            domainNames: [Fn.ref("domainName"), Fn.sub("www.${domainName}")],
             defaultBehavior: {
                 origin,
             },
