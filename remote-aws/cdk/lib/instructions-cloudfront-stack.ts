@@ -49,6 +49,7 @@ export class InstructionsCloudFrontStack extends Stack {
         const origin = S3BucketOrigin.withOriginAccessControl(webBucket, {
             originAccessLevels: [AccessLevel.READ, AccessLevel.LIST],
         })
+        webBucket.grantRead(ServicePrincipal.fromStaticServicePrincipleName('sts.amazonaws.com'))
 
         const cfDistro = new Distribution(this, "InstructionsCFDistro", {
             certificate,
@@ -59,6 +60,5 @@ export class InstructionsCloudFrontStack extends Stack {
             defaultRootObject: "index.html"
         })
 
-        webBucket.grantRead(ServicePrincipal.fromStaticServicePrincipleName('sts.amazonaws.com'))
     }
 }

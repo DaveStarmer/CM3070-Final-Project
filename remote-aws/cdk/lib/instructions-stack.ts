@@ -21,15 +21,15 @@ export class InstructionsStack extends Stack {
       allowedPattern: "^[a-z0-9-]{1,32}$"
     })
 
-    /** name of private code bucket */
-    const codeBucketName = new CfnParameter(this, "codeBucketName", {
-      type: "String",
-      description: "Private Code Bucket Name",
-      allowedPattern: "^[a-z0-9\.-]{1,63}$"
-    }).toString()
+    // /** name of private code bucket */
+    // const codeBucketName = new CfnParameter(this, "codeBucketName", {
+    //   type: "String",
+    //   description: "Private Code Bucket Name",
+    //   allowedPattern: "^[a-z0-9\.-]{1,63}$"
+    // }).toString()
 
-    /** private code bucket construct */
-    const privateCodeBucket = Bucket.fromBucketName(this, "privateCodeBucket", Fn.ref(codeBucketName))
+    // /** private code bucket construct */
+    // const privateCodeBucket = Bucket.fromBucketName(this, "privateCodeBucket", Fn.ref(codeBucketName))
 
     /** Bucket for public code sharing  */
     const publicCodeBucket = new Bucket(this, "publicCodeBucket", {
