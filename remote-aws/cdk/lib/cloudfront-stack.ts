@@ -105,26 +105,26 @@ export class CloudFrontStack extends Stack {
         /** bucket for private web content - dashboard */
         this.privateWebBucket = new Bucket(this, "privateWebBucket", {
             bucketName: Fn.sub("vid-dash-private-web-${uniqueId}"),
-            cors: [{
-                allowedOrigins: ["https*"],
-                allowedMethods: [HttpMethods.GET, HttpMethods.POST],
-                allowedHeaders: ["*"],
-                exposedHeaders: ["Etag", "x-amx-meta-custom-header"]
-            }],
+            // cors: [{
+            //     allowedOrigins: ["https*"],
+            //     allowedMethods: [HttpMethods.GET, HttpMethods.POST],
+            //     allowedHeaders: ["*"],
+            //     exposedHeaders: ["Etag", "x-amx-meta-custom-header"]
+            // }],
             removalPolicy: RemovalPolicy.DESTROY
         })
 
-        /** bucket for public web content */
-        this.publicWebBucket = new Bucket(this, "publicWebBucket", {
-            bucketName: Fn.sub("vid-dash-public-web-${uniqueId}"),
-            cors: [{
-                allowedOrigins: ["http*"],
-                allowedMethods: [HttpMethods.GET],
-                allowedHeaders: ["*"],
-                exposedHeaders: ["Etag", "x-amx-meta-custom-header"]
-            }],
-            removalPolicy: RemovalPolicy.DESTROY
-        })
+        // /** bucket for public web content */
+        // this.publicWebBucket = new Bucket(this, "publicWebBucket", {
+        //     bucketName: Fn.sub("vid-dash-public-web-${uniqueId}"),
+        //     cors: [{
+        //         allowedOrigins: ["http*"],
+        //         allowedMethods: [HttpMethods.GET],
+        //         allowedHeaders: ["*"],
+        //         exposedHeaders: ["Etag", "x-amx-meta-custom-header"]
+        //     }],
+        //     removalPolicy: RemovalPolicy.DESTROY
+        // })
 
         // create User Pool
         this.createUserPool()
@@ -251,10 +251,10 @@ export class CloudFrontStack extends Stack {
             defaultRootObject: "index.html",
             defaultBehavior: {
                 origin,
-                edgeLambdas: [{
-                    eventType: LambdaEdgeEventType.VIEWER_REQUEST,
-                    functionVersion: this.authLambdaVersion,
-                }],
+                // edgeLambdas: [{
+                //     eventType: LambdaEdgeEventType.VIEWER_REQUEST,
+                //     functionVersion: this.authLambdaVersion,
+                // }],
                 viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
                 cachePolicy: CachePolicy.AMPLIFY
             },
