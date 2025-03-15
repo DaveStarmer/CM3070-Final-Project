@@ -49,7 +49,7 @@ export class InstructionsCloudFrontStack extends Stack {
         const origin = S3BucketOrigin.withOriginAccessControl(webBucket, {
             originAccessLevels: [AccessLevel.READ, AccessLevel.LIST],
         })
-        webBucket.grantRead(ServicePrincipal.fromStaticServicePrincipleName('sts.amazonaws.com'))
+        // webBucket.grantRead(ServicePrincipal.fromStaticServicePrincipleName('sts.amazonaws.com'))
 
         const cfDistro = new Distribution(this, "InstructionsCFDistro", {
             comment: "CloudFront Distribution for Instructions",
