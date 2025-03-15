@@ -109,6 +109,7 @@ jobs:
           --stack-name CloudFrontStack
           --capabilities CAPABILITY_NAMED_IAM
           --parameter-overrides uniqueId=${{ secrets.FYP_UNIQUE_ID }}
+          publicUniqueId=${{ secrets.FYP_PUBLIC_UNIQUE_ID }}
           codeBucketName=${{ vars.FYP_PUBLIC_CODE_BUCKET_CF }}
           codeBucketRegion="us-east-1"
           domainName=${{ vars.FYP_DOMAIN }}

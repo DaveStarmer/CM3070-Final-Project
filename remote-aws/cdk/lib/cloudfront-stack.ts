@@ -37,9 +37,15 @@ export class CloudFrontStack extends Stack {
         /** CloudFormation Parameter for Unique ID to add to resource names where necessary */
         const uniqueId = new CfnParameter(this, "uniqueId", {
             type: "String",
-            description: "Unique element for bucket naming",
+            description: "Unique element for resource naming",
             allowedPattern: "^[a-z0-9-]{1,32}$"
         }).toString()
+
+
+        new CfnParameter(this, "publicUniqueId", {
+            type: "String",
+            description: "Unique element for public resource naming",
+        })
 
         // name of code bucket
         new CfnParameter(this, "codeBucketName", {
@@ -57,10 +63,6 @@ export class CloudFrontStack extends Stack {
             default: props?.env?.region
         })
 
-        // new CfnParameter(this, "hostedZoneId", {
-        //     type: "String",
-        //     description: "ID of Route53 Hosted Zone"
-        // })
 
         /** code bucket construct */
         // this.codeBucket = Bucket.fromBucketName(this, "codeBucket", Fn.ref("codeBucketName"))
@@ -161,22 +163,22 @@ export class CloudFrontStack extends Stack {
 
         userPool.node.addDependency(this.certificate)
 
-        const userPoolDomain = new UserPoolDomain(this, "UserPoolDomain", {
-            userPool,
-            customDomain: {
-                domainName: Fn.sub("auth.${domainName}"),
-                certificate: this.certificate
-            }
-            // cognitoDomain: {
-            //     domainPrefix: 'ds-fyp',
-            // },
-        })
-        // userPool.addDomain("CamUserPoolDomain", {
+        // const userPoolDomain = new UserPoolDomain(this, "UserPoolDomain", {
+        //     userPool,
         //     customDomain: {
         //         domainName: Fn.sub("auth.${domainName}"),
         //         certificate: this.certificate
         //     }
+        //     // cognitoDomain: {
+        //     //     domainPrefix: 'ds-fyp',
+        //     // },
         // })
+        const userPoolDomain = userPool.addDomain("UserPoolDashDomain", {
+            customDomain: {
+                domainName: Fn.sub("auth.${domainName}"),
+                certificate: this.certificate
+            }
+        })
 
         // userPoolDomain.node.addDependency(userPool)
 
