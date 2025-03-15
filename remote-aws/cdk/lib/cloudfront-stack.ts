@@ -173,9 +173,11 @@ export class CloudFrontStack extends Stack {
         //     //     domainPrefix: 'ds-fyp',
         //     // },
         // })
-        const userPoolDomain = userPool.addDomain("UserPoolDashDomain", {
+
+        const userPoolDomain = userPool.addDomain("userPoolDashDomain", {
             customDomain: {
-                domainName: Fn.sub("auth.${domainName}"),
+                // domainName: Fn.sub("https://auth.${domainName}"),
+                domainName: Fn.sub("https://auth.ds-cam-fyp.click/"),
                 certificate: this.certificate
             }
             // cognitoDomain: {
@@ -185,7 +187,7 @@ export class CloudFrontStack extends Stack {
 
         // userPoolDomain.node.addDependency(userPool)
 
-        const userPoolClient = userPool.addClient('DashUserPoolClient', {
+        const userPoolClient = userPool.addClient('dashUserPoolClient', {
             generateSecret: true,
             oAuth: {
                 flows: {
@@ -250,7 +252,7 @@ export class CloudFrontStack extends Stack {
 
 
         /** CloudFront Distribution */
-        const cfDist = new Distribution(this, "CloudFrontDistribution", {
+        const cfDist = new Distribution(this, "cloudFrontDistribution", {
             enabled: true,
             comment: "CloudFront Distribution",
             defaultRootObject: "index.html",
@@ -271,8 +273,8 @@ export class CloudFrontStack extends Stack {
         cfDist.node.addDependency(this.authLambda)
 
         // output CloudFront Distribution name
-        new CfnOutput(this, "CloudFront-Distribution-Id", { value: cfDist.distributionId })
-        new CfnOutput(this, "CloudFront-Distribution-Domain-Name", { value: cfDist.distributionDomainName })
+        new CfnOutput(this, "cloudFrontDistributionId", { value: cfDist.distributionId })
+        new CfnOutput(this, "cloudFrontDistributionDomainName", { value: cfDist.distributionDomainName })
 
         new StringParameter(this, "domainNameParam", {
             description: "Domain Name",
