@@ -3,9 +3,7 @@ run-name: Uploading Web Content
 on:
   push:
     paths:
-      - remote-dashboard/private-web/** # run automatically on changes to web code
-      - remote-dashboard/public-web/** # run automatically on changes to web code
-      - remote-dashboard/web/**
+      - remote-dashboard/web/** # run automatically on changes to web code
 env:
   AWS_REGION: 'eu-west-2'
 jobs:
@@ -26,9 +24,7 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
       - name: Upload to Code Buckets
         run: |
-          aws s3 cp remote-dashboard/public-web/ s3://${{ secrets.PRIVATE_CODE_BUCKET }}/Public-Web --recursive
-          aws s3 cp remote-dashboard/private-web/ s3://${{ secrets.PRIVATE_CODE_BUCKET }}/Private-Web --recursive
-      - name: Upload Public web to web buckets
-        run: aws s3 cp remote-dashboard/public-web/ s3://${{ secrets.PUBLIC_WEB_BUCKET }} --recursive
+          aws s3 cp remote-dashboard/web/ s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/Dashboard-Web --recursive
+          aws s3 cp remote-dashboard/web/ s3://${{ vars.PUBLIC_CODE_BUCKET }}/Dashboard-Web --recursive
       - name: Upload Private web to web bucket
-        run: aws s3 cp remote-dashboard/web/ s3://${{ secrets.PRIVATE_WEB_BUCKET }} --recursive
+        run: aws s3 cp remote-dashboard/web/ s3://${{ secrets.FYP_DASHBOARD_BUCKET }} --recursive
