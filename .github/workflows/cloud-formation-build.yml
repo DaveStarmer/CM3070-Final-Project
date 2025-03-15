@@ -113,7 +113,6 @@ jobs:
           codeBucketRegion="us-east-1"
           domainName=${{ vars.FYP_DOMAIN }}
           certificateArn=${{ secrets.FYP_CERTIFICATE_ARN }}
-          hostedZoneId=${{ secrets.FYP_HOSTED_ZONE_ID}}
           userEmail="test.diy.cam.user@outlook.com"
       - name: Deploy Dashboard CloudFormation Template
         run: >

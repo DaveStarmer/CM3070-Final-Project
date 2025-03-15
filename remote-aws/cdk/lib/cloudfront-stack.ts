@@ -57,10 +57,10 @@ export class CloudFrontStack extends Stack {
             default: props?.env?.region
         })
 
-        new CfnParameter(this, "hostedZoneId", {
-            type: "String",
-            description: "ID of Route53 Hosted Zone"
-        })
+        // new CfnParameter(this, "hostedZoneId", {
+        //     type: "String",
+        //     description: "ID of Route53 Hosted Zone"
+        // })
 
         /** code bucket construct */
         // this.codeBucket = Bucket.fromBucketName(this, "codeBucket", Fn.ref("codeBucketName"))
@@ -155,7 +155,7 @@ export class CloudFrontStack extends Stack {
             },
             userInvitation: {
                 emailSubject: "Invite to Surveillance System",
-                emailBody: "Hello {username}. You have been invited to join the Surveillance System. Your temporary password is {####}"
+                emailBody: "Hello {username}. You have been invited to join the Surveillance System. Your temporary password is {####} - please use this to log in for the first time."
             }
         })
 
@@ -219,13 +219,13 @@ export class CloudFrontStack extends Stack {
             stringValue: userPool.userPoolId
         })
 
-        new StringParameter(this, "userPoolClientIdParam", {
-            description: "Cognito User Pool Client ID",
-            dataType: ParameterDataType.TEXT,
-            tier: ParameterTier.STANDARD,
-            parameterName: "user-pool-client-id",
-            stringValue: userPoolClient.userPoolClientId
-        })
+        // new StringParameter(this, "userPoolClientIdParam", {
+        //     description: "Cognito User Pool Client ID",
+        //     dataType: ParameterDataType.TEXT,
+        //     tier: ParameterTier.STANDARD,
+        //     parameterName: "user-pool-client-id",
+        //     stringValue: userPoolClient.userPoolClientId
+        // })
 
         this.userPool = userPool
         // this.userPoolDomain = userPoolDomain
