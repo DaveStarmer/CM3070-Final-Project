@@ -1,6 +1,6 @@
 import { CfnCustomResource, CfnOutput, CfnParameter, CustomResource, Duration, Fn, RemovalPolicy, SecretValue, Stack, StackProps } from "aws-cdk-lib"
 import { Certificate } from "aws-cdk-lib/aws-certificatemanager"
-import { CfnCloudFrontOriginAccessIdentity, Distribution, LambdaEdgeEventType, OriginAccessIdentity, S3OriginAccessControl, experimental, Signing, ViewerProtocolPolicy, CachePolicy } from "aws-cdk-lib/aws-cloudfront"
+import { CfnCloudFrontOriginAccessIdentity, Distribution, LambdaEdgeEventType, OriginAccessIdentity, S3OriginAccessControl, experimental, Signing, ViewerProtocolPolicy, CachePolicy, AccessLevel } from "aws-cdk-lib/aws-cloudfront"
 import { HttpOrigin, S3BucketOrigin, S3Origin } from "aws-cdk-lib/aws-cloudfront-origins"
 import { CfnUserPoolUser, LambdaVersion, UserPool, UserPoolClient, UserPoolDomain, VerificationEmailStyle } from "aws-cdk-lib/aws-cognito"
 import { CanonicalUserPrincipal, CompositePrincipal, Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal, User } from "aws-cdk-lib/aws-iam"
@@ -233,24 +233,24 @@ export class CloudFrontStack extends Stack {
     }
 
     createCloudFrontDistro() {
-        const originAccessControl = new S3OriginAccessControl(this, 'CameraOAC', {
-            originAccessControlName: "Camera CloudFront OAC",
-            description: "Camera CloudFront Origin Access Control",
-            signing: Signing.SIGV4_NO_OVERRIDE
-        })
+        // const originAccessControl = new S3OriginAccessControl(this, 'CameraOAC', {
+        //     originAccessControlName: "Camera CloudFront OAC",
+        //     description: "Camera CloudFront Origin Access Control",
+        //     signing: Signing.SIGV4_NO_OVERRIDE
+        // })
 
-        const s3Origin = S3BucketOrigin.withOriginAccessControl(this.privateWebBucket, {
-            originAccessControl,
+        const origin = S3BucketOrigin.withOriginAccessControl(this.privateWebBucket, {
+            originAccessLevels: [AccessLevel.READ, AccessLevel.LIST],
         })
 
 
         /** CloudFront Distribution */
         const cfDist = new Distribution(this, "CloudFrontDistribution", {
             enabled: true,
-            comment: "CloudFormation Distribution",
+            comment: "CloudFront Distribution",
             defaultRootObject: "index.html",
             defaultBehavior: {
-                origin: s3Origin,
+                origin,
                 edgeLambdas: [{
                     eventType: LambdaEdgeEventType.VIEWER_REQUEST,
                     functionVersion: this.authLambdaVersion,
@@ -258,7 +258,7 @@ export class CloudFrontStack extends Stack {
                 viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
                 cachePolicy: CachePolicy.AMPLIFY
             },
-            domainNames: [Fn.sub("www.${domainName}")],
+            domainNames: [Fn.sub("www.${domainName}"), Fn.ref("domainName")],
             certificate: this.certificate,
             enableLogging: false,
         })
