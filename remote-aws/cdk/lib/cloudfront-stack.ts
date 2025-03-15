@@ -176,8 +176,7 @@ export class CloudFrontStack extends Stack {
 
         const userPoolDomain = userPool.addDomain("userPoolDashDomain", {
             customDomain: {
-                // domainName: Fn.sub("https://auth.${domainName}"),
-                domainName: Fn.sub("https://auth.ds-cam-fyp.click/"),
+                domainName: Fn.sub("https://auth.${domainName}"),
                 certificate: this.certificate
             }
             // cognitoDomain: {
@@ -185,7 +184,7 @@ export class CloudFrontStack extends Stack {
             // }
         })
 
-        // userPoolDomain.node.addDependency(userPool)
+        userPoolDomain.node.addDependency(userPool)
 
         const userPoolClient = userPool.addClient('dashUserPoolClient', {
             generateSecret: true,
