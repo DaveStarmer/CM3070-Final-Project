@@ -326,7 +326,7 @@ export class CloudFrontStack extends Stack {
 
         this.authLambda = new experimental.EdgeFunction(this, "edgeAuthLambda", {
             ...props,
-            functionName: "edge-auth-lambda",
+            functionName: "edge-auth",
             runtime: Runtime.PYTHON_3_13,
             code: Code.fromBucketV2(this.codeBucket, "lambdas/auth-edge.zip"),
             timeout: Duration.seconds(5),
@@ -340,9 +340,9 @@ export class CloudFrontStack extends Stack {
     createEdgeLambdaRole() {
         const ssmGetParameterPolicy = new ManagedPolicy(
             this,
-            "ssm-get-parameter-policy",
+            "ssmGetParameterPolicy",
             {
-                managedPolicyName: `ssm-get-parameter-policy`,
+                managedPolicyName: "auth-lambda-get-ssm-parameter-policy",
                 statements: [
                     new PolicyStatement({
                         effect: Effect.ALLOW,
@@ -360,9 +360,9 @@ export class CloudFrontStack extends Stack {
 
         const cloudWatchLogsPolicy = new ManagedPolicy(
             this,
-            "cloudwatchLogsPolicy",
+            "cloudWatchLogsPolicy",
             {
-                managedPolicyName: `cloudwatch-logs-policy`,
+                managedPolicyName: "auth-lambda-cloudwatch-logs-policy",
                 statements: [
                     new PolicyStatement({
                         effect: Effect.ALLOW,
@@ -381,17 +381,16 @@ export class CloudFrontStack extends Stack {
 
         const edgeLambdaRole = new Role(
             this,
-            "edgeAuthLambdaRole",
+            "edgeAuthRole",
             {
-                roleName: `edge-auth-role`,
+                roleName: "edge-auth-role",
                 assumedBy: new CompositePrincipal(
                     new ServicePrincipal("lambda.amazonaws.com"),
                     new ServicePrincipal("edgelambda.amazonaws.com")
                 ),
                 managedPolicies: [
                     cloudWatchLogsPolicy,
-                    ssmGetParameterPolicy,
-                    // secretsManagerPolicy
+                    ssmGetParameterPolicy
                 ],
             }
         )
