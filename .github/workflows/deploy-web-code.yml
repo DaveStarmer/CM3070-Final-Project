@@ -3,7 +3,7 @@ run-name: Uploading Web Content
 on:
   push:
     paths:
-      - remote-dashboard/web/** # run automatically on changes to web code
+      - remote-dashboard/web/** # run automatically on changes to dashboard web code
 env:
   AWS_REGION: 'eu-west-2'
 jobs:
@@ -20,11 +20,11 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502
         with:
-          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE }}
+          role-to-assume: ${{ secrets.FYP_AWS_DEPLOY_ROLE }}
           aws-region: ${{ env.AWS_REGION }}
       - name: Upload to Code Buckets
         run: |
-          aws s3 cp remote-dashboard/web/ s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/Dashboard-Web --recursive
-          aws s3 cp remote-dashboard/web/ s3://${{ vars.PUBLIC_CODE_BUCKET }}/Dashboard-Web --recursive
+          aws s3 cp remote-dashboard/web/ s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/dashboard-web --recursive
+          aws s3 cp remote-dashboard/web/ s3://${{ vars.FYP_PUBLIC_CODE_BUCKET }}/dashboard-web --recursive
       - name: Upload Private web to web bucket
         run: aws s3 cp remote-dashboard/web/ s3://${{ secrets.FYP_DASHBOARD_BUCKET }} --recursive

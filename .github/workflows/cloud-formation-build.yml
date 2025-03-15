@@ -91,8 +91,7 @@ jobs:
         run: aws s3 cp remote-aws/cf-templates/ s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/cloudFormation/ --recursive
       - name: Copy Web Code to Private Code Bucket
         run: |
-          aws s3 cp remote-dashboard/public-web/ s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/public-web --recursive
-          aws s3 cp remote-dashboard/private-web/ s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/private-web --recursive
+          aws s3 cp remote-dashboard/web/ s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/dashboard-web --recursive
       - name: Copy Code to Public Code Buckets
         run: |
           aws s3 cp remote-aws/cf-templates/DashboardStack.template.json s3://${{ vars.FYP_PUBLIC_CODE_BUCKET }}/CloudFormation/
@@ -100,8 +99,7 @@ jobs:
           aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas s3://${{ vars.FYP_PUBLIC_CODE_BUCKET }}/lambdas/ --recursive
           aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas/copy-web-code.zip s3://${{ vars.FYP_PUBLIC_CODE_BUCKET_CF }}/lambdas/copy-web-code.zip
           aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas/auth-edge.zip s3://${{ vars.FYP_PUBLIC_CODE_BUCKET_CF }}/lambdas/auth-edge.zip
-          aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/private-web s3://${{ vars.FYP_PUBLIC_CODE_BUCKET_CF }}/private-web --recursive
-          aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/public-web s3://${{ vars.FYP_PUBLIC_CODE_BUCKET_CF }}/public-web --recursive
+          aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/dashboard-web s3://${{ vars.FYP_PUBLIC_CODE_BUCKET_CF }}/dashboard-web --recursive
       - name: Deploy CloudFront CloudFormation Template
         run: >
           aws --region us-east-1 cloudformation deploy
