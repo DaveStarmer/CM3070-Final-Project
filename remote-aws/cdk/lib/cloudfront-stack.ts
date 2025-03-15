@@ -253,10 +253,10 @@ export class CloudFrontStack extends Stack {
             defaultRootObject: "index.html",
             defaultBehavior: {
                 origin,
-                // edgeLambdas: [{
-                //     eventType: LambdaEdgeEventType.VIEWER_REQUEST,
-                //     functionVersion: this.authLambdaVersion,
-                // }],
+                edgeLambdas: [{
+                    eventType: LambdaEdgeEventType.VIEWER_REQUEST,
+                    functionVersion: this.authLambdaVersion,
+                }],
                 viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
                 cachePolicy: CachePolicy.AMPLIFY
             },
