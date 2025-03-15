@@ -175,13 +175,13 @@ export class CloudFrontStack extends Stack {
         // })
 
         const userPoolDomain = userPool.addDomain("userPoolDashDomain", {
-            customDomain: {
-                domainName: Fn.sub("auth.${domainName}"),
-                certificate: this.certificate
-            }
-            // cognitoDomain: {
-            //     domainPrefix: Fn.ref("publicUniqueId")
+            // customDomain: {
+            //     domainName: Fn.sub("auth.${domainName}"),
+            //     certificate: this.certificate
             // }
+            cognitoDomain: {
+                domainPrefix: Fn.ref("publicUniqueId")
+            }
         })
 
         userPoolDomain.node.addDependency(userPool)
