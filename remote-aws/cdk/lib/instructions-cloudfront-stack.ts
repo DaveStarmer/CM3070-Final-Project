@@ -57,7 +57,7 @@ export class InstructionsCloudFrontStack extends Stack {
             domainNames: [Fn.ref("domainName"), Fn.sub("www.${domainName}")],
             defaultBehavior: {
                 origin,
-                viewerProtocolPolicy: ViewerProtocolPolicy.ALLOW_ALL,
+                viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
                 cachePolicy: CachePolicy.CACHING_DISABLED
             },
             defaultRootObject: "index.html",
