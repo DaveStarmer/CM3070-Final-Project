@@ -1,6 +1,6 @@
 import { CfnOutput, CfnParameter, Fn, Stack, StackProps } from "aws-cdk-lib";
 import { Certificate } from "aws-cdk-lib/aws-certificatemanager";
-import { AccessLevel, Distribution, ViewerProtocolPolicy } from "aws-cdk-lib/aws-cloudfront";
+import { AccessLevel, CachePolicy, Distribution, ViewerProtocolPolicy } from "aws-cdk-lib/aws-cloudfront";
 import { S3BucketOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
 import { ServicePrincipal } from "aws-cdk-lib/aws-iam";
 import { Bucket } from "aws-cdk-lib/aws-s3";
@@ -57,7 +57,8 @@ export class InstructionsCloudFrontStack extends Stack {
             domainNames: [Fn.ref("domainName"), Fn.sub("www.${domainName}")],
             defaultBehavior: {
                 origin,
-                viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+                viewerProtocolPolicy: ViewerProtocolPolicy.ALLOW_ALL,
+                cachePolicy: CachePolicy.CACHING_DISABLED
             },
             defaultRootObject: "index.html",
         })
