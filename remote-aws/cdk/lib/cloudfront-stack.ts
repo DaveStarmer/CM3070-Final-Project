@@ -178,7 +178,7 @@ export class CloudFrontStack extends Stack {
         //     }
         // })
 
-        // userPoolDomain.node.addDependency(userPoolClient)
+        // userPoolDomain.node.addDependency(userPool)
 
         const userPoolClient = userPool.addClient('DashUserPoolClient', {
             generateSecret: true,
