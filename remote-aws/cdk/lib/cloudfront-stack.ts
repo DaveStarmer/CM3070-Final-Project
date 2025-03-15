@@ -219,13 +219,13 @@ export class CloudFrontStack extends Stack {
             stringValue: userPool.userPoolId
         })
 
-        // new StringParameter(this, "userPoolClientIdParam", {
-        //     description: "Cognito User Pool Client ID",
-        //     dataType: ParameterDataType.TEXT,
-        //     tier: ParameterTier.STANDARD,
-        //     parameterName: "user-pool-client-id",
-        //     stringValue: userPoolClient.userPoolClientId
-        // })
+        new StringParameter(this, "userPoolClientIdParam", {
+            description: "Cognito User Pool Client ID",
+            dataType: ParameterDataType.TEXT,
+            tier: ParameterTier.STANDARD,
+            parameterName: "user-pool-client-id",
+            stringValue: userPoolClient.userPoolClientId
+        })
 
         this.userPool = userPool
         // this.userPoolDomain = userPoolDomain
