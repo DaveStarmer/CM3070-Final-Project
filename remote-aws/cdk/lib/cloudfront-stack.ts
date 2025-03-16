@@ -51,8 +51,8 @@ export class CloudFrontStack extends Stack {
         new CfnParameter(this, "codeBucketName", {
             type: "String",
             description: "Code bucket name",
-            allowedPattern: "^[a-z0-9\.-]{1,63}$",
-            default: "instruct-code-2560df37ccbefd6b43eeb50fdc8abe7f"
+            allowedPattern: "^[a-z0-9\.-]{1,64}$",
+            default: "instruct-cf-code-ec0c1faa4de3482c9bdc0081a3ec4"
         })
 
         // location of code bucket
