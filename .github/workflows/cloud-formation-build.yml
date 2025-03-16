@@ -18,12 +18,15 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
+      - name: Generate unique identifier for latest lambda
+        run: |
+          echo "LAMBDA_VERSION_IDENTIFIER=$(date '+%d%m%Y%H%M%S')" >> $GITHUB_ENV
       - name: Run cdk synth
         uses: youyo/aws-cdk-github-actions@v2
         with:
             cdk_subcommand: 'synth'
             working_dir: 'remote-aws/cdk'
-            cdk_args: '-q'
+            cdk_args: '-q -c lambdaSuffix=${{ env.LAMBDA_VERSION_IDENTIFIER }}'
         env:
             AWS_ACCESS_KEY_ID: "access_key"
             AWS_SECRET_ACCESS_KEY: "secret_access_key"
@@ -97,8 +100,8 @@ jobs:
           aws s3 cp remote-aws/cf-templates/DashboardStack.template.json s3://${{ vars.FYP_PUBLIC_CODE_BUCKET }}/CloudFormation/
           aws s3 cp remote-aws/cf-templates/CloudFrontStack.template.json s3://${{ vars.FYP_PUBLIC_CODE_BUCKET }}/cloudformation/
           aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas s3://${{ vars.FYP_PUBLIC_CODE_BUCKET }}/lambdas/ --recursive
-          aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas/copy-web-code.zip s3://${{ vars.FYP_PUBLIC_CODE_BUCKET_CF }}/lambdas/copy-web-code.zip
-          aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas/edge-auth.zip s3://${{ vars.FYP_PUBLIC_CODE_BUCKET_CF }}/lambdas/edge-auth.zip
+          aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas/copy-web-code.zip s3://${{ vars.FYP_PUBLIC_CODE_BUCKET_CF }}/lambdas/copy-web-code-${{ env.LAMBDA_VERSION_IDENTIFIER }}.zip
+          aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas/edge-auth.zip s3://${{ vars.FYP_PUBLIC_CODE_BUCKET_CF }}/lambdas/edge-auth-${{ env.LAMBDA_VERSION_IDENTIFIER }}.zip
           aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/dashboard-web s3://${{ vars.FYP_PUBLIC_CODE_BUCKET_CF }}/dashboard-web --recursive
       - name: Deploy CloudFront CloudFormation Template
         run: >
