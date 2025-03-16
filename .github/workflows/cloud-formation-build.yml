@@ -98,7 +98,7 @@ jobs:
           aws s3 cp remote-aws/cf-templates/CloudFrontStack.template.json s3://${{ vars.FYP_PUBLIC_CODE_BUCKET }}/cloudformation/
           aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas s3://${{ vars.FYP_PUBLIC_CODE_BUCKET }}/lambdas/ --recursive
           aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas/copy-web-code.zip s3://${{ vars.FYP_PUBLIC_CODE_BUCKET_CF }}/lambdas/copy-web-code.zip
-          aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas/auth-edge.zip s3://${{ vars.FYP_PUBLIC_CODE_BUCKET_CF }}/lambdas/auth-edge.zip
+          aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas/auth-edge.zip s3://${{ vars.FYP_PUBLIC_CODE_BUCKET_CF }}/lambdas/edge-auth.zip
           aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/dashboard-web s3://${{ vars.FYP_PUBLIC_CODE_BUCKET_CF }}/dashboard-web --recursive
       - name: Deploy CloudFront CloudFormation Template
         run: >

@@ -1,7 +1,7 @@
-"""Lambda Authorisation at Edge
-"""
+"""Lambda Authorisation at Edge"""
 
-import os
+import base64
+import requests
 from urllib.parse import quote_plus
 import logging
 import json
@@ -9,7 +9,6 @@ import json
 import boto3
 
 logger = logging.getLogger(__name__)
-logger.setLevel("DEBUG")  # set during development for full logging
 
 
 def handler_function(event: dict, _) -> dict:
@@ -47,6 +46,7 @@ def get_parameters() -> dict:
             "domain-name",
             "user-pool-id",
             "user-pool-client-id",
+            "user-pool-client-secret",
             "cognito-endpoint",
         ]
     )
@@ -54,6 +54,33 @@ def get_parameters() -> dict:
     logger.debug(response)
 
     return {param["Name"]: param["Value"] for param in response["Parameters"]}
+
+
+def code_to_jwt(param: dict, code: str):
+    client_id = param["user-pool-client-id"]
+    client_secret = param["user-pool-client-secret"]
+    user_pool = param("user-pool-id")
+
+    payload = {
+        "grant_type": "authorization_code",
+        "client_id": client_id,
+        "code": code,
+    }
+
+    # encode authorisation to include in header
+    b64_encoded_auth = base64.b64encode(f"{client_id}:{client_secret}".encode("ascii"))
+    encoded_auth = b64_encoded_auth.decode("ascii")
+    headers = {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Authorization": f"Basic {encoded_auth}",
+    }
+
+    user_pool_token_url = (
+        f"https://cognito-idp.us-east-1.amazonaws.com/{user_pool}/.well-known/jwks.json"
+    )
+    response = requests.post(user_pool_token_url, params=payload, headers=headers)
+
+    return response.json()
 
 
 def check_sign_in(request: dict) -> dict:
@@ -81,6 +108,15 @@ def check_sign_in(request: dict) -> dict:
     if "code" in queries:
         # already authenticated - return initial request
         logger.debug("Code found: %s", queries["code"])
+
+        # create a session cookie which is secure and expires in an hour
+        session_cookie = f"session-id={queries['code']};Max-Age=3600;Secure"
+        # due to the way Python deals with copying dictionaries, the most efficient approach
+        # is to edit the request variable. Edge Lambdas are limited to 5s execution time
+        if "Set-Cookie" in request["headers"]:
+            request["headers"]["Set-Cookie"].append(session_cookie)
+        else:
+            request["headers"]["Set-Cookie"] = [session_cookie]
         return request
 
     # get store parameters
@@ -147,6 +183,15 @@ def parse_cookies_from_header(headers: dict) -> dict:
 
 
 def create_signin_url(params: dict, request: dict) -> str:
+    """Create an appropriate sign-in URL
+
+    Args:
+        params (dict): parameters previously received from SSM Parameter Store
+        request (dict): request object
+
+    Returns:
+        str: URL for the correct Cognito Domain, with the original URL as part of the querystring
+    """
     logger.info("Creating sign in URL")
 
     # elements of original URL to encode
@@ -157,10 +202,14 @@ def create_signin_url(params: dict, request: dict) -> str:
     if querystring:
         original_url += f"?{querystring}"
 
-    # if request is already an authorisation request, return
+    # if the original host starts with ".auth" and has a redirect_url this is valid authentication
+    # request but if there is no redirect url, redirect to 'www'
     if host.startswith("auth."):
         logger.info("already an authorisation url")
-        return original_url
+        if "redirect_url" in querystring:
+            return original_url
+        else:
+            original_url = original_url.replace("auth.", "www.", 1)
 
     # encode the original request url to pass as query parameter in sign in request
     original_url_encoded = quote_plus(original_url.encode("utf-8"))

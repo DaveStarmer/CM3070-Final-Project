@@ -4,7 +4,7 @@ import { CfnCloudFrontOriginAccessIdentity, Distribution, LambdaEdgeEventType, O
 import { HttpOrigin, S3BucketOrigin, S3Origin } from "aws-cdk-lib/aws-cloudfront-origins"
 import { CfnUserPoolUser, LambdaVersion, UserPool, UserPoolClient, UserPoolDomain, VerificationEmailStyle } from "aws-cdk-lib/aws-cognito"
 import { CanonicalUserPrincipal, CompositePrincipal, Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal, User } from "aws-cdk-lib/aws-iam"
-import { Code, Function, IVersion, Runtime, Version } from "aws-cdk-lib/aws-lambda"
+import { ApplicationLogLevel, Code, Function, IVersion, LoggingFormat, Runtime, Version } from "aws-cdk-lib/aws-lambda"
 import { ARecord, HostedZone, RecordTarget } from "aws-cdk-lib/aws-route53"
 import { Bucket, EventType, HttpMethods } from "aws-cdk-lib/aws-s3"
 import { Construct } from "constructs"
@@ -233,6 +233,14 @@ export class CloudFrontStack extends Stack {
             stringValue: userPoolClient.userPoolClientId
         })
 
+        new StringParameter(this, "userPoolClientSecret", {
+            description: "Cognito User Pool Client Secret",
+            dataType: ParameterDataType.TEXT,
+            tier: ParameterTier.STANDARD,
+            parameterName: "user-pool-client-secret",
+            stringValue: userPoolClient.userPoolClientSecret.unsafeUnwrap()
+        })
+
         this.userPool = userPool
         // this.userPoolDomain = userPoolDomain
         this.userPoolClient = userPoolClient
@@ -328,10 +336,12 @@ export class CloudFrontStack extends Stack {
             ...props,
             functionName: "edge-auth",
             runtime: Runtime.PYTHON_3_13,
-            code: Code.fromBucketV2(this.codeBucket, "lambdas/auth-edge.zip"),
+            code: Code.fromBucketV2(this.codeBucket, "lambdas/edge-auth.zip"),
             timeout: Duration.seconds(5),
             handler: "handler.handler_function",
             role: lambdaRole,
+            applicationLogLevelV2: ApplicationLogLevel.DEBUG,
+            loggingFormat: LoggingFormat.JSON
         })
 
         this.authLambdaVersion = this.authLambda.currentVersion
