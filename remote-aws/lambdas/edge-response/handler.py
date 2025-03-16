@@ -16,15 +16,17 @@ def handler_function(event: dict, _) -> dict:
     Returns:
         dict: _description_
     """
+    logger.info("Handling request")
     response = event["Records"][0]["cf"]["response"]
     request = event["Records"][0]["cf"]["request"]
+    logger.debug(request)
 
     # create the set-cookie header if not present
     if "set-cookie" not in response["headers"]:
         response["headers"]["set-cookie"] = []
 
     headers = request["headers"]
-    queries = kvp_split(headers["querystring"].split("&"))
+    queries = kvp_split(request["querystring"].split("&"))
 
     if "code" not in queries:
         logger.info("no code issued")
@@ -33,9 +35,9 @@ def handler_function(event: dict, _) -> dict:
     cookie_value = f"session-id={queries['code']};Max-Age=3600;Secure"
     logger.debug("Cookie: %s", cookie_value)
 
-    # response["headers"]["set-cookie"].append(
-    #     {"key": "Set-Cookie", "value": cookie_value}
-    # )
+    response["headers"]["set-cookie"].append(
+        {"key": "Set-Cookie", "value": cookie_value}
+    )
 
     logger.debug(response)
 
