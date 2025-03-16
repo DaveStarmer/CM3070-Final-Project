@@ -15,7 +15,6 @@ import { Secret } from "aws-cdk-lib/aws-secretsmanager"
 import { ParameterDataType, ParameterTier, StringParameter } from "aws-cdk-lib/aws-ssm"
 // import { EdgeFunction } from "aws-cdk-lib/aws-cloudfront/lib/experimental"
 
-
 // orig version of cdk 2.173.4
 
 export class CloudFrontStack extends Stack {

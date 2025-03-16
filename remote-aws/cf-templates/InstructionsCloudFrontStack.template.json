@@ -1,0 +1,242 @@
+{
+ "Parameters": {
+  "uniqueId": {
+   "Type": "String",
+   "AllowedPattern": "^[a-z0-9-]{1,32}$",
+   "Description": "Unique element for bucket naming"
+  },
+  "publicUniqueId": {
+   "Type": "String",
+   "AllowedPattern": "^[a-z0-9-]{1,32}$",
+   "Description": "Unique element for bucket naming"
+  },
+  "domainName": {
+   "Type": "String",
+   "Description": "Domain name for instruction site"
+  },
+  "certificateArn": {
+   "Type": "String",
+   "Description": "ARN of certificte for domain"
+  },
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Resources": {
+  "publicCodeBucket7DECA10E": {
+   "Type": "AWS::S3::Bucket",
+   "Properties": {
+    "BucketName": {
+     "Fn::Sub": "instruct-cf-code-${publicUniqueId}"
+    }
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "InstructionsCloudFrontStack/publicCodeBucket/Resource"
+   }
+  },
+  "InstructionsWebBucket708EC107": {
+   "Type": "AWS::S3::Bucket",
+   "Properties": {
+    "BucketName": {
+     "Fn::Sub": "instruct-web-bucket-${uniqueId}"
+    }
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "InstructionsCloudFrontStack/InstructionsWebBucket/Resource"
+   }
+  },
+  "InstructionsWebBucketPolicy154D545D": {
+   "Type": "AWS::S3::BucketPolicy",
+   "Properties": {
+    "Bucket": {
+     "Ref": "InstructionsWebBucket708EC107"
+    },
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "s3:GetObject",
+        "s3:ListBucket"
+       ],
+       "Condition": {
+        "StringEquals": {
+         "AWS:SourceArn": {
+          "Fn::Join": [
+           "",
+           [
+            "arn:",
+            {
+             "Ref": "AWS::Partition"
+            },
+            ":cloudfront::",
+            {
+             "Ref": "AWS::AccountId"
+            },
+            ":distribution/",
+            {
+             "Ref": "InstructionsCFDistro4E36FD6A"
+            }
+           ]
+          ]
+         }
+        }
+       },
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "cloudfront.amazonaws.com"
+       },
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "InstructionsWebBucket708EC107",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "InstructionsWebBucket708EC107",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "InstructionsCloudFrontStack/InstructionsWebBucket/Policy/Resource"
+   }
+  },
+  "InstructionsCFDistroOrigin1S3OriginAccessControl2587EDA3": {
+   "Type": "AWS::CloudFront::OriginAccessControl",
+   "Properties": {
+    "OriginAccessControlConfig": {
+     "Name": "InstructionsCloudFrontStackIOrigin1S3OriginAccessControl5D36BD1E",
+     "OriginAccessControlOriginType": "s3",
+     "SigningBehavior": "always",
+     "SigningProtocol": "sigv4"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "InstructionsCloudFrontStack/InstructionsCFDistro/Origin1/S3OriginAccessControl/Resource"
+   }
+  },
+  "InstructionsCFDistro4E36FD6A": {
+   "Type": "AWS::CloudFront::Distribution",
+   "Properties": {
+    "DistributionConfig": {
+     "Aliases": [
+      {
+       "Ref": "domainName"
+      },
+      {
+       "Fn::Sub": "www.${domainName}"
+      }
+     ],
+     "Comment": "CloudFront Distribution for Instructions",
+     "DefaultCacheBehavior": {
+      "CachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
+      "Compress": true,
+      "TargetOriginId": "InstructionsCloudFrontStackInstructionsCFDistroOrigin1A7A9173E",
+      "ViewerProtocolPolicy": "redirect-to-https"
+     },
+     "DefaultRootObject": "index.html",
+     "Enabled": true,
+     "HttpVersion": "http2",
+     "IPV6Enabled": true,
+     "Origins": [
+      {
+       "DomainName": {
+        "Fn::GetAtt": [
+         "InstructionsWebBucket708EC107",
+         "RegionalDomainName"
+        ]
+       },
+       "Id": "InstructionsCloudFrontStackInstructionsCFDistroOrigin1A7A9173E",
+       "OriginAccessControlId": {
+        "Fn::GetAtt": [
+         "InstructionsCFDistroOrigin1S3OriginAccessControl2587EDA3",
+         "Id"
+        ]
+       },
+       "S3OriginConfig": {
+        "OriginAccessIdentity": ""
+       }
+      }
+     ],
+     "ViewerCertificate": {
+      "AcmCertificateArn": {
+       "Ref": "certificateArn"
+      },
+      "MinimumProtocolVersion": "TLSv1.2_2021",
+      "SslSupportMethod": "sni-only"
+     }
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "InstructionsCloudFrontStack/InstructionsCFDistro/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/3WPTQ6CMBCFz+K+VCkbt4p7CRzAlFLNQGnNzFRiSO9uEBPduHp/+RZPyXyv5G6jJ8pMN2QOWjk3rM0gyquvNOrRskWhJ7rMVMj5GM1geRk/bpUqODDPb73mJIwLsbti8CznExAjtJEheNEUZ4Qb+IMxlqgMnjG4hf9T/8IpidpSiGjsm4h8j5yED52VPW0fSsl8OdUTQIbRM4xW1qu+AMlHuW3xAAAA"
+   },
+   "Metadata": {
+    "aws:cdk:path": "InstructionsCloudFrontStack/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "CloudFormationDistribution": {
+   "Value": {
+    "Fn::GetAtt": [
+     "InstructionsCFDistro4E36FD6A",
+     "DomainName"
+    ]
+   }
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}
