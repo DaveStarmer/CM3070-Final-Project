@@ -249,7 +249,7 @@ export class CloudFrontStack extends Stack {
                     }
                 ],
                 viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-                cachePolicy: CachePolicy.AMPLIFY
+                cachePolicy: CachePolicy.CACHING_DISABLED
             },
             domainNames: [Fn.sub("www.${domainName}"), Fn.ref("domainName")],
             certificate: this.certificate,

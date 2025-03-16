@@ -25,13 +25,18 @@ def handler_function(event: dict, _) -> dict:
 
     headers = request["headers"]
     queries = kvp_split(headers["querystring"].split("&"))
+
     if "code" not in queries:
         logger.info("no code issued")
         return response
+
     cookie_value = f"session-id={queries['code']};Max-Age=3600;Secure"
+    logger.debug("Cookie: %s", cookie_value)
 
     response["headers"]["set-cookie"].append(
         {"key": "Set-Cookie", "value": cookie_value}
     )
+
+    logger.debug(response)
 
     return response
