@@ -135,7 +135,7 @@ export class CloudFrontStack extends Stack {
         // create CloudFront distro
         this.createCloudFrontDistro()
         // copy appropriate code to web buckets
-        this.copyCodeToWebBuckets()
+        // this.copyCodeToWebBuckets()
     }
 
     createUserPool() {
@@ -321,7 +321,7 @@ export class CloudFrontStack extends Stack {
             properties: {
                 sourceBucket: this.codeBucket.bucketName,
                 destinationBucket: this.privateWebBucket.bucketName,
-                keys: ["private-web"]
+                keys: ["web"]
             }
         })
         copyPrivateWebResources.node.addDependency(grantToCodeBucket)
