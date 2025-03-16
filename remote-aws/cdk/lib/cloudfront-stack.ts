@@ -1,5 +1,5 @@
 import { CfnCustomResource, CfnOutput, CfnParameter, CustomResource, Duration, Fn, RemovalPolicy, SecretValue, Stack, StackProps } from "aws-cdk-lib"
-import { Certificate } from "aws-cdk-lib/aws-certificatemanager"
+import { Certificate, ICertificate } from "aws-cdk-lib/aws-certificatemanager"
 import { CfnCloudFrontOriginAccessIdentity, Distribution, LambdaEdgeEventType, OriginAccessIdentity, S3OriginAccessControl, experimental, Signing, ViewerProtocolPolicy, CachePolicy, AccessLevel } from "aws-cdk-lib/aws-cloudfront"
 import { HttpOrigin, S3BucketOrigin, S3Origin } from "aws-cdk-lib/aws-cloudfront-origins"
 import { CfnUserPoolUser, LambdaVersion, UserPool, UserPoolClient, UserPoolDomain, VerificationEmailStyle } from "aws-cdk-lib/aws-cognito"
@@ -21,7 +21,7 @@ import { ParameterDataType, ParameterTier, StringParameter } from "aws-cdk-lib/a
 export class CloudFrontStack extends Stack {
     publicWebBucket: Bucket
     privateWebBucket: Bucket
-    certificate: any
+    certificate: ICertificate
     codeBucket: any
     authLambda: experimental.EdgeFunction
     authLambdaVersion: IVersion
