@@ -221,7 +221,6 @@ export class CloudFrontStack extends Stack {
             originAccessLevels: [AccessLevel.READ, AccessLevel.LIST],
         })
 
-
         /** CloudFront Distribution */
         const cfDist = new Distribution(this, "cloudFrontDistribution", {
             enabled: true,

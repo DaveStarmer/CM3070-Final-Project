@@ -34,9 +34,7 @@ def handler_function(event: dict, _) -> dict:
     cookie_value = f"session-id={queries['code']};Max-Age=3600;Secure"
     logger.debug("Cookie: %s", cookie_value)
 
-    response["headers"]["set-cookie"].append(
-        {"key": "Set-Cookie", "value": cookie_value}
-    )
+    response["headers"]["set-cookie"].append({"value": cookie_value})
 
     logger.debug(response)
 
