@@ -135,7 +135,7 @@ export class CloudFrontStack extends Stack {
         // create CloudFront distro
         this.createCloudFrontDistro()
         // copy appropriate code to web buckets
-        // this.copyCodeToWebBuckets()
+        this.copyCodeToWebBuckets()
     }
 
     createUserPool() {
@@ -332,7 +332,7 @@ export class CloudFrontStack extends Stack {
     createEdgeLambda(props?: StackProps) {
         const lambdaRole = this.createEdgeLambdaRole()
 
-        this.authLambda = new experimental.EdgeFunction(this, "edgeAuthLambda", {
+        this.authLambda = new experimental.EdgeFunction(this, "authLambda", {
             ...props,
             functionName: "edge-auth",
             runtime: Runtime.PYTHON_3_13,
