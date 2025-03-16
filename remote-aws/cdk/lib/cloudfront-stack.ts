@@ -220,12 +220,6 @@ export class CloudFrontStack extends Stack {
     }
 
     createCloudFrontDistro() {
-        // const originAccessControl = new S3OriginAccessControl(this, 'CameraOAC', {
-        //     originAccessControlName: "Camera CloudFront OAC",
-        //     description: "Camera CloudFront Origin Access Control",
-        //     signing: Signing.SIGV4_NO_OVERRIDE
-        // })
-
         const origin = S3BucketOrigin.withOriginAccessControl(this.privateWebBucket, {
             originAccessLevels: [AccessLevel.READ, AccessLevel.LIST],
         })
