@@ -354,6 +354,8 @@ export class CloudFrontStack extends Stack {
     createEdgeLambda(props?: StackProps) {
         const lambdaRole = this.createEdgeLambdaRole()
 
+        const currentDate = (new Date()).toISOString()
+
         this.authLambda = new experimental.EdgeFunction(this, "authLambda", {
             ...props,
             functionName: "edge-auth",
@@ -363,7 +365,8 @@ export class CloudFrontStack extends Stack {
             handler: "handler.handler_function",
             role: lambdaRole,
             applicationLogLevelV2: ApplicationLogLevel.DEBUG,
-            loggingFormat: LoggingFormat.JSON
+            loggingFormat: LoggingFormat.JSON,
+            description: `Authorisation Edge Lambda, date to ensure latest version ${currentDate}`
         })
 
         this.authLambdaVersion = this.authLambda.currentVersion
