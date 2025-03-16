@@ -31,7 +31,7 @@ def handler_function(event: dict, _) -> dict:
     cookie_value = f"session-id={queries['code']};Max-Age=3600;Secure"
 
     response["headers"]["set-cookie"].append(
-        {"key": "set-cookie", "value": cookie_value}
+        {"key": "Set-Cookie", "value": cookie_value}
     )
 
     return response
