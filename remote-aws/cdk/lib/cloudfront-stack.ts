@@ -247,6 +247,7 @@ export class CloudFrontStack extends Stack {
         })
 
         cfDist.node.addDependency(this.authLambda)
+        cfDist.node.addDependency(this.responseLambda)
 
         // output CloudFront Distribution name
         new CfnOutput(this, "cloudFrontDistributionId", { value: cfDist.distributionId })
@@ -322,7 +323,7 @@ export class CloudFrontStack extends Stack {
             description: "Response Edge Lambda"
         })
 
-        this.responseLambdaVersion = this.authLambda.currentVersion
+        this.responseLambdaVersion = this.responseLambda.currentVersion
     }
 
     createAuthEdgeLambdaRole() {
