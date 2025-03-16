@@ -23,6 +23,8 @@ export class CloudFrontStack extends Stack {
     codeBucket: IBucket
     authLambda: experimental.EdgeFunction
     authLambdaVersion: IVersion
+    responseLambda: experimental.EdgeFunction
+    responseLambdaVersion: IVersion
     lambdaSuffix: string
     userPool: UserPool
     userPoolClient: UserPoolClient
@@ -109,7 +111,9 @@ export class CloudFrontStack extends Stack {
         // create User Pool
         this.createUserPool()
         // create authorisation at edge lambda
-        this.createEdgeLambda(props)
+        this.createAuthEdgeLambda(props)
+        // create response edge lambda
+        this.createResponseEdgeLambda()
         // create CloudFront distro
         this.createCloudFrontDistro()
         // copy appropriate code to web buckets
@@ -234,10 +238,16 @@ export class CloudFrontStack extends Stack {
             defaultRootObject: "index.html",
             defaultBehavior: {
                 origin,
-                edgeLambdas: [{
-                    eventType: LambdaEdgeEventType.VIEWER_REQUEST,
-                    functionVersion: this.authLambdaVersion,
-                }],
+                edgeLambdas: [
+                    {
+                        eventType: LambdaEdgeEventType.VIEWER_REQUEST,
+                        functionVersion: this.authLambdaVersion,
+                    },
+                    {
+                        eventType: LambdaEdgeEventType.VIEWER_RESPONSE,
+                        functionVersion: this.responseLambdaVersion
+                    }
+                ],
                 viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
                 cachePolicy: CachePolicy.AMPLIFY
             },
@@ -286,10 +296,8 @@ export class CloudFrontStack extends Stack {
     }
 
     /** Deploy Edge Lambda */
-    createEdgeLambda(props?: StackProps) {
-        const lambdaRole = this.createEdgeLambdaRole()
-
-        const currentDate = (new Date()).toISOString()
+    createAuthEdgeLambda(props?: StackProps) {
+        const lambdaRole = this.createAuthEdgeLambdaRole()
 
         this.authLambda = new experimental.EdgeFunction(this, "authLambda", {
             ...props,
@@ -307,7 +315,27 @@ export class CloudFrontStack extends Stack {
         this.authLambdaVersion = this.authLambda.currentVersion
     }
 
-    createEdgeLambdaRole() {
+    /** Deploy Edge Lambda */
+    createResponseEdgeLambda(props?: StackProps) {
+        const lambdaRole = this.createResponseEdgeLambdaRole()
+
+        this.responseLambda = new experimental.EdgeFunction(this, "responseLambda", {
+            ...props,
+            functionName: "edge-response",
+            runtime: Runtime.PYTHON_3_13,
+            code: Code.fromBucketV2(this.codeBucket, `lambdas/edge-response-${this.lambdaSuffix}.zip`),
+            timeout: Duration.seconds(5),
+            handler: "handler.handler_function",
+            role: lambdaRole,
+            applicationLogLevelV2: ApplicationLogLevel.DEBUG,
+            loggingFormat: LoggingFormat.JSON,
+            description: "Response Edge Lambda"
+        })
+
+        this.responseLambdaVersion = this.authLambda.currentVersion
+    }
+
+    createAuthEdgeLambdaRole() {
         const ssmGetParameterPolicy = new ManagedPolicy(
             this,
             "ssmGetParameterPolicy",
@@ -330,7 +358,7 @@ export class CloudFrontStack extends Stack {
 
         const cloudWatchLogsPolicy = new ManagedPolicy(
             this,
-            "cloudWatchLogsPolicy",
+            "authCloudWatchLogsPolicy",
             {
                 managedPolicyName: "auth-lambda-cloudwatch-logs-policy",
                 statements: [
@@ -349,25 +377,6 @@ export class CloudFrontStack extends Stack {
             }
         )
 
-        const secretsManagerPolicy = new ManagedPolicy(
-            this,
-            "auth-lambda-secrets-manager-policy",
-            {
-                managedPolicyName: "auth-lambda-secrets-manager-policy",
-                statements: [
-                    new PolicyStatement({
-                        effect: Effect.ALLOW,
-                        actions: [
-                            "secretsmanager:GetSecretValue",
-                        ],
-                        resources: [
-                            "arn:aws:secretsmanager:*:*:secret:*"
-                        ]
-                    })
-                ]
-            }
-        )
-
         const edgeLambdaRole = new Role(
             this,
             "edgeAuthRole",
@@ -379,8 +388,47 @@ export class CloudFrontStack extends Stack {
                 ),
                 managedPolicies: [
                     cloudWatchLogsPolicy,
-                    ssmGetParameterPolicy,
-                    secretsManagerPolicy
+                    ssmGetParameterPolicy
+                ],
+            }
+        )
+
+        return edgeLambdaRole
+    }
+
+    createResponseEdgeLambdaRole() {
+        const cloudWatchLogsPolicy = new ManagedPolicy(
+            this,
+            "responseCloudWatchLogsPolicy",
+            {
+                managedPolicyName: "auth-lambda-cloudwatch-logs-policy",
+                statements: [
+                    new PolicyStatement({
+                        effect: Effect.ALLOW,
+                        actions: [
+                            "logs:CreateLogGroup",
+                            "logs:CreateLogStream",
+                            "logs:PutLogEvents"
+                        ],
+                        resources: [
+                            `arn:${this.partition}:logs:*:*:*`
+                        ]
+                    })
+                ]
+            }
+        )
+
+        const edgeLambdaRole = new Role(
+            this,
+            "edgeResponseRole",
+            {
+                roleName: "edge-response-role",
+                assumedBy: new CompositePrincipal(
+                    new ServicePrincipal("lambda.amazonaws.com"),
+                    new ServicePrincipal("edgelambda.amazonaws.com")
+                ),
+                managedPolicies: [
+                    cloudWatchLogsPolicy
                 ],
             }
         )

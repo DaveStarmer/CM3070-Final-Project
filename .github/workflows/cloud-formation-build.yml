@@ -102,6 +102,7 @@ jobs:
           aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas s3://${{ vars.FYP_PUBLIC_CODE_BUCKET }}/lambdas/ --recursive
           aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas/copy-web-code.zip s3://${{ vars.FYP_PUBLIC_CODE_BUCKET_CF }}/lambdas/copy-web-code-${{ env.LAMBDA_VERSION_IDENTIFIER }}.zip
           aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas/edge-auth.zip s3://${{ vars.FYP_PUBLIC_CODE_BUCKET_CF }}/lambdas/edge-auth-${{ env.LAMBDA_VERSION_IDENTIFIER }}.zip
+          aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas/edge-response.zip s3://${{ vars.FYP_PUBLIC_CODE_BUCKET_CF }}/lambdas/edge-response-${{ env.LAMBDA_VERSION_IDENTIFIER }}.zip
           aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/dashboard-web s3://${{ vars.FYP_PUBLIC_CODE_BUCKET_CF }}/dashboard-web --recursive
       - name: Deploy CloudFront CloudFormation Template
         run: >
