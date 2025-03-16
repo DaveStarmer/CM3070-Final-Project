@@ -340,7 +340,7 @@ export class CloudFrontStack extends Stack {
             this,
             "ssmGetParameterPolicy",
             {
-                managedPolicyName: "auth-lambda-get-ssm-parameter-policy",
+                managedPolicyName: "auth-lambda-get-parameter-policy",
                 statements: [
                     new PolicyStatement({
                         effect: Effect.ALLOW,
@@ -360,7 +360,7 @@ export class CloudFrontStack extends Stack {
             this,
             "authCloudWatchLogsPolicy",
             {
-                managedPolicyName: "auth-lambda-cloudwatch-logs-policy",
+                managedPolicyName: "auth-lambda-logs-policy",
                 statements: [
                     new PolicyStatement({
                         effect: Effect.ALLOW,
@@ -381,7 +381,7 @@ export class CloudFrontStack extends Stack {
             this,
             "edgeAuthRole",
             {
-                roleName: "edge-auth-role",
+                roleName: "edge-auth-lambda-role",
                 assumedBy: new CompositePrincipal(
                     new ServicePrincipal("lambda.amazonaws.com"),
                     new ServicePrincipal("edgelambda.amazonaws.com")
@@ -401,7 +401,7 @@ export class CloudFrontStack extends Stack {
             this,
             "responseCloudWatchLogsPolicy",
             {
-                managedPolicyName: "auth-lambda-cloudwatch-logs-policy",
+                managedPolicyName: "response-lambda-logs-policy",
                 statements: [
                     new PolicyStatement({
                         effect: Effect.ALLOW,
@@ -422,7 +422,7 @@ export class CloudFrontStack extends Stack {
             this,
             "edgeResponseRole",
             {
-                roleName: "edge-response-role",
+                roleName: "edge-response-lambda-role",
                 assumedBy: new CompositePrincipal(
                     new ServicePrincipal("lambda.amazonaws.com"),
                     new ServicePrincipal("edgelambda.amazonaws.com")
