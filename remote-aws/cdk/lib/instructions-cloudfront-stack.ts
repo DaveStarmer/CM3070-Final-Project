@@ -23,7 +23,7 @@ export class InstructionsCloudFrontStack extends Stack {
         })
 
         const cfCodeBucket = new Bucket(this, "publicCodeBucket", {
-            bucketName: Fn.sub("instruct-cf-code-${publicUniqueId}")
+            bucketName: Fn.sub("public-cf-code-${publicUniqueId}"),
         })
 
 
@@ -52,7 +52,7 @@ export class InstructionsCloudFrontStack extends Stack {
         // webBucket.grantRead(ServicePrincipal.fromStaticServicePrincipleName('sts.amazonaws.com'))
 
         const cfDistro = new Distribution(this, "InstructionsCFDistro", {
-            comment: "CloudFront Distribution for Instructions",
+            comment: "CloudFront Distribution for Instructions Website",
             certificate,
             domainNames: [Fn.ref("domainName"), Fn.sub("www.${domainName}")],
             defaultBehavior: {

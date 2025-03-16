@@ -68,7 +68,7 @@ export class CloudFrontStack extends Stack {
         // this.codeBucket = Bucket.fromBucketName(this, "codeBucket", Fn.ref("codeBucketName"))
         this.codeBucket = Bucket.fromBucketAttributes(this, "codeBucket", {
             bucketName: Fn.ref("codeBucketName"),
-            region: Fn.ref("codeBucketRegion")
+            region: "us-east-1"
         })
 
         /** Registered Domain Name */

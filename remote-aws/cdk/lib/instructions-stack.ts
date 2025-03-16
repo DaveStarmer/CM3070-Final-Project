@@ -17,7 +17,7 @@ export class InstructionsStack extends Stack {
 
     const publicUniqueId = new CfnParameter(this, "publicUniqueId", {
       type: "String",
-      description: "Unique element for bucket naming",
+      description: "Unique element for public bucket naming",
       allowedPattern: "^[a-z0-9-]{1,32}$"
     })
 
@@ -33,7 +33,7 @@ export class InstructionsStack extends Stack {
 
     /** Bucket for public code sharing  */
     const publicCodeBucket = new Bucket(this, "publicCodeBucket", {
-      bucketName: Fn.sub("instruct-code-${publicUniqueId}")
+      bucketName: Fn.sub("public-cam-code-${publicUniqueId}")
     })
 
   }
