@@ -1,4 +1,4 @@
-import { CfnCustomResource, CfnOutput, CfnParameter, CustomResource, Duration, Fn, RemovalPolicy, SecretValue, Stack, StackProps } from "aws-cdk-lib"
+import { CfnCustomResource, CfnElement, CfnOutput, CfnParameter, CustomResource, Duration, Fn, Names, RemovalPolicy, SecretValue, Stack, StackProps } from "aws-cdk-lib"
 import { Certificate, ICertificate } from "aws-cdk-lib/aws-certificatemanager"
 import { CfnCloudFrontOriginAccessIdentity, Distribution, LambdaEdgeEventType, OriginAccessIdentity, S3OriginAccessControl, experimental, Signing, ViewerProtocolPolicy, CachePolicy, AccessLevel } from "aws-cdk-lib/aws-cloudfront"
 import { HttpOrigin, S3BucketOrigin, S3Origin } from "aws-cdk-lib/aws-cloudfront-origins"
@@ -64,11 +64,11 @@ export class CloudFrontStack extends Stack {
 
 
         /** code bucket construct */
-        // this.codeBucket = Bucket.fromBucketName(this, "codeBucket", Fn.ref("codeBucketName"))
-        this.codeBucket = Bucket.fromBucketAttributes(this, "codeBucket", {
-            bucketName: Fn.ref("codeBucketName"),
-            region: "us-east-1"
-        })
+        this.codeBucket = Bucket.fromBucketName(this, "codeBucket", Fn.ref("codeBucketName"))
+        // this.codeBucket = Bucket.fromBucketAttributes(this, "codeBucket", {
+        //     bucketName: Fn.ref("codeBucketName"),
+        //     region: "us-east-1"
+        // })
 
         /** Registered Domain Name */
         const domainName = new CfnParameter(this, "domainName", {
@@ -183,7 +183,7 @@ export class CloudFrontStack extends Stack {
             // }
         })
 
-        userPoolDomain.node.addDependency(userPool)
+        // userPoolDomain.node.addDependency(userPool)
 
         const userPoolClient = userPool.addClient('dashUserPoolClient', {
             generateSecret: true,
@@ -232,13 +232,36 @@ export class CloudFrontStack extends Stack {
             stringValue: userPoolClient.userPoolClientId
         })
 
-        new StringParameter(this, "userPoolClientSecret", {
+
+        const upClientOutput = new StringParameter(this, "userPoolClientSecret", {
             description: "Cognito User Pool Client Secret",
             dataType: ParameterDataType.TEXT,
             tier: ParameterTier.STANDARD,
             parameterName: "user-pool-client-secret",
-            stringValue: userPoolClient.userPoolClientSecret.unsafeUnwrap()
+            stringValue: Fn.getAtt(
+                // getting logical id from https://stackoverflow.com/a/67196352
+                this.resolve((userPoolClient.node.defaultChild as CfnElement).logicalId),
+                "ClientSecret"
+            ).toString()
+            // stringValue: userPoolClient.userPoolClientSecret.unsafeUnwrap()
         })
+        upClientOutput.node.addDependency(userPoolClient)
+
+        // const currentEpoch = (new Date()).getTime()
+        // const userPoolClientSecretName = `user-pool-secret-${currentEpoch}`
+
+        // new StringParameter(this, "userPoolClientSecretName", {
+        //     description: "Name of User Pool Client Secret",
+        //     dataType: ParameterDataType.TEXT,
+        //     tier: ParameterTier.STANDARD,
+        //     parameterName: "user-pool-client-secret-name",
+        //     stringValue: userPoolClientSecretName
+        // })
+
+        // new Secret(this, "userPoolClientSecret", {
+        //     secretName: userPoolClientSecretName,
+        //     secretStringValue: userPoolClient.userPoolClientSecret
+        // })
 
         this.userPool = userPool
         // this.userPoolDomain = userPoolDomain
@@ -388,6 +411,25 @@ export class CloudFrontStack extends Stack {
             }
         )
 
+        const secretsManagerPolicy = new ManagedPolicy(
+            this,
+            "auth-lambda-secrets-manager-policy",
+            {
+                managedPolicyName: "auth-lambda-secrets-manager-policy",
+                statements: [
+                    new PolicyStatement({
+                        effect: Effect.ALLOW,
+                        actions: [
+                            "secretsmanager:GetSecretValue",
+                        ],
+                        resources: [
+                            "arn:aws:secretsmanager:*:*:secret:*"
+                        ]
+                    })
+                ]
+            }
+        )
+
         const edgeLambdaRole = new Role(
             this,
             "edgeAuthRole",
@@ -399,7 +441,8 @@ export class CloudFrontStack extends Stack {
                 ),
                 managedPolicies: [
                     cloudWatchLogsPolicy,
-                    ssmGetParameterPolicy
+                    ssmGetParameterPolicy,
+                    secretsManagerPolicy
                 ],
             }
         )
