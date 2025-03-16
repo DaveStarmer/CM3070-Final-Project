@@ -30,8 +30,8 @@ def handler_function(event: dict, _) -> dict:
         logger.info("no code issued")
         return response
 
-    # cookie_value = f"session-id={queries['code']};Max-Age=3600;Secure"
-    # logger.debug("Cookie: %s", cookie_value)
+    cookie_value = f"session-id={queries['code']};Max-Age=3600;Secure"
+    logger.debug("Cookie: %s", cookie_value)
 
     # response["headers"]["set-cookie"].append(
     #     {"key": "Set-Cookie", "value": cookie_value}
