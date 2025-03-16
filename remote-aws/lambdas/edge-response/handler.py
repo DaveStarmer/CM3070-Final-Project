@@ -25,7 +25,6 @@ def handler_function(event: dict, _) -> dict:
     if "set-cookie" not in response["headers"]:
         response["headers"]["set-cookie"] = []
 
-    headers = request["headers"]
     queries = kvp_split(request["querystring"].split("&"))
 
     if "code" not in queries:

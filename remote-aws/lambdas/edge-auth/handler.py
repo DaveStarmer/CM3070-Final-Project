@@ -110,17 +110,6 @@ def check_sign_in(request: dict) -> dict:
         # already authenticated - return initial request
         logger.debug("Code found: %s", queries["code"])
 
-        # # create a session cookie which is secure and expires in an hour
-        # session_cookie = {
-        #     "key": "Cookie",
-        #     "value": f"session-id={queries['code']};Max-Age=3600;Secure",
-        # }
-        # # due to the way Python deals with copying dictionaries, the most efficient approach
-        # # is to edit the request variable. Edge Lambdas are limited to 5s execution time
-        # if "Set-Cookie" in request["headers"]:
-        #     request["headers"]["Set-Cookie"].append(session_cookie)
-        # else:
-        #     request["headers"]["Set-Cookie"] = [session_cookie]
         return request
 
     # get store parameters
