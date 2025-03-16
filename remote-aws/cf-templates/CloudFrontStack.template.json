@@ -389,7 +389,7 @@
      "S3Bucket": {
       "Ref": "codeBucketName"
      },
-     "S3Key": "lambdas/edge-auth-20250316200843.zip"
+     "S3Key": "lambdas/edge-auth-20250316213416.zip"
     },
     "Description": "Authorisation Edge Lambda",
     "FunctionName": "edge-auth",
@@ -414,7 +414,7 @@
     "aws:cdk:path": "CloudFrontStack/authLambda/Fn/Resource"
    }
   },
-  "authLambdaFnCurrentVersion75C86FD9f92c072d95aab849ed4eb180fcd23106": {
+  "authLambdaFnCurrentVersion75C86FD944023bfe7f166134a7d375da94fcd6fe": {
    "Type": "AWS::Lambda::Version",
    "Properties": {
     "FunctionName": {
@@ -486,7 +486,7 @@
      "S3Bucket": {
       "Ref": "codeBucketName"
      },
-     "S3Key": "lambdas/edge-response-20250316200843.zip"
+     "S3Key": "lambdas/edge-response-20250316213416.zip"
     },
     "Description": "Response Edge Lambda",
     "FunctionName": "edge-response",
@@ -511,7 +511,7 @@
     "aws:cdk:path": "CloudFrontStack/responseLambda/Fn/Resource"
    }
   },
-  "responseLambdaFnCurrentVersion182D69686fcd4351b1bdc4b8ce3a666715de2994": {
+  "responseLambdaFnCurrentVersion182D69687de1807fccde09d17e97259973c7910a": {
    "Type": "AWS::Lambda::Version",
    "Properties": {
     "FunctionName": {
@@ -533,8 +533,10 @@
     }
    },
    "DependsOn": [
-    "authLambdaFnCurrentVersion75C86FD9f92c072d95aab849ed4eb180fcd23106",
-    "authLambdaFnCACD311C"
+    "authLambdaFnCurrentVersion75C86FD944023bfe7f166134a7d375da94fcd6fe",
+    "authLambdaFnCACD311C",
+    "responseLambdaFnCurrentVersion182D69687de1807fccde09d17e97259973c7910a",
+    "responseLambdaFn5E189E9A"
    ],
    "Metadata": {
     "aws:cdk:path": "CloudFrontStack/cloudFrontDistribution/Origin1/S3OriginAccessControl/Resource"
@@ -560,13 +562,13 @@
        {
         "EventType": "viewer-request",
         "LambdaFunctionARN": {
-         "Ref": "authLambdaFnCurrentVersion75C86FD9f92c072d95aab849ed4eb180fcd23106"
+         "Ref": "authLambdaFnCurrentVersion75C86FD944023bfe7f166134a7d375da94fcd6fe"
         }
        },
        {
         "EventType": "viewer-response",
         "LambdaFunctionARN": {
-         "Ref": "authLambdaFnCurrentVersion75C86FD9f92c072d95aab849ed4eb180fcd23106"
+         "Ref": "responseLambdaFnCurrentVersion182D69687de1807fccde09d17e97259973c7910a"
         }
        }
       ],
@@ -607,8 +609,10 @@
     }
    },
    "DependsOn": [
-    "authLambdaFnCurrentVersion75C86FD9f92c072d95aab849ed4eb180fcd23106",
-    "authLambdaFnCACD311C"
+    "authLambdaFnCurrentVersion75C86FD944023bfe7f166134a7d375da94fcd6fe",
+    "authLambdaFnCACD311C",
+    "responseLambdaFnCurrentVersion182D69687de1807fccde09d17e97259973c7910a",
+    "responseLambdaFn5E189E9A"
    ],
    "Metadata": {
     "aws:cdk:path": "CloudFrontStack/cloudFrontDistribution/Resource"
@@ -748,7 +752,7 @@
      "S3Bucket": {
       "Ref": "codeBucketName"
      },
-     "S3Key": "lambdas/copy-web-code-20250316200843.zip"
+     "S3Key": "lambdas/copy-web-code-20250316213416.zip"
     },
     "Handler": "handler.handler_function",
     "Role": {
