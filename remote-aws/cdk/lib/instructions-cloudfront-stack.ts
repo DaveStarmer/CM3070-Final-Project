@@ -26,7 +26,6 @@ export class InstructionsCloudFrontStack extends Stack {
             bucketName: Fn.sub("public-cf-code-${publicUniqueId}"),
         })
 
-
         new CfnParameter(this, "domainName", {
             type: "String",
             description: "Domain name for instruction site"

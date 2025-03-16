@@ -17,11 +17,6 @@
   "certificateArn": {
    "Type": "String",
    "Description": "ARN of certificte for domain"
-  },
-  "BootstrapVersion": {
-   "Type": "AWS::SSM::Parameter::Value<String>",
-   "Default": "/cdk-bootstrap/hnb659fds/version",
-   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
   }
  },
  "Resources": {
@@ -29,7 +24,7 @@
    "Type": "AWS::S3::Bucket",
    "Properties": {
     "BucketName": {
-     "Fn::Sub": "instruct-cf-code-${publicUniqueId}"
+     "Fn::Sub": "public-cf-code-${publicUniqueId}"
     }
    },
    "UpdateReplacePolicy": "Retain",
@@ -148,7 +143,7 @@
        "Fn::Sub": "www.${domainName}"
       }
      ],
-     "Comment": "CloudFront Distribution for Instructions",
+     "Comment": "CloudFront Distribution for Instructions Website",
      "DefaultCacheBehavior": {
       "CachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
       "Compress": true,
@@ -191,15 +186,6 @@
    "Metadata": {
     "aws:cdk:path": "InstructionsCloudFrontStack/InstructionsCFDistro/Resource"
    }
-  },
-  "CDKMetadata": {
-   "Type": "AWS::CDK::Metadata",
-   "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/3WPTQ6CMBCFz+K+VCkbt4p7CRzAlFLNQGnNzFRiSO9uEBPduHp/+RZPyXyv5G6jJ8pMN2QOWjk3rM0gyquvNOrRskWhJ7rMVMj5GM1geRk/bpUqODDPb73mJIwLsbti8CznExAjtJEheNEUZ4Qb+IMxlqgMnjG4hf9T/8IpidpSiGjsm4h8j5yED52VPW0fSsl8OdUTQIbRM4xW1qu+AMlHuW3xAAAA"
-   },
-   "Metadata": {
-    "aws:cdk:path": "InstructionsCloudFrontStack/CDKMetadata/Default"
-   }
   }
  },
  "Outputs": {
@@ -212,31 +198,5 @@
    }
   }
  },
- "Rules": {
-  "CheckBootstrapVersion": {
-   "Assertions": [
-    {
-     "Assert": {
-      "Fn::Not": [
-       {
-        "Fn::Contains": [
-         [
-          "1",
-          "2",
-          "3",
-          "4",
-          "5"
-         ],
-         {
-          "Ref": "BootstrapVersion"
-         }
-        ]
-       }
-      ]
-     },
-     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
-    }
-   ]
-  }
- }
+ "Rules": {}
 }
