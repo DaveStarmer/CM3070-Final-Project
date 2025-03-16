@@ -305,7 +305,7 @@
    "Type": "AWS::IAM::ManagedPolicy",
    "Properties": {
     "Description": "",
-    "ManagedPolicyName": "auth-lambda-get-ssm-parameter-policy",
+    "ManagedPolicyName": "auth-lambda-get-parameter-policy",
     "Path": "/",
     "PolicyDocument": {
      "Statement": [
@@ -325,11 +325,11 @@
     "aws:cdk:path": "CloudFrontStack/ssmGetParameterPolicy/Resource"
    }
   },
-  "cloudWatchLogsPolicy62FA4890": {
+  "authCloudWatchLogsPolicy9F99BFB1": {
    "Type": "AWS::IAM::ManagedPolicy",
    "Properties": {
     "Description": "",
-    "ManagedPolicyName": "auth-lambda-cloudwatch-logs-policy",
+    "ManagedPolicyName": "auth-lambda-logs-policy",
     "Path": "/",
     "PolicyDocument": {
      "Statement": [
@@ -347,28 +347,7 @@
     }
    },
    "Metadata": {
-    "aws:cdk:path": "CloudFrontStack/cloudWatchLogsPolicy/Resource"
-   }
-  },
-  "authlambdasecretsmanagerpolicy45BB4C96": {
-   "Type": "AWS::IAM::ManagedPolicy",
-   "Properties": {
-    "Description": "",
-    "ManagedPolicyName": "auth-lambda-secrets-manager-policy",
-    "Path": "/",
-    "PolicyDocument": {
-     "Statement": [
-      {
-       "Action": "secretsmanager:GetSecretValue",
-       "Effect": "Allow",
-       "Resource": "arn:aws:secretsmanager:*:*:secret:*"
-      }
-     ],
-     "Version": "2012-10-17"
-    }
-   },
-   "Metadata": {
-    "aws:cdk:path": "CloudFrontStack/auth-lambda-secrets-manager-policy/Resource"
+    "aws:cdk:path": "CloudFrontStack/authCloudWatchLogsPolicy/Resource"
    }
   },
   "edgeAuthRole0905A893": {
@@ -391,16 +370,13 @@
     },
     "ManagedPolicyArns": [
      {
-      "Ref": "cloudWatchLogsPolicy62FA4890"
+      "Ref": "authCloudWatchLogsPolicy9F99BFB1"
      },
      {
       "Ref": "ssmGetParameterPolicy6E238F58"
-     },
-     {
-      "Ref": "authlambdasecretsmanagerpolicy45BB4C96"
      }
     ],
-    "RoleName": "edge-auth-role"
+    "RoleName": "edge-auth-lambda-role"
    },
    "Metadata": {
     "aws:cdk:path": "CloudFrontStack/edgeAuthRole/Resource"
@@ -413,8 +389,9 @@
      "S3Bucket": {
       "Ref": "codeBucketName"
      },
-     "S3Key": "lambdas/edge-auth.zip"
+     "S3Key": "lambdas/edge-auth-20250316194915.zip"
     },
+    "Description": "Authorisation Edge Lambda",
     "FunctionName": "edge-auth",
     "Handler": "handler.handler_function",
     "LoggingConfig": {
@@ -437,7 +414,7 @@
     "aws:cdk:path": "CloudFrontStack/authLambda/Fn/Resource"
    }
   },
-  "authLambdaFnCurrentVersion75C86FD9843eadd0a1fcea75bd4c35402698ce78": {
+  "authLambdaFnCurrentVersion75C86FD9b0ac630aa2c6fa326e5777d1e0e521e5": {
    "Type": "AWS::Lambda::Version",
    "Properties": {
     "FunctionName": {
@@ -446,6 +423,103 @@
    },
    "Metadata": {
     "aws:cdk:path": "CloudFrontStack/authLambda/Fn/CurrentVersion/Resource"
+   }
+  },
+  "responseCloudWatchLogsPolicy35ADBE4E": {
+   "Type": "AWS::IAM::ManagedPolicy",
+   "Properties": {
+    "Description": "",
+    "ManagedPolicyName": "response-lambda-logs-policy",
+    "Path": "/",
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+       ],
+       "Effect": "Allow",
+       "Resource": "arn:aws:logs:*:*:*"
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/responseCloudWatchLogsPolicy/Resource"
+   }
+  },
+  "edgeResponseRole2102F54B": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": [
+         "edgelambda.amazonaws.com",
+         "lambda.amazonaws.com"
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Ref": "responseCloudWatchLogsPolicy35ADBE4E"
+     }
+    ],
+    "RoleName": "edge-response-lambda-role"
+   },
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/edgeResponseRole/Resource"
+   }
+  },
+  "responseLambdaFn5E189E9A": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": {
+      "Ref": "codeBucketName"
+     },
+     "S3Key": "lambdas/edge-response-20250316194915.zip"
+    },
+    "Description": "Response Edge Lambda",
+    "FunctionName": "edge-response",
+    "Handler": "handler.handler_function",
+    "LoggingConfig": {
+     "ApplicationLogLevel": "DEBUG",
+     "LogFormat": "JSON"
+    },
+    "Role": {
+     "Fn::GetAtt": [
+      "edgeResponseRole2102F54B",
+      "Arn"
+     ]
+    },
+    "Runtime": "python3.13",
+    "Timeout": 5
+   },
+   "DependsOn": [
+    "edgeResponseRole2102F54B"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/responseLambda/Fn/Resource"
+   }
+  },
+  "responseLambdaFnCurrentVersion182D6968ba1d21ddb5963f64f98d27fc6ab004ee": {
+   "Type": "AWS::Lambda::Version",
+   "Properties": {
+    "FunctionName": {
+     "Ref": "responseLambdaFn5E189E9A"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/responseLambda/Fn/CurrentVersion/Resource"
    }
   },
   "cloudFrontDistributionOrigin1S3OriginAccessControl9F9A03CE": {
@@ -459,7 +533,7 @@
     }
    },
    "DependsOn": [
-    "authLambdaFnCurrentVersion75C86FD9843eadd0a1fcea75bd4c35402698ce78",
+    "authLambdaFnCurrentVersion75C86FD9b0ac630aa2c6fa326e5777d1e0e521e5",
     "authLambdaFnCACD311C"
    ],
    "Metadata": {
@@ -480,13 +554,19 @@
      ],
      "Comment": "CloudFront Distribution",
      "DefaultCacheBehavior": {
-      "CachePolicyId": "2e54312d-136d-493c-8eb9-b001f22f67d2",
+      "CachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
       "Compress": true,
       "LambdaFunctionAssociations": [
        {
         "EventType": "viewer-request",
         "LambdaFunctionARN": {
-         "Ref": "authLambdaFnCurrentVersion75C86FD9843eadd0a1fcea75bd4c35402698ce78"
+         "Ref": "authLambdaFnCurrentVersion75C86FD9b0ac630aa2c6fa326e5777d1e0e521e5"
+        }
+       },
+       {
+        "EventType": "viewer-response",
+        "LambdaFunctionARN": {
+         "Ref": "authLambdaFnCurrentVersion75C86FD9b0ac630aa2c6fa326e5777d1e0e521e5"
         }
        }
       ],
@@ -527,7 +607,7 @@
     }
    },
    "DependsOn": [
-    "authLambdaFnCurrentVersion75C86FD9843eadd0a1fcea75bd4c35402698ce78",
+    "authLambdaFnCurrentVersion75C86FD9b0ac630aa2c6fa326e5777d1e0e521e5",
     "authLambdaFnCACD311C"
    ],
    "Metadata": {
@@ -668,7 +748,7 @@
      "S3Bucket": {
       "Ref": "codeBucketName"
      },
-     "S3Key": "lambdas/copy-web-code.zip"
+     "S3Key": "lambdas/copy-web-code-20250316194915.zip"
     },
     "Handler": "handler.handler_function",
     "Role": {
@@ -704,7 +784,7 @@
      "Ref": "privateWebBucketDEC03662"
     },
     "keys": [
-     "web"
+     "dashboard-web"
     ]
    },
    "DependsOn": [
