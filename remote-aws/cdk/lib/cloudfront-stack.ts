@@ -343,7 +343,7 @@ export class CloudFrontStack extends Stack {
             properties: {
                 sourceBucket: this.codeBucket.bucketName,
                 destinationBucket: this.privateWebBucket.bucketName,
-                keys: ["web"]
+                keys: ["dashboard-web"]
             }
         })
         copyPrivateWebResources.node.addDependency(grantToCodeBucket)
