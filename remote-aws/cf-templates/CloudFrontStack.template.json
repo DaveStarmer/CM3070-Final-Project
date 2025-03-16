@@ -1,0 +1,826 @@
+{
+ "Parameters": {
+  "uniqueId": {
+   "Type": "String",
+   "AllowedPattern": "^[a-z0-9-]{1,32}$",
+   "Description": "Unique element for resource naming"
+  },
+  "publicUniqueId": {
+   "Type": "String",
+   "Description": "Unique element for public resource naming"
+  },
+  "codeBucketName": {
+   "Type": "String",
+   "Default": "instruct-cf-code-ec0c1faa4de3482c9bdc0081a3ec4",
+   "AllowedPattern": "^[a-z0-9.-]{1,64}$",
+   "Description": "Code bucket name"
+  },
+  "codeBucketRegion": {
+   "Type": "String",
+   "Default": "us-east-1",
+   "AllowedPattern": "^[a-z0-9-]{1,12}$",
+   "Description": "Code Bucket Region"
+  },
+  "domainName": {
+   "Type": "String",
+   "AllowedPattern": "[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)",
+   "Description": "Registered Domain Name"
+  },
+  "certificateArn": {
+   "Type": "String",
+   "AllowedPattern": "^[a-z0-9\\.\\/\\:-]{1,2048}$",
+   "Description": "ARN of certificate"
+  },
+  "userEmail": {
+   "Type": "String",
+   "Description": "Email of root user"
+  },
+  "userPassword": {
+   "Type": "String",
+   "Default": "Pa55word!",
+   "Description": "Email of root user"
+  }
+ },
+ "Resources": {
+  "privateWebBucketDEC03662": {
+   "Type": "AWS::S3::Bucket",
+   "Properties": {
+    "BucketName": {
+     "Fn::Sub": "vid-dash-private-web-${uniqueId}"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/privateWebBucket/Resource"
+   }
+  },
+  "privateWebBucketPolicy5939BD04": {
+   "Type": "AWS::S3::BucketPolicy",
+   "Properties": {
+    "Bucket": {
+     "Ref": "privateWebBucketDEC03662"
+    },
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "s3:GetObject",
+        "s3:ListBucket"
+       ],
+       "Condition": {
+        "StringEquals": {
+         "AWS:SourceArn": {
+          "Fn::Join": [
+           "",
+           [
+            "arn:",
+            {
+             "Ref": "AWS::Partition"
+            },
+            ":cloudfront::",
+            {
+             "Ref": "AWS::AccountId"
+            },
+            ":distribution/",
+            {
+             "Ref": "cloudFrontDistributionF6A12875"
+            }
+           ]
+          ]
+         }
+        }
+       },
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "cloudfront.amazonaws.com"
+       },
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "privateWebBucketDEC03662",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "privateWebBucketDEC03662",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/privateWebBucket/Policy/Resource"
+   }
+  },
+  "userPoolDC9497E0": {
+   "Type": "AWS::Cognito::UserPool",
+   "Properties": {
+    "AccountRecoverySetting": {
+     "RecoveryMechanisms": [
+      {
+       "Name": "verified_phone_number",
+       "Priority": 1
+      },
+      {
+       "Name": "verified_email",
+       "Priority": 2
+      }
+     ]
+    },
+    "AdminCreateUserConfig": {
+     "AllowAdminCreateUserOnly": true,
+     "InviteMessageTemplate": {
+      "EmailMessage": "Hello {username}. You have been invited to join the Surveillance System. Your temporary password is {####} - please use this to log in for the first time.",
+      "EmailSubject": "Invite to Surveillance System"
+     }
+    },
+    "AutoVerifiedAttributes": [
+     "email"
+    ],
+    "EmailVerificationMessage": "Hello {username}. Your account has been created. Your verification code is {####}",
+    "EmailVerificationSubject": "Verify your email for your new Private Camera System",
+    "SmsVerificationMessage": "The verification code to your new account is {####}",
+    "UserPoolName": "vid-user-pool",
+    "UsernameAttributes": [
+     "email"
+    ],
+    "VerificationMessageTemplate": {
+     "DefaultEmailOption": "CONFIRM_WITH_CODE",
+     "EmailMessage": "Hello {username}. Your account has been created. Your verification code is {####}",
+     "EmailSubject": "Verify your email for your new Private Camera System",
+     "SmsMessage": "The verification code to your new account is {####}"
+    }
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/userPool/Resource"
+   }
+  },
+  "userPooluserPoolDashDomain046B4BF1": {
+   "Type": "AWS::Cognito::UserPoolDomain",
+   "Properties": {
+    "CustomDomainConfig": {
+     "CertificateArn": {
+      "Ref": "certificateArn"
+     }
+    },
+    "Domain": {
+     "Fn::Sub": "auth.${domainName}"
+    },
+    "UserPoolId": {
+     "Ref": "userPoolDC9497E0"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/userPool/userPoolDashDomain/Resource"
+   }
+  },
+  "userPooldashUserPoolClient7B44A8F5": {
+   "Type": "AWS::Cognito::UserPoolClient",
+   "Properties": {
+    "AllowedOAuthFlows": [
+     "code"
+    ],
+    "AllowedOAuthFlowsUserPoolClient": true,
+    "AllowedOAuthScopes": [
+     "profile",
+     "phone",
+     "email",
+     "openid",
+     "aws.cognito.signin.user.admin"
+    ],
+    "CallbackURLs": [
+     {
+      "Fn::Sub": "https://www.${domainName}"
+     },
+     {
+      "Fn::Sub": "https://www.${domainName}/"
+     }
+    ],
+    "DefaultRedirectURI": {
+     "Fn::Sub": "https://www.${domainName}"
+    },
+    "GenerateSecret": true,
+    "PreventUserExistenceErrors": "LEGACY",
+    "SupportedIdentityProviders": [
+     "COGNITO"
+    ],
+    "UserPoolId": {
+     "Ref": "userPoolDC9497E0"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/userPool/dashUserPoolClient/Resource"
+   }
+  },
+  "cognitoEndpointParamC1A7C797": {
+   "Type": "AWS::SSM::Parameter",
+   "Properties": {
+    "DataType": "text",
+    "Description": "Cognito Endpoint",
+    "Name": "cognito-endpoint",
+    "Tier": "Standard",
+    "Type": "String",
+    "Value": {
+     "Fn::GetAtt": [
+      "userPooluserPoolDashDomain046B4BF1",
+      "CloudFrontDistribution"
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/cognitoEndpointParam/Resource"
+   }
+  },
+  "userPoolIdParam85CE1A9E": {
+   "Type": "AWS::SSM::Parameter",
+   "Properties": {
+    "DataType": "text",
+    "Description": "Cognito User Pool ID",
+    "Name": "user-pool-id",
+    "Tier": "Standard",
+    "Type": "String",
+    "Value": {
+     "Ref": "userPoolDC9497E0"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/userPoolIdParam/Resource"
+   }
+  },
+  "userPoolClientIdParam463E0F5C": {
+   "Type": "AWS::SSM::Parameter",
+   "Properties": {
+    "DataType": "text",
+    "Description": "Cognito User Pool Client ID",
+    "Name": "user-pool-client-id",
+    "Tier": "Standard",
+    "Type": "String",
+    "Value": {
+     "Ref": "userPooldashUserPoolClient7B44A8F5"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/userPoolClientIdParam/Resource"
+   }
+  },
+  "userPoolClientSecretA9163839": {
+   "Type": "AWS::SSM::Parameter",
+   "Properties": {
+    "DataType": "text",
+    "Description": "Cognito User Pool Client Secret",
+    "Name": "user-pool-client-secret",
+    "Tier": "Standard",
+    "Type": "String",
+    "Value": {
+     "Fn::GetAtt": [
+      "userPooldashUserPoolClient7B44A8F5",
+      "ClientSecret"
+     ]
+    }
+   },
+   "DependsOn": [
+    "userPooldashUserPoolClient7B44A8F5"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/userPoolClientSecret/Resource"
+   }
+  },
+  "ssmGetParameterPolicy6E238F58": {
+   "Type": "AWS::IAM::ManagedPolicy",
+   "Properties": {
+    "Description": "",
+    "ManagedPolicyName": "auth-lambda-get-parameter-policy",
+    "Path": "/",
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "ssm:GetParameter",
+        "ssm:GetParameters"
+       ],
+       "Effect": "Allow",
+       "Resource": "arn:aws:ssm:*:*:*"
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/ssmGetParameterPolicy/Resource"
+   }
+  },
+  "authCloudWatchLogsPolicy9F99BFB1": {
+   "Type": "AWS::IAM::ManagedPolicy",
+   "Properties": {
+    "Description": "",
+    "ManagedPolicyName": "auth-lambda-logs-policy",
+    "Path": "/",
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+       ],
+       "Effect": "Allow",
+       "Resource": "arn:aws:logs:*:*:*"
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/authCloudWatchLogsPolicy/Resource"
+   }
+  },
+  "edgeAuthRole0905A893": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": [
+         "edgelambda.amazonaws.com",
+         "lambda.amazonaws.com"
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Ref": "authCloudWatchLogsPolicy9F99BFB1"
+     },
+     {
+      "Ref": "ssmGetParameterPolicy6E238F58"
+     }
+    ],
+    "RoleName": "edge-auth-lambda-role"
+   },
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/edgeAuthRole/Resource"
+   }
+  },
+  "authLambdaFnCACD311C": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": {
+      "Ref": "codeBucketName"
+     },
+     "S3Key": "lambdas/edge-auth-20250316200411.zip"
+    },
+    "Description": "Authorisation Edge Lambda",
+    "FunctionName": "edge-auth",
+    "Handler": "handler.handler_function",
+    "LoggingConfig": {
+     "ApplicationLogLevel": "DEBUG",
+     "LogFormat": "JSON"
+    },
+    "Role": {
+     "Fn::GetAtt": [
+      "edgeAuthRole0905A893",
+      "Arn"
+     ]
+    },
+    "Runtime": "python3.13",
+    "Timeout": 5
+   },
+   "DependsOn": [
+    "edgeAuthRole0905A893"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/authLambda/Fn/Resource"
+   }
+  },
+  "authLambdaFnCurrentVersion75C86FD9b9b435e972437900c9c568479288361f": {
+   "Type": "AWS::Lambda::Version",
+   "Properties": {
+    "FunctionName": {
+     "Ref": "authLambdaFnCACD311C"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/authLambda/Fn/CurrentVersion/Resource"
+   }
+  },
+  "responseCloudWatchLogsPolicy35ADBE4E": {
+   "Type": "AWS::IAM::ManagedPolicy",
+   "Properties": {
+    "Description": "",
+    "ManagedPolicyName": "response-lambda-logs-policy",
+    "Path": "/",
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+       ],
+       "Effect": "Allow",
+       "Resource": "arn:aws:logs:*:*:*"
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/responseCloudWatchLogsPolicy/Resource"
+   }
+  },
+  "edgeResponseRole2102F54B": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": [
+         "edgelambda.amazonaws.com",
+         "lambda.amazonaws.com"
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Ref": "responseCloudWatchLogsPolicy35ADBE4E"
+     }
+    ],
+    "RoleName": "edge-response-lambda-role"
+   },
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/edgeResponseRole/Resource"
+   }
+  },
+  "responseLambdaFn5E189E9A": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": {
+      "Ref": "codeBucketName"
+     },
+     "S3Key": "lambdas/edge-response-20250316200411.zip"
+    },
+    "Description": "Response Edge Lambda",
+    "FunctionName": "edge-response",
+    "Handler": "handler.handler_function",
+    "LoggingConfig": {
+     "ApplicationLogLevel": "DEBUG",
+     "LogFormat": "JSON"
+    },
+    "Role": {
+     "Fn::GetAtt": [
+      "edgeResponseRole2102F54B",
+      "Arn"
+     ]
+    },
+    "Runtime": "python3.13",
+    "Timeout": 5
+   },
+   "DependsOn": [
+    "edgeResponseRole2102F54B"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/responseLambda/Fn/Resource"
+   }
+  },
+  "responseLambdaFnCurrentVersion182D6968241b0bc54bbad06e047d45a3ed02f17a": {
+   "Type": "AWS::Lambda::Version",
+   "Properties": {
+    "FunctionName": {
+     "Ref": "responseLambdaFn5E189E9A"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/responseLambda/Fn/CurrentVersion/Resource"
+   }
+  },
+  "cloudFrontDistributionOrigin1S3OriginAccessControl9F9A03CE": {
+   "Type": "AWS::CloudFront::OriginAccessControl",
+   "Properties": {
+    "OriginAccessControlConfig": {
+     "Name": "CloudFrontStackcloudFrontDisOrigin1S3OriginAccessControlBC0112C1",
+     "OriginAccessControlOriginType": "s3",
+     "SigningBehavior": "always",
+     "SigningProtocol": "sigv4"
+    }
+   },
+   "DependsOn": [
+    "authLambdaFnCurrentVersion75C86FD9b9b435e972437900c9c568479288361f",
+    "authLambdaFnCACD311C"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/cloudFrontDistribution/Origin1/S3OriginAccessControl/Resource"
+   }
+  },
+  "cloudFrontDistributionF6A12875": {
+   "Type": "AWS::CloudFront::Distribution",
+   "Properties": {
+    "DistributionConfig": {
+     "Aliases": [
+      {
+       "Fn::Sub": "www.${domainName}"
+      },
+      {
+       "Ref": "domainName"
+      }
+     ],
+     "Comment": "CloudFront Distribution",
+     "DefaultCacheBehavior": {
+      "CachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
+      "Compress": true,
+      "LambdaFunctionAssociations": [
+       {
+        "EventType": "viewer-request",
+        "LambdaFunctionARN": {
+         "Ref": "authLambdaFnCurrentVersion75C86FD9b9b435e972437900c9c568479288361f"
+        }
+       },
+       {
+        "EventType": "viewer-response",
+        "LambdaFunctionARN": {
+         "Ref": "authLambdaFnCurrentVersion75C86FD9b9b435e972437900c9c568479288361f"
+        }
+       }
+      ],
+      "TargetOriginId": "CloudFrontStackcloudFrontDistributionOrigin10E3CC188",
+      "ViewerProtocolPolicy": "redirect-to-https"
+     },
+     "DefaultRootObject": "index.html",
+     "Enabled": true,
+     "HttpVersion": "http2",
+     "IPV6Enabled": true,
+     "Origins": [
+      {
+       "DomainName": {
+        "Fn::GetAtt": [
+         "privateWebBucketDEC03662",
+         "RegionalDomainName"
+        ]
+       },
+       "Id": "CloudFrontStackcloudFrontDistributionOrigin10E3CC188",
+       "OriginAccessControlId": {
+        "Fn::GetAtt": [
+         "cloudFrontDistributionOrigin1S3OriginAccessControl9F9A03CE",
+         "Id"
+        ]
+       },
+       "S3OriginConfig": {
+        "OriginAccessIdentity": ""
+       }
+      }
+     ],
+     "ViewerCertificate": {
+      "AcmCertificateArn": {
+       "Ref": "certificateArn"
+      },
+      "MinimumProtocolVersion": "TLSv1.2_2021",
+      "SslSupportMethod": "sni-only"
+     }
+    }
+   },
+   "DependsOn": [
+    "authLambdaFnCurrentVersion75C86FD9b9b435e972437900c9c568479288361f",
+    "authLambdaFnCACD311C"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/cloudFrontDistribution/Resource"
+   }
+  },
+  "domainNameParam5AB6B878": {
+   "Type": "AWS::SSM::Parameter",
+   "Properties": {
+    "DataType": "text",
+    "Description": "Domain Name",
+    "Name": "domain-name",
+    "Tier": "Standard",
+    "Type": "String",
+    "Value": {
+     "Ref": "domainName"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/domainNameParam/Resource"
+   }
+  },
+  "copyBetweenBucketsServiceRole8D6854A0": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/copyBetweenBuckets/ServiceRole/Resource"
+   }
+  },
+  "copyBetweenBucketsServiceRoleDefaultPolicyF43EE16F": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "s3:GetBucket*",
+        "s3:GetObject*",
+        "s3:List*"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::Join": [
+          "",
+          [
+           "arn:aws:s3:::",
+           {
+            "Ref": "codeBucketName"
+           },
+           "/*"
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           "arn:aws:s3:::",
+           {
+            "Ref": "codeBucketName"
+           }
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "s3:Abort*",
+        "s3:PutObject",
+        "s3:PutObjectLegalHold",
+        "s3:PutObjectRetention",
+        "s3:PutObjectTagging",
+        "s3:PutObjectVersionTagging"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::Join": [
+         "",
+         [
+          {
+           "Fn::GetAtt": [
+            "privateWebBucketDEC03662",
+            "Arn"
+           ]
+          },
+          "/*"
+         ]
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "copyBetweenBucketsServiceRoleDefaultPolicyF43EE16F",
+    "Roles": [
+     {
+      "Ref": "copyBetweenBucketsServiceRole8D6854A0"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/copyBetweenBuckets/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "copyBetweenBuckets89CEF446": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": {
+      "Ref": "codeBucketName"
+     },
+     "S3Key": "lambdas/copy-web-code-20250316200411.zip"
+    },
+    "Handler": "handler.handler_function",
+    "Role": {
+     "Fn::GetAtt": [
+      "copyBetweenBucketsServiceRole8D6854A0",
+      "Arn"
+     ]
+    },
+    "Runtime": "python3.13",
+    "Timeout": 900
+   },
+   "DependsOn": [
+    "copyBetweenBucketsServiceRoleDefaultPolicyF43EE16F",
+    "copyBetweenBucketsServiceRole8D6854A0"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/copyBetweenBuckets/Resource"
+   }
+  },
+  "copyPrivateWebResources": {
+   "Type": "AWS::CloudFormation::CustomResource",
+   "Properties": {
+    "ServiceToken": {
+     "Fn::GetAtt": [
+      "copyBetweenBuckets89CEF446",
+      "Arn"
+     ]
+    },
+    "sourceBucket": {
+     "Ref": "codeBucketName"
+    },
+    "destinationBucket": {
+     "Ref": "privateWebBucketDEC03662"
+    },
+    "keys": [
+     "dashboard-web"
+    ]
+   },
+   "DependsOn": [
+    "copyBetweenBucketsServiceRoleDefaultPolicyF43EE16F"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/copyPrivateWebResources/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "UserPoolId": {
+   "Value": {
+    "Ref": "userPoolDC9497E0"
+   }
+  },
+  "UserPoolClientId": {
+   "Value": {
+    "Ref": "userPooldashUserPoolClient7B44A8F5"
+   }
+  },
+  "cloudFrontDistributionId": {
+   "Value": {
+    "Ref": "cloudFrontDistributionF6A12875"
+   }
+  },
+  "cloudFrontDistributionDomainName": {
+   "Value": {
+    "Fn::GetAtt": [
+     "cloudFrontDistributionF6A12875",
+     "DomainName"
+    ]
+   }
+  }
+ },
+ "Rules": {}
+}

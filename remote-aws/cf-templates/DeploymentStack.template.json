@@ -1,0 +1,26 @@
+{
+ "Parameters": {
+  "uniqueId": {
+   "Type": "String",
+   "AllowedPattern": "^[a-z0-9.-]{1,63}$",
+   "Description": "Private Code Bucket Name"
+  }
+ },
+ "Resources": {
+  "codeBucket9D8D5B72": {
+   "Type": "AWS::S3::Bucket",
+   "Properties": {
+    "BucketName": {
+     "Fn::Sub": "deployment-code-${uniqueId}"
+    }
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "DeploymentStack/codeBucket/Resource"
+   }
+  }
+ },
+ "Conditions": {},
+ "Rules": {}
+}

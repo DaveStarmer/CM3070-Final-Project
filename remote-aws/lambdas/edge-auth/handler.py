@@ -1,15 +1,15 @@
-"""Lambda Authorisation at Edge
-"""
+"""Lambda Authorisation at Edge"""
 
-import os
+import base64
 from urllib.parse import quote_plus
 import logging
 import json
-
+import requests
 import boto3
 
+from head_parse import kvp_split, parse_cookies_from_header
+
 logger = logging.getLogger(__name__)
-logger.setLevel("DEBUG")  # set during development for full logging
 
 
 def handler_function(event: dict, _) -> dict:
@@ -47,6 +47,7 @@ def get_parameters() -> dict:
             "domain-name",
             "user-pool-id",
             "user-pool-client-id",
+            "user-pool-client-secret",
             "cognito-endpoint",
         ]
     )
@@ -54,6 +55,33 @@ def get_parameters() -> dict:
     logger.debug(response)
 
     return {param["Name"]: param["Value"] for param in response["Parameters"]}
+
+
+def code_to_jwt(param: dict, code: str):
+    client_id = param["user-pool-client-id"]
+    client_secret = param["user-pool-client-secret"]
+    user_pool = param("user-pool-id")
+
+    payload = {
+        "grant_type": "authorization_code",
+        "client_id": client_id,
+        "code": code,
+    }
+
+    # encode authorisation to include in header
+    b64_encoded_auth = base64.b64encode(f"{client_id}:{client_secret}".encode("ascii"))
+    encoded_auth = b64_encoded_auth.decode("ascii")
+    headers = {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Authorization": f"Basic {encoded_auth}",
+    }
+
+    user_pool_token_url = (
+        f"https://cognito-idp.us-east-1.amazonaws.com/{user_pool}/.well-known/jwks.json"
+    )
+    response = requests.post(user_pool_token_url, params=payload, headers=headers)
+
+    return response.json()
 
 
 def check_sign_in(request: dict) -> dict:
@@ -81,6 +109,7 @@ def check_sign_in(request: dict) -> dict:
     if "code" in queries:
         # already authenticated - return initial request
         logger.debug("Code found: %s", queries["code"])
+
         return request
 
     # get store parameters
@@ -105,48 +134,16 @@ def check_sign_in(request: dict) -> dict:
     }
 
 
-def kvp_split(tokens: list, delimiter: str = "=") -> dict:
-    """Split list of key=value strings into dictionary of key:value
-
-    Args:
-        tokens (list): list of strings in key=value format
-        delimiter (str, optional): delimiter between key and value. Defaults to "=".
-
-    Returns:
-        dict: key-value pair dictionary
-    """
-    # nested comprehension to give cookies as a dictionary
-    # the inner comprehension returns a list of key-value lists
-    # the outer comprehension returns a dictionary with leading and trailing whitespace removed
-    split_tokens = {
-        kvp[0].strip(): kvp[1].strip()
-        for kvp in [token.split(delimiter) for token in tokens if token]
-    }
-    return split_tokens
-
-
-def parse_cookies_from_header(headers: dict) -> dict:
-    """Parse cookies from header
-
-    Args:
-        headers (dict): HTTP headers passed to lambda function
-
-    Returns:
-        dict: cookies as key-value pairs
-    """
-    if "cookie" in headers:
-        # get all cookies as a list from the string
-        cookies_split = headers["cookie"][0]["value"].split(";")
-
-        # get cookies as dictionary
-        cookies = kvp_split(cookies_split)
-        return cookies
-
-    # default return value (empty dict)
-    return {}
-
-
 def create_signin_url(params: dict, request: dict) -> str:
+    """Create an appropriate sign-in URL
+
+    Args:
+        params (dict): parameters previously received from SSM Parameter Store
+        request (dict): request object
+
+    Returns:
+        str: URL for the correct Cognito Domain, with the original URL as part of the querystring
+    """
     logger.info("Creating sign in URL")
 
     # elements of original URL to encode
@@ -157,10 +154,14 @@ def create_signin_url(params: dict, request: dict) -> str:
     if querystring:
         original_url += f"?{querystring}"
 
-    # if request is already an authorisation request, return
+    # if the original host starts with ".auth" and has a redirect_url this is valid authentication
+    # request but if there is no redirect url, redirect to 'www'
     if host.startswith("auth."):
         logger.info("already an authorisation url")
-        return original_url
+        if "redirect_url" in querystring:
+            return original_url
+        else:
+            original_url = original_url.replace("auth.", "www.", 1)
 
     # encode the original request url to pass as query parameter in sign in request
     original_url_encoded = quote_plus(original_url.encode("utf-8"))

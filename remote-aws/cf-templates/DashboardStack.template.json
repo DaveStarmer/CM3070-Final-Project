@@ -1,0 +1,32 @@
+{
+ "Parameters": {
+  "uniqueId": {
+   "Type": "String",
+   "AllowedPattern": "^[a-z0-9-]{1,32}$",
+   "Description": "Unique element for bucket naming"
+  },
+  "codeBucketName": {
+   "Type": "String",
+   "Default": "instruct-code-2560df37ccbefd6b43eeb50fdc8abe7f",
+   "AllowedPattern": "^[a-z0-9.-]{1,63}$",
+   "Description": "Private Code Bucket Name"
+  }
+ },
+ "Resources": {
+  "videoBucket07D1C31D": {
+   "Type": "AWS::S3::Bucket",
+   "Properties": {
+    "BucketName": {
+     "Fn::Sub": "vid-dash-video-${uniqueId}"
+    }
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "DashboardStack/videoBucket/Resource"
+   }
+  }
+ },
+ "Conditions": {},
+ "Rules": {}
+}

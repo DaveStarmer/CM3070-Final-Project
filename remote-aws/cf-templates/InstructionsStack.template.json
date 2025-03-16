@@ -1,0 +1,31 @@
+{
+ "Parameters": {
+  "uniqueId": {
+   "Type": "String",
+   "AllowedPattern": "^[a-z0-9-]{1,32}$",
+   "Description": "Unique element for bucket naming"
+  },
+  "publicUniqueId": {
+   "Type": "String",
+   "AllowedPattern": "^[a-z0-9-]{1,32}$",
+   "Description": "Unique element for public bucket naming"
+  }
+ },
+ "Resources": {
+  "publicCodeBucket7DECA10E": {
+   "Type": "AWS::S3::Bucket",
+   "Properties": {
+    "BucketName": {
+     "Fn::Sub": "public-cam-code-${publicUniqueId}"
+    }
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "InstructionsStack/publicCodeBucket/Resource"
+   }
+  }
+ },
+ "Conditions": {},
+ "Rules": {}
+}

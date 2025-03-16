@@ -1,0 +1,114 @@
+h1 {text-align: center;}
+
+/* Toggle */
+/* Toggle box */
+.toggle {
+    position: relative;
+    display: inline-block;
+    width: 38px;
+    height: 19px;
+}
+/* Checkbox */
+.toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+/* Moving 'knob' position */
+.toggleknob {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #999;
+    transition: 0.5s;
+    -webkit-transition: 0.5s;
+    border-radius: 19px;
+}
+/* Moving 'knob */
+.toggleknob:before {
+    position: absolute;
+    content: "";
+    height: 11px;
+    width: 11px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    border-radius: 50%;
+}
+/* Toggle is on */
+input:checked + .toggleknob {
+    background-color: blue;
+}
+/* Toggle is currently active inut */
+input:focus + .toggleknob {
+    box-shadow: 0 0 1px blue;
+}
+/* Toggle is on - move knob */
+input:checked + .toggleknob:before {
+    -webkit-transform: translateX(19px);
+    -ms-transform: translateX(19px);
+    transform: translateX(19px);
+}
+
+/* Menu */
+/* Menu Checkbox */
+#menu-open {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+/* Menu */
+/* display when checkbox checked, hide at other times */
+#menu-open ~ #nav-menu {
+    display: none;
+}
+#menu-open:checked ~ #nav-menu {
+    display: block;
+}
+/* outer menu style */
+#nav-menu {
+    position: fixed;
+    background-color: white;
+    border: 2px solid black;
+    list-style: none;
+    padding-left: 0;
+}
+/* individual items - links */
+#nav-menu a {
+    width: 150px;
+    height: 30px;
+    padding: 5px;
+    display: flex;
+    justify-content: baseline;
+    align-items: center;
+    text-decoration: none;
+}
+/* hover menu item */
+#nav-menu a:hover {
+    background-color: blue;
+    color: white;
+}
+nav {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+/* Camera Cards */
+.activation-card {
+    margin: 3px;
+    background-color: #999;
+    display: flex;
+    margin: 5px;
+    padding: 5px;
+}
+.activation-info {
+    padding-left: 10px;
+}
+
+.activation-date-time {
+    font-weight: bold;
+}
