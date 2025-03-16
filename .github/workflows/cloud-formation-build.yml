@@ -20,7 +20,7 @@ jobs:
           ref: ${{ github.head_ref }}
       - name: Generate unique identifier for latest lambda
         run: |
-          echo "LAMBDA_VERSION_IDENTIFIER=$(date '+%d%m%Y%H%M%S')" >> $GITHUB_ENV
+          echo "LAMBDA_VERSION_IDENTIFIER=$(date '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
       - name: Run cdk synth
         uses: youyo/aws-cdk-github-actions@v2
         with:

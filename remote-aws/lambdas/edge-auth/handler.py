@@ -1,12 +1,13 @@
 """Lambda Authorisation at Edge"""
 
 import base64
-import requests
 from urllib.parse import quote_plus
 import logging
 import json
-
+import requests
 import boto3
+
+from head_parse import kvp_split, parse_cookies_from_header
 
 logger = logging.getLogger(__name__)
 
@@ -110,7 +111,10 @@ def check_sign_in(request: dict) -> dict:
         logger.debug("Code found: %s", queries["code"])
 
         # create a session cookie which is secure and expires in an hour
-        session_cookie = f"session-id={queries['code']};Max-Age=3600;Secure"
+        session_cookie = {
+            "key": "Cookie",
+            "value": f"session-id={queries['code']};Max-Age=3600;Secure",
+        }
         # due to the way Python deals with copying dictionaries, the most efficient approach
         # is to edit the request variable. Edge Lambdas are limited to 5s execution time
         if "Set-Cookie" in request["headers"]:
@@ -139,47 +143,6 @@ def check_sign_in(request: dict) -> dict:
         },
         "status": "302",
     }
-
-
-def kvp_split(tokens: list, delimiter: str = "=") -> dict:
-    """Split list of key=value strings into dictionary of key:value
-
-    Args:
-        tokens (list): list of strings in key=value format
-        delimiter (str, optional): delimiter between key and value. Defaults to "=".
-
-    Returns:
-        dict: key-value pair dictionary
-    """
-    # nested comprehension to give cookies as a dictionary
-    # the inner comprehension returns a list of key-value lists
-    # the outer comprehension returns a dictionary with leading and trailing whitespace removed
-    split_tokens = {
-        kvp[0].strip(): kvp[1].strip()
-        for kvp in [token.split(delimiter) for token in tokens if token]
-    }
-    return split_tokens
-
-
-def parse_cookies_from_header(headers: dict) -> dict:
-    """Parse cookies from header
-
-    Args:
-        headers (dict): HTTP headers passed to lambda function
-
-    Returns:
-        dict: cookies as key-value pairs
-    """
-    if "cookie" in headers:
-        # get all cookies as a list from the string
-        cookies_split = headers["cookie"][0]["value"].split(";")
-
-        # get cookies as dictionary
-        cookies = kvp_split(cookies_split)
-        return cookies
-
-    # default return value (empty dict)
-    return {}
 
 
 def create_signin_url(params: dict, request: dict) -> str:
