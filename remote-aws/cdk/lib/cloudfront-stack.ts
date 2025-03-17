@@ -25,7 +25,6 @@ export class CloudFrontStack extends Stack {
     authLambdaVersion: IVersion
     responseLambda: experimental.EdgeFunction
     responseLambdaVersion: IVersion
-    lambdaSuffix: string
     userPool: UserPool
     userPoolClient: UserPoolClient
     userPoolInfoSecret: Secret
@@ -105,8 +104,6 @@ export class CloudFrontStack extends Stack {
             bucketName: Fn.sub("vid-dash-private-web-${uniqueId}"),
             removalPolicy: RemovalPolicy.DESTROY
         })
-
-        this.lambdaSuffix = this.node.tryGetContext("lambdaSuffix")
 
         // create User Pool
         this.createUserPool()
@@ -264,11 +261,12 @@ export class CloudFrontStack extends Stack {
 
     /** Code to web buckets */
     copyCodeToWebBuckets() {
+        const lambdaKey = this.node.tryGetContext("lambdas")["copy-web-code"]
         const copyLambda = new Function(this, "copyBetweenBuckets", {
             timeout: Duration.minutes(15),
             runtime: Runtime.PYTHON_3_13,
             handler: "handler.handler_function",
-            code: Code.fromBucketV2(this.codeBucket, `lambdas/copy-web-code-${this.lambdaSuffix}.zip`)
+            code: Code.fromBucketV2(this.codeBucket, `lambdas-cf/${lambdaKey}`)
         })
 
         const grantToCodeBucket = this.codeBucket.grantRead(copyLambda)
@@ -288,13 +286,14 @@ export class CloudFrontStack extends Stack {
 
     /** Deploy Edge Lambda */
     createAuthEdgeLambda(props?: StackProps) {
+        const lambdaKey = this.node.tryGetContext("lambdas")["edge-auth"]
         const lambdaRole = this.createAuthEdgeLambdaRole()
 
         this.authLambda = new experimental.EdgeFunction(this, "authLambda", {
             ...props,
             functionName: "edge-auth",
             runtime: Runtime.PYTHON_3_13,
-            code: Code.fromBucketV2(this.codeBucket, `lambdas/edge-auth-${this.lambdaSuffix}.zip`),
+            code: Code.fromBucketV2(this.codeBucket, `lambdas-cf/${lambdaKey}`),
             timeout: Duration.seconds(5),
             handler: "handler.handler_function",
             role: lambdaRole,
@@ -308,13 +307,14 @@ export class CloudFrontStack extends Stack {
 
     /** Deploy Edge Lambda */
     createResponseEdgeLambda(props?: StackProps) {
+        const lambdaKey = this.node.tryGetContext("lambdas")["edge-response"]
         const lambdaRole = this.createResponseEdgeLambdaRole()
 
         this.responseLambda = new experimental.EdgeFunction(this, "responseLambda", {
             ...props,
             functionName: "edge-response",
             runtime: Runtime.PYTHON_3_13,
-            code: Code.fromBucketV2(this.codeBucket, `lambdas/edge-response-${this.lambdaSuffix}.zip`),
+            code: Code.fromBucketV2(this.codeBucket, `lambdas-cf/${lambdaKey}`),
             timeout: Duration.seconds(5),
             handler: "handler.handler_function",
             role: lambdaRole,

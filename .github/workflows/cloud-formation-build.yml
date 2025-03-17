@@ -18,9 +18,14 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
-      - name: Generate unique identifier for latest lambda
+      - name: Build Lambda Deployment Zips
         run: |
-          echo "LAMBDA_VERSION_IDENTIFIER=$(date '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
+          for filename in remote-aws/lambdas/*; do
+            source build/build_lambda_zip.sh $filename ${{ secrets.FYP_PRIVATE_CODE_BUCKET }}
+            jq '.context.lambdas' remote-aws/cdk/cdk.json
+          done
+      - name: List Lambdas
+        run: jq '.context.lambdas' remote-aws/cdk/cdk.json
       - name: Run cdk synth
         uses: youyo/aws-cdk-github-actions@v2
         with:
@@ -85,12 +90,10 @@ jobs:
           uniqueId=${{ secrets.FYP_UNIQUE_ID }}
           domainName=${{ secrets.INSTRUCT_DOMAIN_NAME }}
           certificateArn=${{ secrets.INSTRUCT_CERT_ARN }}
-      - name: Build and Upload Lambda Deployment Zips
+      - name: Copy Lambda Zips to Private Code Bucket
         run: |
-          for filename in remote-aws/lambdas/*; do
-            source build/build_lambda_zip.sh $filename ${{ secrets.FYP_PRIVATE_CODE_BUCKET }}
-          done
-      - name: Copy Templates to Private Code Bucket
+          aws s3 cp remote-aws/lambdas s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas-cf --recursive --exclude "*" --include "*.zip" --exclude "*/*"
+      - name: Copy Templates to Private Code Bucket  
         run: aws s3 cp remote-aws/cf-templates/ s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/cloudFormation/ --recursive
       - name: Copy Web Code to Private Code Bucket
         run: |
@@ -99,11 +102,8 @@ jobs:
         run: |
           aws s3 cp remote-aws/cf-templates/DashboardStack.template.json s3://${{ vars.FYP_PUBLIC_CODE_BUCKET }}/CloudFormation/
           aws s3 cp remote-aws/cf-templates/CloudFrontStack.template.json s3://${{ vars.FYP_PUBLIC_CODE_BUCKET }}/cloudformation/
-          aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas s3://${{ vars.FYP_PUBLIC_CODE_BUCKET }}/lambdas/ --recursive
-          aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas/copy-web-code.zip s3://${{ vars.FYP_PUBLIC_CODE_BUCKET_CF }}/lambdas/copy-web-code-${{ env.LAMBDA_VERSION_IDENTIFIER }}.zip
-          aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas/edge-auth.zip s3://${{ vars.FYP_PUBLIC_CODE_BUCKET_CF }}/lambdas/edge-auth-${{ env.LAMBDA_VERSION_IDENTIFIER }}.zip
-          aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas/edge-response.zip s3://${{ vars.FYP_PUBLIC_CODE_BUCKET_CF }}/lambdas/edge-response-${{ env.LAMBDA_VERSION_IDENTIFIER }}.zip
-          aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/dashboard-web s3://${{ vars.FYP_PUBLIC_CODE_BUCKET_CF }}/dashboard-web --recursive
+          aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas-cf s3://${{ vars.FYP_PUBLIC_CODE_BUCKET }}/lambdas-cf/ --recursive
+          aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas-cf s3://${{ vars.FYP_PUBLIC_CODE_BUCKET_CF }}/lambdas-cf/ --recursive
       - name: Deploy CloudFront CloudFormation Template
         run: >
           aws --region us-east-1 cloudformation deploy
