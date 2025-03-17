@@ -267,7 +267,7 @@ export class CloudFrontStack extends Stack {
             timeout: Duration.minutes(15),
             runtime: Runtime.PYTHON_3_13,
             handler: "handler.handler_function",
-            code: Code.fromBucketV2(this.codeBucket, `lambdas/${lambdaKey}`)
+            code: Code.fromBucketV2(this.codeBucket, `lambdas-cf/${lambdaKey}`)
         })
 
         const grantToCodeBucket = this.codeBucket.grantRead(copyLambda)
@@ -294,7 +294,7 @@ export class CloudFrontStack extends Stack {
             ...props,
             functionName: "edge-auth",
             runtime: Runtime.PYTHON_3_13,
-            code: Code.fromBucketV2(this.codeBucket, `lambdas/${lambdaKey}`),
+            code: Code.fromBucketV2(this.codeBucket, `lambdas-cf/${lambdaKey}`),
             timeout: Duration.seconds(5),
             handler: "handler.handler_function",
             role: lambdaRole,
@@ -315,7 +315,7 @@ export class CloudFrontStack extends Stack {
             ...props,
             functionName: "edge-response",
             runtime: Runtime.PYTHON_3_13,
-            code: Code.fromBucketV2(this.codeBucket, `lambdas/${lambdaKey}`),
+            code: Code.fromBucketV2(this.codeBucket, `lambdas-cf/${lambdaKey}`),
             timeout: Duration.seconds(5),
             handler: "handler.handler_function",
             role: lambdaRole,
@@ -341,7 +341,7 @@ export class CloudFrontStack extends Stack {
                             "ssm:GetParameters"
                         ],
                         resources: [
-                            `arn: ${this.partition}: ssm:*:*:* `
+                            `arn:${this.partition}:ssm:*:*:*`
                         ]
                     })
                 ]
@@ -362,7 +362,7 @@ export class CloudFrontStack extends Stack {
                             "logs:PutLogEvents"
                         ],
                         resources: [
-                            `arn: ${this.partition}: logs:*:*:* `
+                            `arn:${this.partition}:logs:*:*:*`
                         ]
                     })
                 ]
@@ -403,7 +403,7 @@ export class CloudFrontStack extends Stack {
                             "logs:PutLogEvents"
                         ],
                         resources: [
-                            `arn: ${this.partition}: logs:*:*:* `
+                            `arn:${this.partition}:logs:*:*:*`
                         ]
                     })
                 ]

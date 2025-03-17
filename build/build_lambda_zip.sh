@@ -5,6 +5,7 @@ lambda_name=$(basename "$1")
 # directory=$(dirname "$1")
 
 # output information for debug
+echo =====
 echo $lambda_name
 echo $1
 
@@ -32,9 +33,11 @@ mv ../${lambda_name}.zip ../${hash_zip_filename}
 
 # return to original folder
 cd -
-
+pwd
 # write new zip file name into cdk.json
-jq -c '.context.lambda."'"$lambda_name"'" = "'"$hash_zip_filename"'"' remote-aws/cdk/cdk.json > tempcdk.json
+jq -c '.context.lambdas."'"$lambda_name"'" = "'"$hash_zip_filename"'"' remote-aws/cdk/cdk.json > tempcdk.json
+jq '.context.lambdas' tempcdk.json
 mv tempcdk.json remote-aws/cdk/cdk.json
+echo cdk.json updated
 
 echo $hash_zip_filename
