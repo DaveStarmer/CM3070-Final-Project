@@ -28,13 +28,13 @@ hash_zip_filename=${lambda_name}-${zip_hash}.zip
 mv ../${lambda_name}.zip ../${hash_zip_filename}
 
 # upload to appropriate s3 bucket
-aws s3 cp ../${hash_zip_filename} s3://$2/lambdas/
+# aws s3 cp ../${hash_zip_filename} s3://$2/lambdas/
 
 # return to original folder
 cd -
 
 # write new zip file name into cdk.json
-jq -c 'context.lambda."'"$lambda_name"'" = "'"$hash_zip_filename"'"' remote-aws/cdk/cdk.json > tempcdk.json
+jq -c '.context.lambda."'"$lambda_name"'" = "'"$hash_zip_filename"'"' remote-aws/cdk/cdk.json > tempcdk.json
 mv tempcdk.json remote-aws/cdk/cdk.json
 
 echo $hash_zip_filename
