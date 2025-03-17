@@ -22,10 +22,10 @@ fi
 zip -r ../${lambda_name}.zip * -x tests/*
 
 # create hash of file
-zip_hash=$(md5sum --binary ../${lambda_name}.zip | cut -d " " -f 1)
+folder_hash=$(grep -ar -e . . | md5sum | cut -d " " -f 1)
 
 # rename zip file with hash suffixed to file name
-hash_zip_filename=${lambda_name}-${zip_hash}.zip
+hash_zip_filename=${lambda_name}-${folder_hash}.zip
 mv ../${lambda_name}.zip ../${hash_zip_filename}
 
 # upload to appropriate s3 bucket
