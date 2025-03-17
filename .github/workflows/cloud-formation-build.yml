@@ -18,9 +18,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
-      - name: Generate unique identifier for latest lambda
+      - name: Test for jq
+        run: jq . remote-aws/cdk/cdk.json
+      - name: Build Lambda Deployment Zips
         run: |
-          echo "LAMBDA_VERSION_IDENTIFIER=$(date '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
+          for filename in remote-aws/lambdas/*; do
+            source build/build_lambda_zip.sh $filename ${{ secrets.FYP_PRIVATE_CODE_BUCKET }}
+          done
       - name: Run cdk synth
         uses: youyo/aws-cdk-github-actions@v2
         with:
@@ -85,11 +89,7 @@ jobs:
           uniqueId=${{ secrets.FYP_UNIQUE_ID }}
           domainName=${{ secrets.INSTRUCT_DOMAIN_NAME }}
           certificateArn=${{ secrets.INSTRUCT_CERT_ARN }}
-      - name: Build and Upload Lambda Deployment Zips
-        run: |
-          for filename in remote-aws/lambdas/*; do
-            source build/build_lambda_zip.sh $filename ${{ secrets.FYP_PRIVATE_CODE_BUCKET }}
-          done
+
       - name: Copy Templates to Private Code Bucket
         run: aws s3 cp remote-aws/cf-templates/ s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/cloudFormation/ --recursive
       - name: Copy Web Code to Private Code Bucket
