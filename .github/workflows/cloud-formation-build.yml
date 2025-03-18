@@ -123,5 +123,6 @@ jobs:
           --s3-bucket ${{ vars.FYP_PUBLIC_CODE_BUCKET }}
           --template-file remote-aws/cf-templates/DashboardStack.template.json
           --stack-name DashboardStack
+          --capabilities CAPABILITY_NAMED_IAM
           --parameter-overrides uniqueId=${{ secrets.FYP_UNIQUE_ID }}
           codeBucketName=${{ secrets.FYP_PRIVATE_CODE_BUCKET }}
