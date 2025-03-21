@@ -32,14 +32,14 @@ export class DashboardStack extends Stack {
 
     // Buckets
     /** video clip arrivals bucket */
-    // this.uploadBucket = new Bucket(this, "videoUpload", {
-    //   bucketName: Fn.sub("vid-dash-upload-${uniqueId}")
-    // })
+    this.uploadBucket = new Bucket(this, "videoUpload", {
+      bucketName: Fn.sub("vid-dash-upload-${uniqueId}")
+    })
 
-    // /** video clip storage bucket */
-    // this.videoBucket = new Bucket(this, "videoStorage", {
-    //   bucketName: Fn.sub("vid-dash-video-${uniqueId}")
-    // })
+    /** video clip storage bucket */
+    this.videoBucket = new Bucket(this, "videoStorage", {
+      bucketName: Fn.sub("vid-dash-video-${uniqueId}")
+    })
 
     this.createDynamoDBTable()
     this.createNotificationLambda()
@@ -69,16 +69,16 @@ export class DashboardStack extends Stack {
       // environment variables for lambda
       environment: {
         "DYNAMODB_TABLE": this.database.tableName,
-        // "SOURCE_BUCKET": this.uploadBucket.bucketName,
-        // "DESTINATION_BUCKET": this.videoBucket.bucketName
+        "SOURCE_BUCKET": this.uploadBucket.bucketName,
+        "DESTINATION_BUCKET": this.videoBucket.bucketName
       }
     })
 
     // add access rights for lambda to read and delete from upload bucket
-    // this.uploadBucket.grantRead(notificationLambda)
-    // this.uploadBucket.grantDelete(notificationLambda)
+    this.uploadBucket.grantRead(notificationLambda)
+    this.uploadBucket.grantDelete(notificationLambda)
     // add access rights for lambda to write to video storage bucket
-    // this.videoBucket.grantPut(notificationLambda)
+    this.videoBucket.grantPut(notificationLambda)
     // add access rights for lambda to write to dynamodb table
     this.database.grantWriteData(notificationLambda)
   }
