@@ -32,9 +32,9 @@ export class DashboardStack extends Stack {
 
     // Buckets
     /** video clip arrivals bucket */
-    this.uploadBucket = new Bucket(this, "videoUpload", {
-      bucketName: Fn.sub("vid-dash-upload-${uniqueId")
-    })
+    // this.uploadBucket = new Bucket(this, "videoUpload", {
+    //   bucketName: Fn.sub("vid-dash-upload-${uniqueId}")
+    // })
 
     // /** video clip storage bucket */
     // this.videoBucket = new Bucket(this, "videoStorage", {
@@ -63,20 +63,20 @@ export class DashboardStack extends Stack {
       timeout: Duration.minutes(5),
       runtime: Runtime.PYTHON_3_13,
       // source code for lambda
-      code: Code.fromBucketV2(this.codeBucket, `lambdas-cf/${lambdaKey}`),
+      code: Code.fromBucketV2(this.codeBucket, `lambdas/${lambdaKey}`),
       // name of function to invoke
       handler: "handler.handler_function",
       // environment variables for lambda
       environment: {
         "DYNAMODB_TABLE": this.database.tableName,
-        "SOURCE_BUCKET": this.uploadBucket.bucketName,
+        // "SOURCE_BUCKET": this.uploadBucket.bucketName,
         // "DESTINATION_BUCKET": this.videoBucket.bucketName
       }
     })
 
     // add access rights for lambda to read and delete from upload bucket
-    this.uploadBucket.grantRead(notificationLambda)
-    this.uploadBucket.grantDelete(notificationLambda)
+    // this.uploadBucket.grantRead(notificationLambda)
+    // this.uploadBucket.grantDelete(notificationLambda)
     // add access rights for lambda to write to video storage bucket
     // this.videoBucket.grantPut(notificationLambda)
     // add access rights for lambda to write to dynamodb table

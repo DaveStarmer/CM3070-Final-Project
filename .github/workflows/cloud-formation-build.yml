@@ -24,6 +24,10 @@ jobs:
             source build/build_lambda_zip.sh $filename ${{ secrets.FYP_PRIVATE_CODE_BUCKET }}
             jq '.context.lambdas' remote-aws/cdk/cdk.json
           done
+          for filename in remote-dashboard/lambdas/*; do
+            source build/build_lambda_zip.sh $filename ${{ secrets.FYP_PRIVATE_CODE_BUCKET }}
+            jq '.context.lambdas' remote-aws/cdk/cdk.json
+          done
       - name: List Lambdas
         run: jq '.context.lambdas' remote-aws/cdk/cdk.json
       - name: Run cdk synth
@@ -93,6 +97,7 @@ jobs:
       - name: Copy Lambda Zips to Private Code Bucket
         run: |
           aws s3 cp remote-aws/lambdas s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas-cf --recursive --exclude "*" --include "*.zip" --exclude "*/*"
+          aws s3 cp remote-dashboard/lambdas s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas --recursive --exclude "*" --include "*.zip" --exclude "*/*"
       - name: Copy Templates to Private Code Bucket  
         run: aws s3 cp remote-aws/cf-templates/ s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/cloudFormation/ --recursive
       - name: Copy Web Code to Private Code Bucket
@@ -100,10 +105,11 @@ jobs:
           aws s3 cp remote-dashboard/web/ s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/dashboard-web --recursive
       - name: Copy Code to Public Code Buckets
         run: |
-          aws s3 cp remote-aws/cf-templates/DashboardStack.template.json s3://${{ vars.FYP_PUBLIC_CODE_BUCKET }}/CloudFormation/
+          aws s3 cp remote-aws/cf-templates/DashboardStack.template.json s3://${{ vars.FYP_PUBLIC_CODE_BUCKET }}/cloudformation/
           aws s3 cp remote-aws/cf-templates/CloudFrontStack.template.json s3://${{ vars.FYP_PUBLIC_CODE_BUCKET }}/cloudformation/
           aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas-cf s3://${{ vars.FYP_PUBLIC_CODE_BUCKET }}/lambdas-cf/ --recursive
           aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas-cf s3://${{ vars.FYP_PUBLIC_CODE_BUCKET_CF }}/lambdas-cf/ --recursive
+          aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas s3://${{ vars.FYP_PUBLIC_CODE_BUCKET }}/lambdas/ --recursive
       - name: Deploy CloudFront CloudFormation Template
         run: >
           aws --region us-east-1 cloudformation deploy
