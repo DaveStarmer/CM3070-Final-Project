@@ -13,7 +13,20 @@
   }
  },
  "Resources": {
-  "videoBucket07D1C31D": {
+  "videoUpload4F12A8C9": {
+   "Type": "AWS::S3::Bucket",
+   "Properties": {
+    "BucketName": {
+     "Fn::Sub": "vid-dash-upload-${uniqueId}"
+    }
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "DashboardStack/videoUpload/Resource"
+   }
+  },
+  "videoStorage429F1872": {
    "Type": "AWS::S3::Bucket",
    "Properties": {
     "BucketName": {
@@ -23,7 +36,220 @@
    "UpdateReplacePolicy": "Retain",
    "DeletionPolicy": "Retain",
    "Metadata": {
-    "aws:cdk:path": "DashboardStack/videoBucket/Resource"
+    "aws:cdk:path": "DashboardStack/videoStorage/Resource"
+   }
+  },
+  "activationsTable6047EFE0": {
+   "Type": "AWS::DynamoDB::GlobalTable",
+   "Properties": {
+    "AttributeDefinitions": [
+     {
+      "AttributeName": "filename",
+      "AttributeType": "S"
+     }
+    ],
+    "BillingMode": "PAY_PER_REQUEST",
+    "KeySchema": [
+     {
+      "AttributeName": "filename",
+      "KeyType": "HASH"
+     }
+    ],
+    "Replicas": [
+     {
+      "Region": {
+       "Ref": "AWS::Region"
+      }
+     }
+    ],
+    "TableName": "activationsTable"
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "DashboardStack/activationsTable/Resource"
+   }
+  },
+  "copyBetweenBucketsServiceRole8D6854A0": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "DashboardStack/copyBetweenBuckets/ServiceRole/Resource"
+   }
+  },
+  "copyBetweenBucketsServiceRoleDefaultPolicyF43EE16F": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "s3:GetBucket*",
+        "s3:GetObject*",
+        "s3:List*"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "videoUpload4F12A8C9",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "videoUpload4F12A8C9",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": "s3:DeleteObject*",
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::Join": [
+         "",
+         [
+          {
+           "Fn::GetAtt": [
+            "videoUpload4F12A8C9",
+            "Arn"
+           ]
+          },
+          "/*"
+         ]
+        ]
+       }
+      },
+      {
+       "Action": [
+        "s3:Abort*",
+        "s3:PutObject",
+        "s3:PutObjectLegalHold",
+        "s3:PutObjectRetention",
+        "s3:PutObjectTagging",
+        "s3:PutObjectVersionTagging"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::Join": [
+         "",
+         [
+          {
+           "Fn::GetAtt": [
+            "videoStorage429F1872",
+            "Arn"
+           ]
+          },
+          "/*"
+         ]
+        ]
+       }
+      },
+      {
+       "Action": [
+        "dynamodb:BatchWriteItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "activationsTable6047EFE0",
+         "Arn"
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "copyBetweenBucketsServiceRoleDefaultPolicyF43EE16F",
+    "Roles": [
+     {
+      "Ref": "copyBetweenBucketsServiceRole8D6854A0"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "DashboardStack/copyBetweenBuckets/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "copyBetweenBuckets89CEF446": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": {
+      "Ref": "codeBucketName"
+     },
+     "S3Key": "lambdas/notification-ebd69c6abaf2cd5d041c76d54023897b.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "DYNAMODB_TABLE": {
+       "Ref": "activationsTable6047EFE0"
+      },
+      "SOURCE_BUCKET": {
+       "Ref": "videoUpload4F12A8C9"
+      },
+      "DESTINATION_BUCKET": {
+       "Ref": "videoStorage429F1872"
+      }
+     }
+    },
+    "Handler": "handler.handler_function",
+    "Role": {
+     "Fn::GetAtt": [
+      "copyBetweenBucketsServiceRole8D6854A0",
+      "Arn"
+     ]
+    },
+    "Runtime": "python3.13",
+    "Timeout": 300
+   },
+   "DependsOn": [
+    "copyBetweenBucketsServiceRoleDefaultPolicyF43EE16F",
+    "copyBetweenBucketsServiceRole8D6854A0"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "DashboardStack/copyBetweenBuckets/Resource"
    }
   }
  },
