@@ -62,7 +62,6 @@ export class DashboardStack extends Stack {
     this.createDynamoDBTable()
     this.createNotificationLambda()
     this.uploadBucket.addEventNotification(EventType.OBJECT_CREATED, new LambdaDestination(this.notificationLambda))
-    // this.createEventBridgeTrigger()
   }
 
   createDynamoDBTable() {
@@ -168,21 +167,4 @@ export class DashboardStack extends Stack {
     return lambdaRole
   }
 
-  createEventBridgeTrigger() {
-    // trigger rule when file is uploaded to upload bucket
-    const trigger = new Rule(this, "notificationTriggerRule", {
-      eventPattern: {
-        source: ["aws.s3"],
-        detailType: Match.equalsIgnoreCase("object created"),
-        detail: {
-          bucket: {
-            name: [this.uploadBucket.bucketName]
-          }
-        },
-      }
-    })
-
-    // have rule trigger notification lambda
-    // trigger.addTarget(new LambdaTarget(this.notificationLambda))
-  }
 }
