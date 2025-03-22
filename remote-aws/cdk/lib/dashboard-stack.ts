@@ -59,7 +59,9 @@ export class DashboardStack extends Stack {
     const lambdaKey = this.node.tryGetContext("lambdas")["notification"]
 
     /** lambda triggered by video upload */
-    const notificationLambda = new Function(this, "copyBetweenBuckets", {
+    const notificationLambda = new Function(this, "notificiationLambda", {
+      functionName: "notification-lambda",
+      description: "copies clips to storage bucket, writes to database",
       timeout: Duration.minutes(5),
       runtime: Runtime.PYTHON_3_13,
       // source code for lambda
