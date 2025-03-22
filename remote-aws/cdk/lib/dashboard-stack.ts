@@ -6,6 +6,7 @@ import { Bucket, EventType, IBucket } from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
 import { CompositePrincipal, Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { ParameterDataType, ParameterTier, StringParameter } from 'aws-cdk-lib/aws-ssm';
+import { LambdaRestApi } from 'aws-cdk-lib/aws-apigateway';
 
 
 export class DashboardStack extends Stack {
@@ -17,7 +18,10 @@ export class DashboardStack extends Stack {
   videoBucket: IBucket
   /** DynamoDB Table for all activations */
   database: TableV2
+  /** lambda to deal with notifications */
   notificationLambda: Function
+  /** centralised policy list */
+  policies: { [key: string]: ManagedPolicy }
 
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
@@ -58,9 +62,20 @@ export class DashboardStack extends Stack {
       stringValue: "ENABLED"
     })
 
+    // create centralised managed policies which are used by individual roles
+    this.policies = {} // typescript compiler requires a value, properly filled by the function call
+    this.createManagedPolicies()
+
+    // create database table to store notifications
     this.createDynamoDBTable()
+
+    // create lambda to respond to uploads and notify users
     this.createNotificationLambda()
+    // link this lambda to creation of an object in the upload bucket
     this.uploadBucket.addEventNotification(EventType.OBJECT_CREATED, new LambdaDestination(this.notificationLambda))
+
+    // create API for listing notifications
+    this.createListApi()
   }
 
   createDynamoDBTable() {
@@ -96,7 +111,7 @@ export class DashboardStack extends Stack {
         "SOURCE_BUCKET": this.uploadBucket.bucketName,
         "DESTINATION_BUCKET": this.videoBucket.bucketName
       },
-      role: this.createLambdaExecutionRole(),
+      role: this.createNotificationLambdaExecutionRole(),
       loggingFormat: LoggingFormat.JSON,
       applicationLogLevelV2: ApplicationLogLevel.DEBUG
     })
@@ -110,12 +125,91 @@ export class DashboardStack extends Stack {
     this.database.grantWriteData(this.notificationLambda)
   }
 
-  createLambdaExecutionRole() {
-    const cloudWatchLogsPolicy = new ManagedPolicy(
+  createNotificationLambdaExecutionRole() {
+    const lambdaRole = new Role(
       this,
-      "notificationCloudWatchLogsPolicy",
+      "notificationLambdaRole",
       {
-        managedPolicyName: "notification-lambda-logs-policy",
+        roleName: "notification-lambda-role",
+        assumedBy: new CompositePrincipal(
+          new ServicePrincipal("lambda.amazonaws.com"),
+          new ServicePrincipal("edgelambda.amazonaws.com")
+        ),
+        managedPolicies: [
+          this.policies["cloudWatch"],
+          this.policies["getParameter"]
+        ],
+      }
+    )
+
+    return lambdaRole
+  }
+
+  createListApi() {
+    const api = new LambdaRestApi(this, "listActivationsApi", {
+      description: "list activations",
+      handler: this.createListApiLambda(),
+      proxy: false
+    })
+
+    const listActivations = api.root.addResource("activations")
+    listActivations.addMethod("GET")
+  }
+
+  createListApiLambda() {
+    /** name of latest version of lambda code */
+    const lambdaKey = this.node.tryGetContext("lambdas")["list-api"]
+
+    /** lambda to deal with api requests to list activations */
+    const listApiLambda = new Function(this, "listApiLambda", {
+      functionName: "list-api-lambda",
+      description: "responds to api requests for lists of notification",
+      timeout: Duration.minutes(5),
+      runtime: Runtime.PYTHON_3_13,
+      // source code for lambda
+      code: Code.fromBucketV2(this.codeBucket, `lambdas/${lambdaKey}`),
+      // name of function to invoke
+      handler: "handler.handler_function",
+      // environment variables for lambda - pass names of database table and buckets in
+      environment: {
+        "DYNAMODB_TABLE": this.database.tableName
+      },
+      role: this.createListAPILambdaExecutionRole(),
+      loggingFormat: LoggingFormat.JSON,
+      applicationLogLevelV2: ApplicationLogLevel.DEBUG
+    })
+
+    // add access rights for lambda to read from database
+    this.database.grantReadData(listApiLambda)
+
+    return listApiLambda
+  }
+
+  createListAPILambdaExecutionRole() {
+    const lambdaRole = new Role(
+      this,
+      "notificationLambdaRole",
+      {
+        roleName: "notification-lambda-role",
+        assumedBy: new CompositePrincipal(
+          new ServicePrincipal("lambda.amazonaws.com"),
+          new ServicePrincipal("edgelambda.amazonaws.com")
+        ),
+        managedPolicies: [
+          this.policies["cloudWatch"]
+        ],
+      }
+    )
+
+    return lambdaRole
+  }
+
+  createManagedPolicies() {
+    this.policies["cloudWatch"] = new ManagedPolicy(
+      this,
+      "cloudWatchLogsPolicy",
+      {
+        managedPolicyName: "cam-logs-policy",
         statements: [
           new PolicyStatement({
             effect: Effect.ALLOW,
@@ -132,11 +226,11 @@ export class DashboardStack extends Stack {
       }
     )
 
-    const ssmGetParameterPolicy = new ManagedPolicy(
+    this.policies["getParameter"] = new ManagedPolicy(
       this,
-      "notificationSsmGetParameterPolicy",
+      "ssmGetParameterPolicy",
       {
-        managedPolicyName: "notification-get-parameter-policy",
+        managedPolicyName: "cam-get-parameter-policy",
         statements: [
           new PolicyStatement({
             effect: Effect.ALLOW,
@@ -151,24 +245,6 @@ export class DashboardStack extends Stack {
         ]
       }
     )
-
-    const lambdaRole = new Role(
-      this,
-      "notificationLambdaRole",
-      {
-        roleName: "notification-lambda-role",
-        assumedBy: new CompositePrincipal(
-          new ServicePrincipal("lambda.amazonaws.com"),
-          new ServicePrincipal("edgelambda.amazonaws.com")
-        ),
-        managedPolicies: [
-          cloudWatchLogsPolicy,
-          ssmGetParameterPolicy
-        ],
-      }
-    )
-
-    return lambdaRole
   }
 
 }
