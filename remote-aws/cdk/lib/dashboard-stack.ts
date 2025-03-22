@@ -7,6 +7,8 @@ import { Construct } from 'constructs';
 import { CompositePrincipal, Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { ParameterDataType, ParameterTier, StringParameter } from 'aws-cdk-lib/aws-ssm';
 import { LambdaRestApi } from 'aws-cdk-lib/aws-apigateway';
+import { Distribution } from 'aws-cdk-lib/aws-cloudfront';
+import { HttpOrigin } from 'aws-cdk-lib/aws-cloudfront-origins';
 
 
 export class DashboardStack extends Stack {
@@ -32,12 +34,24 @@ export class DashboardStack extends Stack {
       allowedPattern: "^[a-z0-9-]{1,32}$"
     });
 
-    // name of private code bucket
+    // name of code bucket
     new CfnParameter(this, "codeBucketName", {
       type: "String",
-      description: "Private Code Bucket Name",
+      description: "Code Bucket Name",
       allowedPattern: "^[a-z0-9\.-]{1,63}$",
-      default: "instruct-code-2560df37ccbefd6b43eeb50fdc8abe7f"
+      default: "public-cam-code-ec0c1faa4de3482c9bdc0081a3ec4834"
+    })
+
+    // cloudfront ID
+    new CfnParameter(this, "cloudfrontDistroId", {
+      type: "String",
+      description: "Distribution Id for CloudFront Distribution"
+    })
+
+    // cloudfront Distribution Domain Name
+    new CfnParameter(this, "cloudfrontDomainName", {
+      type: "String",
+      description: "Distribution Domain Name for CloudFront Distribution"
     })
 
     // Buckets
@@ -75,7 +89,7 @@ export class DashboardStack extends Stack {
     this.uploadBucket.addEventNotification(EventType.OBJECT_CREATED, new LambdaDestination(this.notificationLambda))
 
     // create API for listing notifications
-    this.createListApi()
+    this.createListApi(props?.env?.region || "")
   }
 
   createDynamoDBTable() {
@@ -145,7 +159,7 @@ export class DashboardStack extends Stack {
     return lambdaRole
   }
 
-  createListApi() {
+  createListApi(region: string) {
     const api = new LambdaRestApi(this, "listActivationsApi", {
       description: "list activations",
       handler: this.createListApiLambda(),
@@ -154,6 +168,17 @@ export class DashboardStack extends Stack {
 
     const listActivations = api.root.addResource("activations")
     listActivations.addMethod("GET")
+
+    const distro = Distribution.fromDistributionAttributes(this, "cloudFrontDistro", {
+      distributionId: Fn.sub("cloudfrontDistroId"),
+      domainName: Fn.sub("cloudfrontDomainName")
+    }) as Distribution
+
+    const origin = new HttpOrigin(distro.domainName, {
+      originId: `${api.restApiId}.execute-api.${region}.amazonaws.com`
+    })
+
+    // distro.addBehavior("/activations", origin)
   }
 
   createListApiLambda() {
@@ -188,9 +213,9 @@ export class DashboardStack extends Stack {
   createListAPILambdaExecutionRole() {
     const lambdaRole = new Role(
       this,
-      "notificationLambdaRole",
+      "listApiLambdaRole",
       {
-        roleName: "notification-lambda-role",
+        roleName: "list-api-lambda-role",
         assumedBy: new CompositePrincipal(
           new ServicePrincipal("lambda.amazonaws.com"),
           new ServicePrincipal("edgelambda.amazonaws.com")
