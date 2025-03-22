@@ -364,9 +364,9 @@
      "S3Bucket": {
       "Ref": "codeBucketName"
      },
-     "S3Key": "lambdas/notification-f5d1c04a44dc734756e2b669e8187966.zip"
+     "S3Key": "lambdas/notification-ca674a8c0d052af28e3713e4c22b3df8.zip"
     },
-    "Description": "copies clips to storage bucket, writes to database",
+    "Description": "copies clips to storage bucket, writes info to database",
     "Environment": {
      "Variables": {
       "DYNAMODB_TABLE": {

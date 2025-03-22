@@ -389,7 +389,7 @@
      "S3Bucket": {
       "Ref": "codeBucketName"
      },
-     "S3Key": "lambdas-cf/edge-auth-1c6e76c095f994e12ca5eb689a8e8a73.zip"
+     "S3Key": "lambdas-cf/edge-auth-99040f82c8fd141e53b1aa42b667e87b.zip"
     },
     "Description": "Authorisation Edge Lambda",
     "FunctionName": "edge-auth",
@@ -414,7 +414,7 @@
     "aws:cdk:path": "CloudFrontStack/authLambda/Fn/Resource"
    }
   },
-  "authLambdaFnCurrentVersion75C86FD9e2554776c87fa31828d7e29907947ff3": {
+  "authLambdaFnCurrentVersion75C86FD95c8dd07424e2e059e78b55219de68cfa": {
    "Type": "AWS::Lambda::Version",
    "Properties": {
     "FunctionName": {
@@ -486,7 +486,7 @@
      "S3Bucket": {
       "Ref": "codeBucketName"
      },
-     "S3Key": "lambdas-cf/edge-response-41ddb6365c6200359a3b95d9d4b9c21b.zip"
+     "S3Key": "lambdas-cf/edge-response-b00b838dd4b73295d81d033d413847fb.zip"
     },
     "Description": "Response Edge Lambda",
     "FunctionName": "edge-response",
@@ -511,7 +511,7 @@
     "aws:cdk:path": "CloudFrontStack/responseLambda/Fn/Resource"
    }
   },
-  "responseLambdaFnCurrentVersion182D696839bdaa108e508898dd893a4a0115430b": {
+  "responseLambdaFnCurrentVersion182D6968ffa7d67ce7917d17d17f2dc222c6391f": {
    "Type": "AWS::Lambda::Version",
    "Properties": {
     "FunctionName": {
@@ -533,9 +533,9 @@
     }
    },
    "DependsOn": [
-    "authLambdaFnCurrentVersion75C86FD9e2554776c87fa31828d7e29907947ff3",
+    "authLambdaFnCurrentVersion75C86FD95c8dd07424e2e059e78b55219de68cfa",
     "authLambdaFnCACD311C",
-    "responseLambdaFnCurrentVersion182D696839bdaa108e508898dd893a4a0115430b",
+    "responseLambdaFnCurrentVersion182D6968ffa7d67ce7917d17d17f2dc222c6391f",
     "responseLambdaFn5E189E9A"
    ],
    "Metadata": {
@@ -562,13 +562,13 @@
        {
         "EventType": "viewer-request",
         "LambdaFunctionARN": {
-         "Ref": "authLambdaFnCurrentVersion75C86FD9e2554776c87fa31828d7e29907947ff3"
+         "Ref": "authLambdaFnCurrentVersion75C86FD95c8dd07424e2e059e78b55219de68cfa"
         }
        },
        {
         "EventType": "viewer-response",
         "LambdaFunctionARN": {
-         "Ref": "responseLambdaFnCurrentVersion182D696839bdaa108e508898dd893a4a0115430b"
+         "Ref": "responseLambdaFnCurrentVersion182D6968ffa7d67ce7917d17d17f2dc222c6391f"
         }
        }
       ],
@@ -609,9 +609,9 @@
     }
    },
    "DependsOn": [
-    "authLambdaFnCurrentVersion75C86FD9e2554776c87fa31828d7e29907947ff3",
+    "authLambdaFnCurrentVersion75C86FD95c8dd07424e2e059e78b55219de68cfa",
     "authLambdaFnCACD311C",
-    "responseLambdaFnCurrentVersion182D696839bdaa108e508898dd893a4a0115430b",
+    "responseLambdaFnCurrentVersion182D6968ffa7d67ce7917d17d17f2dc222c6391f",
     "responseLambdaFn5E189E9A"
    ],
    "Metadata": {
@@ -752,7 +752,7 @@
      "S3Bucket": {
       "Ref": "codeBucketName"
      },
-     "S3Key": "lambdas-cf/copy-web-code-37efedcc1695347a17f77e708abb350a.zip"
+     "S3Key": "lambdas-cf/copy-web-code-c6f069965fcf2681afdbe5c301460642.zip"
     },
     "Handler": "handler.handler_function",
     "Role": {
