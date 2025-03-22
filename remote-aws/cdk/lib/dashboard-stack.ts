@@ -1,6 +1,5 @@
 import { CfnParameter, Duration, Fn, Stack, StackProps } from 'aws-cdk-lib';
 import { AttributeType, Billing, TableV2 } from 'aws-cdk-lib/aws-dynamodb';
-import { Match, Rule } from 'aws-cdk-lib/aws-events';
 import { LambdaDestination } from 'aws-cdk-lib/aws-s3-notifications';
 import { ApplicationLogLevel, Code, Function, LoggingFormat, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { Bucket, EventType, IBucket } from 'aws-cdk-lib/aws-s3';
