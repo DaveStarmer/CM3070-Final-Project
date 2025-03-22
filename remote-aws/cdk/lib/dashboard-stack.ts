@@ -6,6 +6,7 @@ import { Code, Function, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { Bucket, EventType, IBucket } from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
 import { CompositePrincipal, Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import { ParameterDataType, ParameterTier, StringParameter } from 'aws-cdk-lib/aws-ssm';
 
 
 export class DashboardStack extends Stack {
@@ -48,6 +49,14 @@ export class DashboardStack extends Stack {
     // create bucket to store clips in
     this.videoBucket = new Bucket(this, "videoStorage", {
       bucketName: Fn.sub("vid-dash-video-${uniqueId}")
+    })
+
+    new StringParameter(this, "cognitoEndpointParam", {
+      description: "Cognito Endpoint",
+      dataType: ParameterDataType.TEXT,
+      tier: ParameterTier.STANDARD,
+      parameterName: "camera-system-state",
+      stringValue: "ENABLED"
     })
 
     this.createDynamoDBTable()
