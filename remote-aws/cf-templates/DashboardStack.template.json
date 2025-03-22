@@ -364,7 +364,7 @@
      "S3Bucket": {
       "Ref": "codeBucketName"
      },
-     "S3Key": "lambdas/notification-408c1933376591a108bb48dd3f147a0f.zip"
+     "S3Key": "lambdas/notification-f5d1c04a44dc734756e2b669e8187966.zip"
     },
     "Description": "copies clips to storage bucket, writes to database",
     "Environment": {
@@ -382,6 +382,10 @@
     },
     "FunctionName": "notification-lambda",
     "Handler": "handler.handler_function",
+    "LoggingConfig": {
+     "ApplicationLogLevel": "DEBUG",
+     "LogFormat": "JSON"
+    },
     "Role": {
      "Fn::GetAtt": [
       "notificationLambdaRoleE89DA80E",
