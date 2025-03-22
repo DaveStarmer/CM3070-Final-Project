@@ -66,18 +66,38 @@ jobs:
             echo "No changes since last run"
           fi
           set -e
+      - uses: dorny/paths-filter@v3
+        # pre-written action to allow filtering by changes to particular paths
+        id: filter
+        with:
+          filters: |
+            deployment:
+              - 'remote-aws/cf-templates/DeploymentStack.template.json'
+            instructions:
+              - 'remote-aws/cf-templates/InstructionsStack.template.json'
+            instructions-cf:
+              - 'remote-aws/cf-templates/InstructionsCloudFrontStack.template.json'
+            dashboard:
+              - 'remote-aws/cf-templates/DashboardStack.template.json'
+            cloudfront:
+              - 'remote-aws/cf-templates/CloudFrontStack.template.json'
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502
+        # official AWS action to allow log in to AWS account
         with:
           role-to-assume: ${{ secrets.FYP_AWS_DEPLOY_ROLE }}
           aws-region: ${{ env.AWS_REGION }}
       - name: Deploy Deployment CloudFormation Template
+        # only run action if changes made to corresponding Cloudformation file
+        if: steps.filter.outputs.deployment == true
         run: >
           aws cloudformation deploy
           --template-file remote-aws/cf-templates/DeploymentStack.template.json
           --stack-name DeploymentStack
           --parameter-overrides uniqueId=${{ secrets.FYP_UNIQUE_ID }}
       - name: Deploy Instructions CloudFormation Template
+        # only run action if changes made to corresponding Cloudformation file
+        if: steps.filter.outputs.instructions == true
         run: >
           aws cloudformation deploy
           --template-file remote-aws/cf-templates/InstructionsStack.template.json
@@ -85,6 +105,8 @@ jobs:
           --parameter-overrides publicUniqueId=${{ secrets.FYP_PUBLIC_UNIQUE_ID }}
           uniqueId=${{ secrets.FYP_UNIQUE_ID }}
       - name: Deploy Instructions-CloudFront CloudFormation Template
+        # only run action if changes made to corresponding Cloudformation file
+        if: steps.filter.outputs.instructions == true
         run: >
           aws --region us-east-1 cloudformation deploy
           --template-file remote-aws/cf-templates/InstructionsCloudFrontStack.template.json
@@ -111,6 +133,8 @@ jobs:
           aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas-cf s3://${{ vars.FYP_PUBLIC_CODE_BUCKET_CF }}/lambdas-cf/ --recursive
           aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas s3://${{ vars.FYP_PUBLIC_CODE_BUCKET }}/lambdas/ --recursive
       - name: Deploy CloudFront CloudFormation Template
+        # only run action if changes made to corresponding Cloudformation file
+        if: steps.filter.outputs.cloudfront == true
         run: >
           aws --region us-east-1 cloudformation deploy
           --template-file remote-aws/cf-templates/CloudFrontStack.template.json
@@ -124,6 +148,8 @@ jobs:
           certificateArn=${{ secrets.FYP_CERTIFICATE_ARN }}
           userEmail="test.diy.cam.user@outlook.com"
       - name: Deploy Dashboard CloudFormation Template
+        # only run action if changes made to corresponding Cloudformation file
+        if: steps.filter.output.dashboard == true
         run: >
           aws cloudformation deploy
           --s3-bucket ${{ vars.FYP_PUBLIC_CODE_BUCKET }}
