@@ -22,7 +22,7 @@ fi
 zip -r ../${lambda_name}.zip * -x tests/*
 
 # create hash of file
-folder_hash=$(grep -ar . . | md5sum | cut -d " " -f 1)
+folder_hash=$(grep -ar . | md5sum | cut -d " " -f 1)
 
 # rename zip file with hash suffixed to file name
 hash_zip_filename=${lambda_name}-${folder_hash}.zip
