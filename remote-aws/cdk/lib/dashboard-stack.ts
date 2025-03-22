@@ -6,8 +6,6 @@ import { Code, Function, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { Bucket, IBucket } from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
 
-
-
 export class DashboardStack extends Stack {
   /** private code bucket construct */
   codeBucket: IBucket

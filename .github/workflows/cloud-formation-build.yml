@@ -144,12 +144,6 @@ jobs:
           codeBucketName=${{ secrets.FYP_PRIVATE_CODE_BUCKET }}
           
           fi
-      - name: Test Output Step
-        run: printf "%s\n" "${{ steps.filter.output }}""
-      - name: Test Changes Step
-        run: echo "${{ steps.filter.output.changes }}"
-      - name: Test Dashboard Step
-        run: echo "${{ steps.filter.output.dashboard }}"
       - name: Commit CloudFormation Template if necessary
         run: |
           # Configure Bot's information
