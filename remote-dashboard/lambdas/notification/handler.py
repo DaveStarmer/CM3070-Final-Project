@@ -78,6 +78,6 @@ def system_enabled() -> bool:
     ssm_client = boto3.client("ssm")
     # get current value of parameter holding system state
     system_state = ssm_client.get_parameter(Name="camera-system-state")
-
+    logger.debug(system_state)
     # return true if string is 'ENABLED' (in any case)
-    return system_state.upper() == "ENABLED"
+    return system_state["Parameters"]["Value"].upper() == "ENABLED"

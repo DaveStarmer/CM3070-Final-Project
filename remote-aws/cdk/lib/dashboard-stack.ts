@@ -2,7 +2,7 @@ import { CfnParameter, Duration, Fn, Stack, StackProps } from 'aws-cdk-lib';
 import { AttributeType, Billing, TableV2 } from 'aws-cdk-lib/aws-dynamodb';
 import { Match, Rule } from 'aws-cdk-lib/aws-events';
 import { LambdaDestination } from 'aws-cdk-lib/aws-s3-notifications';
-import { Code, Function, Runtime } from 'aws-cdk-lib/aws-lambda';
+import { ApplicationLogLevel, Code, Function, LoggingFormat, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { Bucket, EventType, IBucket } from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
 import { CompositePrincipal, Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
@@ -93,7 +93,9 @@ export class DashboardStack extends Stack {
         "SOURCE_BUCKET": this.uploadBucket.bucketName,
         "DESTINATION_BUCKET": this.videoBucket.bucketName
       },
-      role: this.createLambdaExecutionRole()
+      role: this.createLambdaExecutionRole(),
+      loggingFormat: LoggingFormat.JSON,
+      applicationLogLevelV2: ApplicationLogLevel.DEBUG
     })
 
     // add access rights for lambda to read and delete from upload bucket
