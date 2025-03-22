@@ -70,7 +70,7 @@
     "aws:cdk:path": "DashboardStack/activationsTable/Resource"
    }
   },
-  "copyBetweenBucketsServiceRole8D6854A0": {
+  "notificiationLambdaServiceRole5F9AA59F": {
    "Type": "AWS::IAM::Role",
    "Properties": {
     "AssumeRolePolicyDocument": {
@@ -101,10 +101,10 @@
     ]
    },
    "Metadata": {
-    "aws:cdk:path": "DashboardStack/copyBetweenBuckets/ServiceRole/Resource"
+    "aws:cdk:path": "DashboardStack/notificiationLambda/ServiceRole/Resource"
    }
   },
-  "copyBetweenBucketsServiceRoleDefaultPolicyF43EE16F": {
+  "notificiationLambdaServiceRoleDefaultPolicyAF7A6E3F": {
    "Type": "AWS::IAM::Policy",
    "Properties": {
     "PolicyDocument": {
@@ -201,18 +201,18 @@
      ],
      "Version": "2012-10-17"
     },
-    "PolicyName": "copyBetweenBucketsServiceRoleDefaultPolicyF43EE16F",
+    "PolicyName": "notificiationLambdaServiceRoleDefaultPolicyAF7A6E3F",
     "Roles": [
      {
-      "Ref": "copyBetweenBucketsServiceRole8D6854A0"
+      "Ref": "notificiationLambdaServiceRole5F9AA59F"
      }
     ]
    },
    "Metadata": {
-    "aws:cdk:path": "DashboardStack/copyBetweenBuckets/ServiceRole/DefaultPolicy/Resource"
+    "aws:cdk:path": "DashboardStack/notificiationLambda/ServiceRole/DefaultPolicy/Resource"
    }
   },
-  "copyBetweenBuckets89CEF446": {
+  "notificiationLambdaC56D9A50": {
    "Type": "AWS::Lambda::Function",
    "Properties": {
     "Code": {
@@ -221,6 +221,7 @@
      },
      "S3Key": "lambdas/notification-ebd69c6abaf2cd5d041c76d54023897b.zip"
     },
+    "Description": "copies clips to storage bucket, writes to database",
     "Environment": {
      "Variables": {
       "DYNAMODB_TABLE": {
@@ -234,10 +235,11 @@
       }
      }
     },
+    "FunctionName": "notification-lambda",
     "Handler": "handler.handler_function",
     "Role": {
      "Fn::GetAtt": [
-      "copyBetweenBucketsServiceRole8D6854A0",
+      "notificiationLambdaServiceRole5F9AA59F",
       "Arn"
      ]
     },
@@ -245,11 +247,11 @@
     "Timeout": 300
    },
    "DependsOn": [
-    "copyBetweenBucketsServiceRoleDefaultPolicyF43EE16F",
-    "copyBetweenBucketsServiceRole8D6854A0"
+    "notificiationLambdaServiceRoleDefaultPolicyAF7A6E3F",
+    "notificiationLambdaServiceRole5F9AA59F"
    ],
    "Metadata": {
-    "aws:cdk:path": "DashboardStack/copyBetweenBuckets/Resource"
+    "aws:cdk:path": "DashboardStack/notificiationLambda/Resource"
    }
   }
  },
