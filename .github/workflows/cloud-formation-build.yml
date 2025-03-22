@@ -75,13 +75,13 @@ jobs:
               - 'remote-aws/cdk/lib/deployment-stack.ts'
             instructions:
               - 'remote-aws/cdk/lib/instructions-stack.ts'
-            instructions-cf:
+            instructionscf:
               - 'remote-aws/cdk/lib/instructions-cloudfront.ts'
             dashboard:
               - 'remote-aws/cdk/lib/dashboard-stack.ts'
-            cloudfront-stack:
+            cloudfrontstack:
               - 'remote-aws/cdk/lib/cloudfront-stack.ts'
-            cloudfront-lambdas:
+            cloudfrontlambdas:
               - 'remote-aws/lambdas/**'
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502
@@ -99,7 +99,7 @@ jobs:
           --parameter-overrides uniqueId=${{ secrets.FYP_UNIQUE_ID }}
       - name: Deploy Instructions CloudFormation Template
         # only run action if changes made to corresponding Cloudformation file
-        if: steps.filter.outputs.instructions == true
+        if: steps.filter.outputs.instructions == 'true'
         run: >
           aws cloudformation deploy
           --template-file remote-aws/cf-templates/InstructionsStack.template.json
@@ -108,7 +108,7 @@ jobs:
           uniqueId=${{ secrets.FYP_UNIQUE_ID }}
       - name: Deploy Instructions-CloudFront CloudFormation Template
         # only run action if changes made to corresponding Cloudformation file
-        if: steps.filter.outputs.instructions == true
+        if: steps.filter.outputs.instructions == 'true'
         run: >
           aws --region us-east-1 cloudformation deploy
           --template-file remote-aws/cf-templates/InstructionsCloudFrontStack.template.json
@@ -136,7 +136,7 @@ jobs:
           aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas s3://${{ vars.FYP_PUBLIC_CODE_BUCKET }}/lambdas/ --recursive
       - name: Deploy CloudFront CloudFormation Template
         # only run action if changes made to corresponding Cloudformation file
-        if: steps.filter.outputs.cloudfront-stack == true || steps.filter.outputs.cloudfront-lambdas == true
+        if: steps.filter.outputs.cloudfrontstack == 'true' || steps.filter.outputs.cloudfrontlambdas == 'true'
         run: >
           aws --region us-east-1 cloudformation deploy
           --template-file remote-aws/cf-templates/CloudFrontStack.template.json
@@ -151,7 +151,7 @@ jobs:
           userEmail="test.diy.cam.user@outlook.com"
       - name: Deploy Dashboard CloudFormation Template
         # only run action if changes made to corresponding Cloudformation file
-        if: steps.filter.output.dashboard == true
+        if: contains('dashboard', steps.filter.outputs.changes)
         run: >
           aws cloudformation deploy
           --s3-bucket ${{ vars.FYP_PUBLIC_CODE_BUCKET }}
@@ -160,3 +160,9 @@ jobs:
           --capabilities CAPABILITY_NAMED_IAM
           --parameter-overrides uniqueId=${{ secrets.FYP_UNIQUE_ID }}
           codeBucketName=${{ secrets.FYP_PRIVATE_CODE_BUCKET }}
+      - name: Test Output Step
+        run: printf "%s\n" "${{ steps.filter.output }}""
+      - name: Test Changes Step
+        run: echo "${{ steps.filter.output.changes }}"
+      - name: Test Dashboard Step
+        run: echo "${{ steps.filter.output.dashboard }}"
