@@ -219,7 +219,7 @@
      "S3Bucket": {
       "Ref": "codeBucketName"
      },
-     "S3Key": "lambdas/notification-ebd69c6abaf2cd5d041c76d54023897b.zip"
+     "S3Key": "lambdas/notification-408c1933376591a108bb48dd3f147a0f.zip"
     },
     "Description": "copies clips to storage bucket, writes to database",
     "Environment": {
@@ -252,6 +252,67 @@
    ],
    "Metadata": {
     "aws:cdk:path": "DashboardStack/notificiationLambda/Resource"
+   }
+  },
+  "notificationTriggerRule480EE58C": {
+   "Type": "AWS::Events::Rule",
+   "Properties": {
+    "EventPattern": {
+     "source": [
+      "aws.s3"
+     ],
+     "detail-type": [
+      {
+       "equals-ignore-case": "object created"
+      }
+     ],
+     "detail": {
+      "bucket": {
+       "name": [
+        {
+         "Ref": "videoUpload4F12A8C9"
+        }
+       ]
+      }
+     }
+    },
+    "State": "ENABLED",
+    "Targets": [
+     {
+      "Arn": {
+       "Fn::GetAtt": [
+        "notificiationLambdaC56D9A50",
+        "Arn"
+       ]
+      },
+      "Id": "Target0"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "DashboardStack/notificationTriggerRule/Resource"
+   }
+  },
+  "notificationTriggerRuleAllowEventRuleDashboardStacknotificiationLambdaD7E09B9F411FED25": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "notificiationLambdaC56D9A50",
+      "Arn"
+     ]
+    },
+    "Principal": "events.amazonaws.com",
+    "SourceArn": {
+     "Fn::GetAtt": [
+      "notificationTriggerRule480EE58C",
+      "Arn"
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "DashboardStack/notificationTriggerRule/AllowEventRuleDashboardStacknotificiationLambdaD7E09B9F"
    }
   }
  },
