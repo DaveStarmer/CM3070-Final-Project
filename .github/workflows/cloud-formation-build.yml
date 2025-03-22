@@ -117,7 +117,7 @@ jobs:
       - name: Deploy CloudFront CloudFormation Template
         # only run action if changes made to corresponding Cloudformation file
         run: >
-          if [[ $(source build/commit_diff_file.sh remote-aws/cdk/lib/cloudfront-stack.ts) != 0 || $(source build/commit_diff_file.sh remote-aws/lambdas/**) != 0]]; then
+          if [[ $(source build/commit_diff_file.sh remote-aws/cdk/lib/cloudfront-stack.ts) != 0 ]] || [[ $(source build/commit_diff_file.sh remote-aws/lambdas) != 0]]; then
           
           aws --region us-east-1 cloudformation deploy
           --template-file remote-aws/cf-templates/CloudFrontStack.template.json
