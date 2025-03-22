@@ -64,9 +64,14 @@ export class DashboardStack extends Stack {
   }
 
   createDynamoDBTable() {
-    this.database = new TableV2(this, "activationsTable", {
-      tableName: "activationsTable",
-      partitionKey: { name: "filename", type: AttributeType.STRING },
+    this.database = new TableV2(this, "activationTable", {
+      tableName: "activations",
+      partitionKey: { name: "camera", type: AttributeType.STRING },
+      sortKey: { name: "timestamp", type: AttributeType.STRING },
+      localSecondaryIndexes: [{
+        indexName: "clipStatusIndex",
+        sortKey: { name: "clipStatus", "type": AttributeType.STRING }
+      }],
       billing: Billing.onDemand()
     })
   }
