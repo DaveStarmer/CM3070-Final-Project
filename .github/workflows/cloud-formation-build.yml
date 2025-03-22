@@ -72,15 +72,17 @@ jobs:
         with:
           filters: |
             deployment:
-              - 'remote-aws/cf-templates/DeploymentStack.template.json'
+              - 'remote-aws/cdk/lib/deployment-stack.ts'
             instructions:
-              - 'remote-aws/cf-templates/InstructionsStack.template.json'
+              - 'remote-aws/cdk/lib/instructions-stack.ts'
             instructions-cf:
-              - 'remote-aws/cf-templates/InstructionsCloudFrontStack.template.json'
+              - 'remote-aws/cdk/lib/instructions-cloudfront.ts'
             dashboard:
-              - 'remote-aws/cf-templates/DashboardStack.template.json'
-            cloudfront:
-              - 'remote-aws/cf-templates/CloudFrontStack.template.json'
+              - 'remote-aws/cdk/lib/dashboard-stack.ts'
+            cloudfront-stack:
+              - 'remote-aws/cdk/lib/cloudfront-stack.ts'
+            cloudfront-lambdas:
+              - 'remote-aws/lambdas/**'
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502
         # official AWS action to allow log in to AWS account
@@ -134,7 +136,7 @@ jobs:
           aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas s3://${{ vars.FYP_PUBLIC_CODE_BUCKET }}/lambdas/ --recursive
       - name: Deploy CloudFront CloudFormation Template
         # only run action if changes made to corresponding Cloudformation file
-        if: steps.filter.outputs.cloudfront == true
+        if: steps.filter.outputs.cloudfront-stack == true || steps.filter.outputs.cloudfront-lambdas == true
         run: >
           aws --region us-east-1 cloudformation deploy
           --template-file remote-aws/cf-templates/CloudFrontStack.template.json

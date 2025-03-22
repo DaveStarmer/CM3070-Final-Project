@@ -26,8 +26,8 @@ export class DashboardStack extends Stack {
       allowedPattern: "^[a-z0-9-]{1,32}$"
     });
 
-    /** name of private code bucket */
-    const codeBucketName = new CfnParameter(this, "codeBucketName", {
+    // name of private code bucket
+    new CfnParameter(this, "codeBucketName", {
       type: "String",
       description: "Private Code Bucket Name",
       allowedPattern: "^[a-z0-9\.-]{1,63}$",
