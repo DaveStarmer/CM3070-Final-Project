@@ -80,7 +80,7 @@ export class DashboardStack extends Stack {
     /** lambda triggered by video upload */
     this.notificationLambda = new Function(this, "notificiationLambda", {
       functionName: "notification-lambda",
-      description: "copies clips to storage bucket, writes to database",
+      description: "copies clips to storage bucket, writes info to database",
       timeout: Duration.minutes(5),
       runtime: Runtime.PYTHON_3_13,
       // source code for lambda
