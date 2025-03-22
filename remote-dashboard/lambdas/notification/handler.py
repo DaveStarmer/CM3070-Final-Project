@@ -14,11 +14,11 @@ def handler_function(event, _):
         event (dict): S3 Trigger Event
         _ (object): Context object - unused
     """
-    logger.debug(os.environ)
-    logger.debug(event)
+    logger.debug("Environment Variables: %s", os.environ)
+    logger.debug("Event: %s", event)
     source_bucket = os.environ.get("SOURCE_BUCKET")
     dest_bucket = os.environ.get("DESTINATION_BUCKET")
-    db_table = os.environ.get("DYNAMO_DB_TABLE")
+    db_table = os.environ.get("DYNAMODB_TABLE")
 
     s3_client = boto3.client("s3")
     db_client = boto3.client("dynamodb")
@@ -35,7 +35,7 @@ def handler_function(event, _):
     # loop through records in event, to delete or store as appropriate
     for record in event["Records"]:
         object_key = record["s3"]["object"]["key"]
-        logger.log("Processing %s", object_key)
+        logger.info("Processing %s", object_key)
 
         if enabled:
             logger.debug(
@@ -52,7 +52,8 @@ def handler_function(event, _):
             # log entry in dynamodb table
             # items include the filename, timestamp, camera identifier, and the current status of the clip
             timestamp = object_key[:14]
-            camera = os.path.basename(object_key)[15:]
+            camera = os.path.basename(os.path.splitext(object_key)[0])[15:]
+            camera = camera.replace("_", " ")
             db_client.put_item(
                 TableName=db_table,
                 Item={
@@ -82,5 +83,6 @@ def system_enabled() -> bool:
     # get current value of parameter holding system state
     system_state = ssm_client.get_parameter(Name="camera-system-state")
 
+    logger.debug("System state parameter: %s", system_state)
     # return true if string is 'ENABLED' (in any case)
-    return system_state["Parameters"]["Value"].upper() == "ENABLED"
+    return system_state["Parameter"]["Value"].upper() == "ENABLED"

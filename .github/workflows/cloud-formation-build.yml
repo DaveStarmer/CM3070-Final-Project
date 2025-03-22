@@ -4,7 +4,8 @@ on:
   push:
     paths: # limit when action runs
       - remote-aws/cdk/** # changes to cdk
-      - remote-aws/lambdas/** # changes to CloudFront Lambdas (need cdk as this)
+      - remote-aws/lambdas/** # changes to CloudFront Lambdas (need cdk as this uses versions)
+      - remote-dashboard/lambdas/** # changes to Dashboard Lambdas (copies new source code)
 env:
   AWS_REGION: 'eu-west-2'
 jobs:
