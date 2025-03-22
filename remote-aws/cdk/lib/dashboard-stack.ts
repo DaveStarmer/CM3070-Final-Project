@@ -23,7 +23,7 @@ export class DashboardStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
     // get CloudFormation parameters
-    const uniqueId = new CfnParameter(this, "uniqueId", {
+    new CfnParameter(this, "uniqueId", {
       type: "String",
       description: "Unique element for bucket naming",
       allowedPattern: "^[a-z0-9-]{1,32}$"
