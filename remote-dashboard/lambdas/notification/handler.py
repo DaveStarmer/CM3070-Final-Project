@@ -61,7 +61,9 @@ def handler_function(event, _):
             )
             logger.debug("Data written to database")
 
-        # as system currently disabled, delete uploaded video from source bucket
+        # delete uploaded video from source bucket
+        # if enabled, this will have been copied to the storage bucket,
+        # if disabled this removes the video from storage
         logger.debug("Deleting %s from %s", object_key, source_bucket)
         s3_client.delete_object(Bucket=source_bucket, Key=object_key)
 
