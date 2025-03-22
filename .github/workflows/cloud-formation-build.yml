@@ -4,7 +4,7 @@ on:
   push:
     paths: # limit when action runs
       - remote-aws/cdk/** # changes to cdk
-      - remote-aws/lambdas/** # changes to CloudFront Lambdas
+      - remote-aws/lambdas/** # changes to CloudFront Lambdas (need cdk as this)
 env:
   AWS_REGION: 'eu-west-2'
 jobs:
@@ -129,6 +129,9 @@ jobs:
           domainName=${{ vars.FYP_DOMAIN }}
           certificateArn=${{ secrets.FYP_CERTIFICATE_ARN }}
           userEmail="test.diy.cam.user@outlook.com"
+
+          else
+          echo No changes to deploy
           
           fi
       - name: Deploy Dashboard CloudFormation Template
@@ -142,6 +145,9 @@ jobs:
           --capabilities CAPABILITY_NAMED_IAM
           --parameter-overrides uniqueId=${{ secrets.FYP_UNIQUE_ID }}
           codeBucketName=${{ secrets.FYP_PRIVATE_CODE_BUCKET }}
+
+          else
+          echo No changes to deploy
           
           fi
       - name: Commit CloudFormation Template if necessary

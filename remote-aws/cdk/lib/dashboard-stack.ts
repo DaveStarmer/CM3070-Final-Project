@@ -5,6 +5,7 @@ import { LambdaDestination } from 'aws-cdk-lib/aws-s3-notifications';
 import { Code, Function, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { Bucket, EventType, IBucket } from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
+import { CompositePrincipal, Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 
 
 export class DashboardStack extends Stack {
@@ -82,7 +83,8 @@ export class DashboardStack extends Stack {
         "DYNAMODB_TABLE": this.database.tableName,
         "SOURCE_BUCKET": this.uploadBucket.bucketName,
         "DESTINATION_BUCKET": this.videoBucket.bucketName
-      }
+      },
+      role: this.createLambdaExecutionRole()
     })
 
     // add access rights for lambda to read and delete from upload bucket
@@ -92,6 +94,67 @@ export class DashboardStack extends Stack {
     this.videoBucket.grantPut(this.notificationLambda)
     // add access rights for lambda to write to dynamodb table
     this.database.grantWriteData(this.notificationLambda)
+  }
+
+  createLambdaExecutionRole() {
+    const cloudWatchLogsPolicy = new ManagedPolicy(
+      this,
+      "notificationCloudWatchLogsPolicy",
+      {
+        managedPolicyName: "notification-lambda-logs-policy",
+        statements: [
+          new PolicyStatement({
+            effect: Effect.ALLOW,
+            actions: [
+              "logs:CreateLogGroup",
+              "logs:CreateLogStream",
+              "logs:PutLogEvents"
+            ],
+            resources: [
+              `arn:${this.partition}:logs:*:*:*`
+            ]
+          })
+        ]
+      }
+    )
+
+    const ssmGetParameterPolicy = new ManagedPolicy(
+      this,
+      "notificationSsmGetParameterPolicy",
+      {
+        managedPolicyName: "notification-get-parameter-policy",
+        statements: [
+          new PolicyStatement({
+            effect: Effect.ALLOW,
+            actions: [
+              "ssm:GetParameter",
+              "ssm:GetParameters"
+            ],
+            resources: [
+              `arn:${this.partition}:ssm:*:*:*`
+            ]
+          })
+        ]
+      }
+    )
+
+    const lambdaRole = new Role(
+      this,
+      "notificationLambdaRole",
+      {
+        roleName: "notification-lambda-role",
+        assumedBy: new CompositePrincipal(
+          new ServicePrincipal("lambda.amazonaws.com"),
+          new ServicePrincipal("edgelambda.amazonaws.com")
+        ),
+        managedPolicies: [
+          cloudWatchLogsPolicy,
+          ssmGetParameterPolicy
+        ],
+      }
+    )
+
+    return lambdaRole
   }
 
   createEventBridgeTrigger() {
