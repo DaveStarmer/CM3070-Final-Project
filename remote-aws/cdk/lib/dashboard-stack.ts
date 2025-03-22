@@ -1,9 +1,9 @@
 import { CfnParameter, Duration, Fn, Stack, StackProps } from 'aws-cdk-lib';
 import { AttributeType, Billing, TableV2 } from 'aws-cdk-lib/aws-dynamodb';
 import { Match, Rule } from 'aws-cdk-lib/aws-events';
-import { LambdaFunction as LambdaTarget } from 'aws-cdk-lib/aws-events-targets';
+import { LambdaDestination } from 'aws-cdk-lib/aws-s3-notifications';
 import { Code, Function, Runtime } from 'aws-cdk-lib/aws-lambda';
-import { Bucket, IBucket } from 'aws-cdk-lib/aws-s3';
+import { Bucket, EventType, IBucket } from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
 
 
@@ -51,7 +51,8 @@ export class DashboardStack extends Stack {
 
     this.createDynamoDBTable()
     this.createNotificationLambda()
-    this.createEventBridgeTrigger()
+    this.uploadBucket.addEventNotification(EventType.OBJECT_CREATED, new LambdaDestination(this.notificationLambda))
+    // this.createEventBridgeTrigger()
   }
 
   createDynamoDBTable() {
@@ -108,6 +109,6 @@ export class DashboardStack extends Stack {
     })
 
     // have rule trigger notification lambda
-    trigger.addTarget(new LambdaTarget(this.notificationLambda))
+    // trigger.addTarget(new LambdaTarget(this.notificationLambda))
   }
 }
