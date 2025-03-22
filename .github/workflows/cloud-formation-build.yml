@@ -45,27 +45,6 @@ jobs:
           mkdir -p remote-aws/cf-templates
           cp remote-aws/cdk/cdk.out/*.template.json remote-aws/cf-templates/
           python3 build/strip_cdk.py
-      - name: Commit CloudFormation Template if necessary
-        run: |
-          # Configure Bot's information
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # get git diff
-          set +e
-          git diff --exit-code remote-aws/cf-templates/*.template.json
-          DIFFERENCE=$?
-          echo git diff exit code = $DIFFERENCE
-          if [ $DIFFERENCE -ne 0 ]
-          then
-            git add remote-aws/cf-templates/*.template.json
-            git status
-            git commit -m "chore: generate CloudFormation templates"
-            git push
-            echo "Changes committed"
-          else
-            echo "No changes since last run"
-          fi
-          set -e
       - uses: dorny/paths-filter@v3
         # pre-written action to allow filtering by changes to particular paths
         id: filter
@@ -136,8 +115,9 @@ jobs:
           aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas s3://${{ vars.FYP_PUBLIC_CODE_BUCKET }}/lambdas/ --recursive
       - name: Deploy CloudFront CloudFormation Template
         # only run action if changes made to corresponding Cloudformation file
-        if: steps.filter.outputs.cloudfrontstack == 'true' || steps.filter.outputs.cloudfrontlambdas == 'true'
         run: >
+          if [[ $(build/commit_diff_file.sh remote-aws/lib/cloudfront-stack.ts) != 0 ]]; then
+          
           aws --region us-east-1 cloudformation deploy
           --template-file remote-aws/cf-templates/CloudFrontStack.template.json
           --stack-name CloudFrontStack
@@ -149,10 +129,12 @@ jobs:
           domainName=${{ vars.FYP_DOMAIN }}
           certificateArn=${{ secrets.FYP_CERTIFICATE_ARN }}
           userEmail="test.diy.cam.user@outlook.com"
+          
+          fi
       - name: Deploy Dashboard CloudFormation Template
-        # only run action if changes made to corresponding Cloudformation file
-        if: contains('dashboard', steps.filter.outputs.changes)
         run: >
+          if [[ $(build/commit_diff_file.sh remote-aws/lib/dashboard-stack.ts) != 0 ]]; then
+          
           aws cloudformation deploy
           --s3-bucket ${{ vars.FYP_PUBLIC_CODE_BUCKET }}
           --template-file remote-aws/cf-templates/DashboardStack.template.json
@@ -160,9 +142,32 @@ jobs:
           --capabilities CAPABILITY_NAMED_IAM
           --parameter-overrides uniqueId=${{ secrets.FYP_UNIQUE_ID }}
           codeBucketName=${{ secrets.FYP_PRIVATE_CODE_BUCKET }}
+          
+          fi
       - name: Test Output Step
         run: printf "%s\n" "${{ steps.filter.output }}""
       - name: Test Changes Step
         run: echo "${{ steps.filter.output.changes }}"
       - name: Test Dashboard Step
         run: echo "${{ steps.filter.output.dashboard }}"
+      - name: Commit CloudFormation Template if necessary
+        run: |
+          # Configure Bot's information
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # get git diff
+          set +e
+          git diff --exit-code remote-aws/cf-templates/*.template.json
+          DIFFERENCE=$?
+          echo git diff exit code = $DIFFERENCE
+          if [ $DIFFERENCE -ne 0 ]
+          then
+            git add remote-aws/cf-templates/*.template.json
+            git status
+            git commit -m "chore: generate CloudFormation templates"
+            git push
+            echo "Changes committed"
+          else
+            echo "No changes since last run"
+          fi
+          set -e
