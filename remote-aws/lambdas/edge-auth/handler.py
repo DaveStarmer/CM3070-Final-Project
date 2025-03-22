@@ -58,6 +58,15 @@ def get_parameters() -> dict:
 
 
 def code_to_jwt(param: dict, code: str):
+    """convert code to JWT
+
+    Args:
+        param (dict): Required parameters
+        code (str): Code issued
+
+    Returns:
+        _type_: _description_
+    """
     client_id = param["user-pool-client-id"]
     client_secret = param["user-pool-client-secret"]
     user_pool = param("user-pool-id")
