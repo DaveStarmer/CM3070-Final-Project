@@ -31,6 +31,7 @@ mv ../${lambda_name}.zip ../${hash_zip_filename}
 # return to original folder
 cd -
 pwd
+
 # write new zip file name into cdk.json
 jq -c '.context.lambdas."'"$lambda_name"'" = "'"$hash_zip_filename"'"' remote-aws/cdk/cdk.json > tempcdk.json
 mv tempcdk.json remote-aws/cdk/cdk.json

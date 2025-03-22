@@ -117,7 +117,8 @@ jobs:
       - name: Deploy CloudFront CloudFormation Template
         # only run action if changes made to corresponding Cloudformation file
         run: >
-          if [[ $(source build/commit_diff_file.sh remote-aws/cdk/lib/cloudfront-stack.ts) != 0 ]] || [[ $(source build/commit_diff_file.sh remote-aws/lambdas) != 0]]; then
+          # if [[ $(source build/commit_diff_file.sh remote-aws/cdk/lib/cloudfront-stack.ts) != 0 ]]; then
+          if [[ $(source build/current_diff_file.sh remote-aws/cf-templates/CloudFrontStack.template.json)]]
           
           aws --region us-east-1 cloudformation deploy
           --template-file remote-aws/cf-templates/CloudFrontStack.template.json
@@ -137,7 +138,8 @@ jobs:
           fi
       - name: Deploy Dashboard CloudFormation Template
         run: >
-          if [[ $(source build/commit_diff_file.sh remote-aws/cdk/lib/dashboard-stack.ts) != 0 ]]; then
+          # if [[ $(source build/commit_diff_file.sh remote-aws/cdk/lib/dashboard-stack.ts) != 0 ]]; then
+          if [[ $(source build/current_diff_file.sh remote-aws/cf-templates/DashboardStack.template.json) != 0 ]]; then
           
           aws cloudformation deploy
           --s3-bucket ${{ vars.FYP_PUBLIC_CODE_BUCKET }}
