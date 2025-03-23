@@ -389,7 +389,7 @@
      "S3Bucket": {
       "Ref": "codeBucketName"
      },
-     "S3Key": "lambdas-cf/edge-auth-bbba4507922094336355cd030cb7ce95.zip"
+     "S3Key": "lambdas-cf/edge-auth-866871cdc15bb97e077d52a6e9db1e5e.zip"
     },
     "Description": "Authorisation Edge Lambda",
     "FunctionName": "edge-auth",
@@ -414,7 +414,7 @@
     "aws:cdk:path": "CloudFrontStack/authLambda/Fn/Resource"
    }
   },
-  "authLambdaFnCurrentVersion75C86FD960012a03200881262c2f31afb4aeb9ca": {
+  "authLambdaFnCurrentVersion75C86FD9ee7540e59d9043b8e639d358bd401bef": {
    "Type": "AWS::Lambda::Version",
    "Properties": {
     "FunctionName": {
@@ -533,7 +533,7 @@
     }
    },
    "DependsOn": [
-    "authLambdaFnCurrentVersion75C86FD960012a03200881262c2f31afb4aeb9ca",
+    "authLambdaFnCurrentVersion75C86FD9ee7540e59d9043b8e639d358bd401bef",
     "authLambdaFnCACD311C",
     "responseLambdaFnCurrentVersion182D6968ffa7d67ce7917d17d17f2dc222c6391f",
     "responseLambdaFn5E189E9A"
@@ -554,6 +554,15 @@
        "Ref": "domainName"
       }
      ],
+     "CacheBehaviors": [
+      {
+       "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
+       "Compress": true,
+       "PathPattern": "activations",
+       "TargetOriginId": "CloudFrontStackcloudFrontDistributionOrigin28FB37C3B",
+       "ViewerProtocolPolicy": "allow-all"
+      }
+     ],
      "Comment": "CloudFront Distribution",
      "DefaultCacheBehavior": {
       "CachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
@@ -562,7 +571,7 @@
        {
         "EventType": "viewer-request",
         "LambdaFunctionARN": {
-         "Ref": "authLambdaFnCurrentVersion75C86FD960012a03200881262c2f31afb4aeb9ca"
+         "Ref": "authLambdaFnCurrentVersion75C86FD9ee7540e59d9043b8e639d358bd401bef"
         }
        },
        {
@@ -597,6 +606,18 @@
        "S3OriginConfig": {
         "OriginAccessIdentity": ""
        }
+      },
+      {
+       "CustomOriginConfig": {
+        "OriginProtocolPolicy": "https-only",
+        "OriginSSLProtocols": [
+         "TLSv1.2"
+        ]
+       },
+       "DomainName": {
+        "Ref": "domainName"
+       },
+       "Id": "CloudFrontStackcloudFrontDistributionOrigin28FB37C3B"
       }
      ],
      "ViewerCertificate": {
@@ -609,7 +630,7 @@
     }
    },
    "DependsOn": [
-    "authLambdaFnCurrentVersion75C86FD960012a03200881262c2f31afb4aeb9ca",
+    "authLambdaFnCurrentVersion75C86FD9ee7540e59d9043b8e639d358bd401bef",
     "authLambdaFnCACD311C",
     "responseLambdaFnCurrentVersion182D6968ffa7d67ce7917d17d17f2dc222c6391f",
     "responseLambdaFn5E189E9A"
@@ -752,7 +773,7 @@
      "S3Bucket": {
       "Ref": "codeBucketName"
      },
-     "S3Key": "lambdas-cf/copy-web-code-4a69f3fe27868230578558f21c1950e8.zip"
+     "S3Key": "lambdas-cf/copy-web-code-85ebc608f3e6082da36c726afcc2b927.zip"
     },
     "Handler": "handler.handler_function",
     "Role": {
