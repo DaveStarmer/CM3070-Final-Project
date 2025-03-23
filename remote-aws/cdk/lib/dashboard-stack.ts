@@ -6,7 +6,7 @@ import { Bucket, EventType, IBucket } from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
 import { CompositePrincipal, Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { ParameterDataType, ParameterTier, StringParameter } from 'aws-cdk-lib/aws-ssm';
-import { DomainName, LambdaRestApi } from 'aws-cdk-lib/aws-apigateway';
+import { DomainName, LambdaIntegration, LambdaRestApi, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { Distribution } from 'aws-cdk-lib/aws-cloudfront';
 import { HttpOrigin } from 'aws-cdk-lib/aws-cloudfront-origins';
 
@@ -160,22 +160,19 @@ export class DashboardStack extends Stack {
   }
 
   createListApi(region: string) {
-    const api = new LambdaRestApi(this, "listActivationsApi", {
+    const api = new RestApi(this, "listActivationsApi", {
+      restApiName: "activationsApi",
       description: "list activations",
-      handler: this.createListApiLambda(),
-      proxy: false,
       deploy: true,
-      deployOptions: {
-        stageName: "activations",
-      }
     })
 
-    api.root.addMethod("ANY")
+    const apiLambda = this.createListApiLambda()
 
-    const distro = Distribution.fromDistributionAttributes(this, "cloudFrontDistro", {
-      distributionId: Fn.sub("cloudfrontDistroId"),
-      domainName: Fn.sub("cloudfrontDomainName")
-    }) as Distribution
+    const apiIntegration = new LambdaIntegration(apiLambda)
+
+    const apiResource = api.root.addResource("activations")
+
+    apiResource.addMethod("GET", apiIntegration)
 
     // const origin = new HttpOrigin(distro.domainName, {
     //   originId: `${api.restApiId}.execute-api.${region}.amazonaws.com`
@@ -191,8 +188,6 @@ export class DashboardStack extends Stack {
     //   domainName: domainName,
     //   restApi: api,
     // })
-
-    new CfnOutput(this, "testOutput", { value: distro.distributionArn })
 
     // distro.addBehavior("/activations", origin)
   }
