@@ -82,7 +82,7 @@
       "edge-auth": "edge-auth.zip",
       "edge-response": "edge-response.zip",
       "notification": "notification.zip",
-      "list-api": "list-api.zip"
+      "activations-list": "activations-list.zip"
     }
   }
 }

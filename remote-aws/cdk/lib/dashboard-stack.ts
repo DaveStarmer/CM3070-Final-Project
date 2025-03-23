@@ -183,7 +183,7 @@ export class DashboardStack extends Stack {
 
   createListApiLambda() {
     /** name of latest version of lambda code */
-    const lambdaKey = this.node.tryGetContext("lambdas")["list-api"]
+    const lambdaKey = this.node.tryGetContext("lambdas")["activations-list"]
 
     /** lambda to deal with api requests to list activations */
     const listApiLambda = new Function(this, "listApiLambda", {
