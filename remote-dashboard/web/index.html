@@ -60,6 +60,27 @@
 
     </footer>
     <script src="scripts/index.js"></script>
+
+    <script>
+      fetch("http://www.ds-cam-fyp.click/", {
+        method: "POST"
+      }).then(r => r.json).then(j => {
+        console.log("http://www.ds-cam-fyp.click/  POST")
+        console.log(j)
+      })
+      fetch("http://www.ds-cam-fyp.click/prod/activations", {
+        method: "GET"
+      }).then(r => r.json).then(j => {
+        console.log("http://www.ds-cam-fyp.click/prod/activations  GET")
+        console.log(j)
+      })
+      fetch("http://www.ds-cam-fyp.click/activations", {
+        method: "POST"
+      }).then(r => r.json).then(j => {
+        console.log("http://www.ds-cam-fyp.click/activations  POST")
+        console.log(j)
+      })
+    </script>
   </body>
 
 </html>
