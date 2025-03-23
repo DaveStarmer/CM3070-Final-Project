@@ -89,7 +89,7 @@ export class DashboardStack extends Stack {
     this.uploadBucket.addEventNotification(EventType.OBJECT_CREATED, new LambdaDestination(this.notificationLambda))
 
     // create API for listing notifications
-    // this.createListApi(props?.env?.region || "")
+    this.createListApi(props?.env?.region || "")
   }
 
   createDynamoDBTable() {
