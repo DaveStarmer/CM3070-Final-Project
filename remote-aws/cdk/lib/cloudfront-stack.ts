@@ -222,8 +222,10 @@ export class CloudFrontStack extends Stack {
         const origin = S3BucketOrigin.withOriginAccessControl(this.privateWebBucket, {
             originAccessLevels: [AccessLevel.READ, AccessLevel.LIST],
         })
-
-        const apiOrigin = new HttpOrigin(Fn.ref("apiDomainName"))
+        new CfnOutput(this, "splitorigin", { key: "splitorigin", value: Fn.select(0, Fn.split("/", Fn.select(0, Fn.split("https://", Fn.ref("apiDomainName"))))) })
+        const apiOrigin = new HttpOrigin(
+            Fn.select(0, Fn.split("/", Fn.select(0, Fn.split("https://", Fn.ref("apiDomainName")))))
+        )
 
         /** CloudFront Distribution */
         const cfDist = new Distribution(this, "cloudFrontDistribution", {
