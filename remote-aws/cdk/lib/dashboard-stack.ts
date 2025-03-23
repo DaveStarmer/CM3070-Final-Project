@@ -162,13 +162,7 @@ export class DashboardStack extends Stack {
 
     apiResource.addMethod("GET", apiIntegration)
 
-    new StringParameter(this, "apiDomainName", {
-      description: "",
-      dataType: ParameterDataType.TEXT,
-      tier: ParameterTier.STANDARD,
-      parameterName: "user-pool-id",
-      stringValue: api.url
-    })
+    new CfnOutput(this, "apiDomainName", { key: "apiDomainName", value: api.url })
 
     // const origin = new HttpOrigin(distro.domainName, {
     //   originId: `${api.restApiId}.execute-api.${region}.amazonaws.com`

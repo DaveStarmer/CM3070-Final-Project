@@ -63,6 +63,11 @@ export class CloudFrontStack extends Stack {
             default: props?.env?.region
         })
 
+        new CfnParameter(this, "apiDomainName", {
+            type: "String",
+            description: "API Domain Name (output from dashboard stack)"
+        })
+
 
         /** code bucket construct */
         this.codeBucket = Bucket.fromBucketName(this, "codeBucket", Fn.ref("codeBucketName"))
@@ -219,7 +224,7 @@ export class CloudFrontStack extends Stack {
             originAccessLevels: [AccessLevel.READ, AccessLevel.LIST],
         })
 
-        const apiOrigin = new HttpOrigin(Fn.ref("domainName"))
+        const apiOrigin = new HttpOrigin(Fn.ref("apiDomainName"))
 
         /** CloudFront Distribution */
         const cfDist = new Distribution(this, "cloudFrontDistribution", {
