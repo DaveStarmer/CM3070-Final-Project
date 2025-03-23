@@ -219,6 +219,8 @@ export class CloudFrontStack extends Stack {
             originAccessLevels: [AccessLevel.READ, AccessLevel.LIST],
         })
 
+        const apiOrigin = new HttpOrigin(Fn.ref("domainName"))
+
         /** CloudFront Distribution */
         const cfDist = new Distribution(this, "cloudFrontDistribution", {
             enabled: true,
@@ -238,6 +240,11 @@ export class CloudFrontStack extends Stack {
                 ],
                 viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
                 cachePolicy: CachePolicy.CACHING_DISABLED
+            },
+            additionalBehaviors: {
+                "activations": {
+                    origin: apiOrigin
+                }
             },
             domainNames: [Fn.sub("www.${domainName}"), Fn.ref("domainName")],
             certificate: this.certificate,

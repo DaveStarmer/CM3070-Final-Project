@@ -114,6 +114,22 @@ jobs:
           aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas-cf s3://${{ vars.FYP_PUBLIC_CODE_BUCKET }}/lambdas-cf/ --recursive
           aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas-cf s3://${{ vars.FYP_PUBLIC_CODE_BUCKET_CF }}/lambdas-cf/ --recursive
           aws s3 cp s3://${{ secrets.FYP_PRIVATE_CODE_BUCKET }}/lambdas s3://${{ vars.FYP_PUBLIC_CODE_BUCKET }}/lambdas/ --recursive
+      - name: Deploy Dashboard CloudFormation Template
+        run: >
+          if [[ $(source build/commit_diff_file.sh remote-aws/cdk/lib/dashboard-stack.ts) != 0 ]]; then
+          
+          aws cloudformation deploy
+          --s3-bucket ${{ vars.FYP_PUBLIC_CODE_BUCKET }}
+          --template-file remote-aws/cf-templates/DashboardStack.template.json
+          --stack-name DashboardStack
+          --capabilities CAPABILITY_NAMED_IAM
+          --parameter-overrides uniqueId=${{ secrets.FYP_UNIQUE_ID }}
+          codeBucketName=${{ secrets.FYP_PRIVATE_CODE_BUCKET }}
+
+          else
+          echo No changes to deploy
+          
+          fi
       - name: Deploy CloudFront CloudFormation Template
         # only run action if changes made to corresponding Cloudformation file
         run: >
@@ -130,24 +146,6 @@ jobs:
           domainName=${{ vars.FYP_DOMAIN }}
           certificateArn=${{ secrets.FYP_CERTIFICATE_ARN }}
           userEmail="test.diy.cam.user@outlook.com"
-
-          else
-          echo No changes to deploy
-          
-          fi
-      - name: Deploy Dashboard CloudFormation Template
-        run: >
-          if [[ $(source build/commit_diff_file.sh remote-aws/cdk/lib/dashboard-stack.ts) != 0 ]]; then
-          
-          aws cloudformation deploy
-          --s3-bucket ${{ vars.FYP_PUBLIC_CODE_BUCKET }}
-          --template-file remote-aws/cf-templates/DashboardStack.template.json
-          --stack-name DashboardStack
-          --capabilities CAPABILITY_NAMED_IAM
-          --parameter-overrides uniqueId=${{ secrets.FYP_UNIQUE_ID }}
-          codeBucketName=${{ secrets.FYP_PRIVATE_CODE_BUCKET }}
-          cloudfrontDistroId=${{ secrets.FYP_DISTRIBUTION_ID }}
-          cloudfrontDomainName=${{ secrets.FYP_DISTRIBUTION_DOMAIN }}
 
           else
           echo No changes to deploy

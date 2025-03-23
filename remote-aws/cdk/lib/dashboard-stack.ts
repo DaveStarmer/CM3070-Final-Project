@@ -42,18 +42,6 @@ export class DashboardStack extends Stack {
       default: "public-cam-code-ec0c1faa4de3482c9bdc0081a3ec4834"
     })
 
-    // cloudfront ID
-    new CfnParameter(this, "cloudfrontDistroId", {
-      type: "String",
-      description: "Distribution Id for CloudFront Distribution"
-    })
-
-    // cloudfront Distribution Domain Name
-    new CfnParameter(this, "cloudfrontDomainName", {
-      type: "String",
-      description: "Distribution Domain Name for CloudFront Distribution"
-    })
-
     // Buckets
     // create bucket CDK construct from name
     this.codeBucket = Bucket.fromBucketName(this, "codeBucket", Fn.ref("codeBucketName"))
