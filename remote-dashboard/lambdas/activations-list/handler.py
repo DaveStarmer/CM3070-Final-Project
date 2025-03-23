@@ -2,18 +2,45 @@ import json
 import os
 import logging
 import boto3
-from boto3.dynamodb.conditions import Key, Attr
+from boto3.dynamodb.conditions import Attr
 
 logger = logging.getLogger(__name__)
 
 
 def handler_function(event, _):
-    logger.debug(event)
-    logger.debug(os.environ)
-    table_name = os.environ["DYNAMODB_TABLE"]
+    logger.debug("Event: %s", event)
+    logger.debug("Environment Variables: %s", os.environ)
+
     http_method = event["requestContext"]["httpMethod"]
 
-    if http_method == "GET":
+    if http_method == "PUT":
+        return update_activation_status(event)
+    elif http_method == "DELETE":
+        return delete_video(event)
+    else:
+        return get_activations(event)
+
+
+def update_activation_status(event):
+    logger.debug("PUT method - update activation status")
+
+
+def delete_video(event):
+    logger.debug("DELETE method - delete video")
+
+
+def get_activations(event: dict) -> dict:
+    """List Activations in database
+
+    Args:
+        event (dict): AWS Lambda event
+
+    Returns:
+        dict: response
+    """
+    table_name = os.environ["DYNAMODB_TABLE"]
+
+    if event["requestContext"]["httpMethod"] == "GET":
         logger.debug("GET method")
         search_params = event["queryStringParameters"]
         if search_params is None:
