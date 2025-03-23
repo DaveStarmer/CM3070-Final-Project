@@ -1,4 +1,4 @@
-import { CfnParameter, Duration, Fn, Stack, StackProps } from 'aws-cdk-lib';
+import { CfnOutput, CfnParameter, Duration, Fn, Stack, StackProps } from 'aws-cdk-lib';
 import { AttributeType, Billing, TableV2 } from 'aws-cdk-lib/aws-dynamodb';
 import { LambdaDestination } from 'aws-cdk-lib/aws-s3-notifications';
 import { ApplicationLogLevel, Code, Function, LoggingFormat, Runtime } from 'aws-cdk-lib/aws-lambda';
@@ -6,7 +6,7 @@ import { Bucket, EventType, IBucket } from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
 import { CompositePrincipal, Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { ParameterDataType, ParameterTier, StringParameter } from 'aws-cdk-lib/aws-ssm';
-import { LambdaRestApi } from 'aws-cdk-lib/aws-apigateway';
+import { DomainName, LambdaRestApi } from 'aws-cdk-lib/aws-apigateway';
 import { Distribution } from 'aws-cdk-lib/aws-cloudfront';
 import { HttpOrigin } from 'aws-cdk-lib/aws-cloudfront-origins';
 
@@ -163,20 +163,36 @@ export class DashboardStack extends Stack {
     const api = new LambdaRestApi(this, "listActivationsApi", {
       description: "list activations",
       handler: this.createListApiLambda(),
-      proxy: false
+      proxy: false,
+      deploy: true,
+      deployOptions: {
+        stageName: "activations",
+      }
     })
 
-    const listActivations = api.root.addResource("activations")
-    listActivations.addMethod("GET")
+    api.root.addMethod("ANY")
 
     const distro = Distribution.fromDistributionAttributes(this, "cloudFrontDistro", {
       distributionId: Fn.sub("cloudfrontDistroId"),
       domainName: Fn.sub("cloudfrontDomainName")
     }) as Distribution
 
-    const origin = new HttpOrigin(distro.domainName, {
-      originId: `${api.restApiId}.execute-api.${region}.amazonaws.com`
-    })
+    // const origin = new HttpOrigin(distro.domainName, {
+    //   originId: `${api.restApiId}.execute-api.${region}.amazonaws.com`
+    // })
+
+    // const apiDomainNam = DomainName.fromDomainNameAttributes(this, 'DomainName', {
+    //   domainName: 'domainName',
+    //   domainNameAliasHostedZoneId: 'domainNameAliasHostedZoneId',
+    //   domainNameAliasTarget: 'domainNameAliasTarget',
+    // });
+
+    // new api.BasePathMapping(this, 'BasePathMapping', {
+    //   domainName: domainName,
+    //   restApi: api,
+    // })
+
+    new CfnOutput(this, "testOutput", { value: distro.distributionArn })
 
     // distro.addBehavior("/activations", origin)
   }
