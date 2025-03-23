@@ -248,7 +248,7 @@ export class CloudFrontStack extends Stack {
                 cachePolicy: CachePolicy.CACHING_DISABLED
             },
             additionalBehaviors: {
-                "activations": {
+                "activations/*": {
                     origin: apiOrigin
                 }
             },
