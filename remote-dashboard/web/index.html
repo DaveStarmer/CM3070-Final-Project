@@ -81,7 +81,10 @@
         console.log(j)
       })
       fetch("https://www.ds-cam-fyp.click/prod/activations/activations", {
-        method: "GET"
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        }
       }).then(r => r.json()).then(j => {
         console.log("http://www.ds-cam-fyp.click/prod/activations/activations  GET")
         console.log(j)

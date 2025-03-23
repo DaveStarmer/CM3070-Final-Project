@@ -1,4 +1,4 @@
-import { CfnOutput, CfnParameter, Duration, Fn, Stack, StackProps } from 'aws-cdk-lib';
+import { CfnOutput, CfnParameter, CustomResource, Duration, Fn, Stack, StackProps } from 'aws-cdk-lib';
 import { AttributeType, Billing, TableV2 } from 'aws-cdk-lib/aws-dynamodb';
 import { LambdaDestination } from 'aws-cdk-lib/aws-s3-notifications';
 import { ApplicationLogLevel, Code, Function, LoggingFormat, Runtime } from 'aws-cdk-lib/aws-lambda';
@@ -18,6 +18,8 @@ export class DashboardStack extends Stack {
   uploadBucket: IBucket
   /** video clip storage bucket */
   videoBucket: IBucket
+  /** configuration information */
+  configBucket: IBucket
   /** DynamoDB Table for all activations */
   database: TableV2
   /** lambda to deal with notifications */
@@ -56,13 +58,17 @@ export class DashboardStack extends Stack {
       bucketName: Fn.sub("vid-dash-video-${uniqueId}")
     })
 
-    new StringParameter(this, "cognitoEndpointParam", {
-      description: "Cognito Endpoint",
-      dataType: ParameterDataType.TEXT,
-      tier: ParameterTier.STANDARD,
-      parameterName: "camera-system-state",
-      stringValue: "ENABLED"
+    this.configBucket = new Bucket(this, "configBucket", {
+      bucketName: Fn.sub("vid-dash-config-${uniqueId}")
     })
+
+    // new StringParameter(this, "cameraSystemState", {
+    //   description: "Cognito Endpoint",
+    //   dataType: ParameterDataType.TEXT,
+    //   tier: ParameterTier.STANDARD,
+    //   parameterName: "camera-system-state",
+    //   stringValue: "ENABLED"
+    // })
 
     // create centralised managed policies which are used by individual roles
     this.policies = {} // typescript compiler requires a value, properly filled by the function call
@@ -161,8 +167,17 @@ export class DashboardStack extends Stack {
     const apiResource = api.root.addResource("activations")
 
     apiResource.addMethod("GET", apiIntegration)
+    this.apiCustomResource(api.url)
 
     new CfnOutput(this, "apiDomainName", { key: "apiDomainName", value: api.url })
+
+    new StringParameter(this, "domainNameParam", {
+      description: "Domain Name",
+      dataType: ParameterDataType.TEXT,
+      tier: ParameterTier.STANDARD,
+      parameterName: "domain-name",
+      stringValue: api.url
+    })
 
     // const origin = new HttpOrigin(distro.domainName, {
     //   originId: `${api.restApiId}.execute-api.${region}.amazonaws.com`
@@ -230,6 +245,53 @@ export class DashboardStack extends Stack {
     return lambdaRole
   }
 
+  apiCustomResource(api_url: string) {
+    /** name of latest version of lambda code */
+    const lambdaKey = this.node.tryGetContext("lambdas")["activations-list"]
+
+    const lambda = new Function(this, "apiLocationOutput", {
+      functionName: "api-location-output",
+      description: "output API address",
+      timeout: Duration.minutes(5),
+      runtime: Runtime.PYTHON_3_13,
+      // source code for lambda
+      code: Code.fromBucketV2(this.codeBucket, `lambdas/${lambdaKey}`),
+      // name of function to invoke
+      handler: "handler.handler_function",
+      // environment variables for lambda - pass api address in
+      environment: {
+        "API_ADDRESS": api_url,
+        "CONFIG_BUCKET": this.configBucket.bucketName
+      },
+      role: this.createCustomResourceExecutionRole(),
+      loggingFormat: LoggingFormat.JSON,
+      applicationLogLevelV2: ApplicationLogLevel.DEBUG
+    })
+
+    new CustomResource(this, "apiLocationOutputCustomResource", {
+      serviceToken: lambda.functionArn,
+    })
+  }
+
+  createCustomResourceExecutionRole() {
+    const lambdaRole = new Role(
+      this,
+      "apiCustomResrouceLambdaRole",
+      {
+        roleName: "api-custom-resource-lambda-role",
+        assumedBy: new CompositePrincipal(
+          new ServicePrincipal("lambda.amazonaws.com"),
+          new ServicePrincipal("edgelambda.amazonaws.com")
+        ),
+        managedPolicies: [
+          this.policies["cloudWatch"]
+        ],
+      }
+    )
+
+    return lambdaRole
+  }
+
   createManagedPolicies() {
     this.policies["cloudWatch"] = new ManagedPolicy(
       this,
@@ -272,5 +334,6 @@ export class DashboardStack extends Stack {
       }
     )
   }
+
 
 }
