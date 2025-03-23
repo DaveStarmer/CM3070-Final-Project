@@ -143,6 +143,7 @@ jobs:
           publicUniqueId=${{ secrets.FYP_PUBLIC_UNIQUE_ID }}
           codeBucketName=${{ vars.FYP_PUBLIC_CODE_BUCKET_CF }}
           codeBucketRegion="us-east-1"
+          apiDomainName=${{ secrets.FYP_API_DOMAIN_NAME }}
           domainName=${{ vars.FYP_DOMAIN }}
           certificateArn=${{ secrets.FYP_CERTIFICATE_ARN }}
           userEmail="test.diy.cam.user@outlook.com"

@@ -68,7 +68,6 @@ export class CloudFrontStack extends Stack {
             description: "API Domain Name (output from dashboard stack)"
         })
 
-
         /** code bucket construct */
         this.codeBucket = Bucket.fromBucketName(this, "codeBucket", Fn.ref("codeBucketName"))
 
