@@ -62,28 +62,28 @@
     <script src="scripts/index.js"></script>
 
     <script>
-      fetch("https://www.ds-cam-fyp.click/", {
+      fetch("https://www.ds-cam-fyp.click/activations/", {
         method: "POST"
       }).then(r => r.json()).then(j => {
-        console.log("http://www.ds-cam-fyp.click/  POST")
+        console.log("http://www.ds-cam-fyp.click/activations/  POST")
         console.log(j)
       })
-      fetch("https://www.ds-cam-fyp.click/prod", {
+      fetch("https://www.ds-cam-fyp.click/activations/prod", {
         method: "GET"
       }).then(r => r.json()).then(j => {
-        console.log("http://www.ds-cam-fyp.click/prod  GET")
+        console.log("http://www.ds-cam-fyp.click/activations/prod  GET")
         console.log(j)
       })
-      fetch("https://www.ds-cam-fyp.click/prod/activations", {
+      fetch("https://www.ds-cam-fyp.click/activations/prod/activations", {
         method: "GET"
       }).then(r => r.json()).then(j => {
-        console.log("http://www.ds-cam-fyp.click/prod/activations  GET")
+        console.log("http://www.ds-cam-fyp.click/activations/prod/activations  GET")
         console.log(j)
       })
-      fetch("https://www.ds-cam-fyp.click/prod/activations/activations", {
+      fetch("https://www.ds-cam-fyp.click/activations/prod/activations/activations", {
         method: "GET"
       }).then(r => r.json()).then(j => {
-        console.log("http://www.ds-cam-fyp.click/prod/activations/activations  GET")
+        console.log("http://www.ds-cam-fyp.click/activations/prod/activations/activations  GET")
         console.log(j)
       })
       fetch("https://www.ds-cam-fyp.click/activations", {
