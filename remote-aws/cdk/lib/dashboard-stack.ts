@@ -270,6 +270,8 @@ export class DashboardStack extends Stack {
       applicationLogLevelV2: ApplicationLogLevel.DEBUG,
     })
 
+    this.configBucket.grantWrite(lambda)
+
     // invoke as a custom resource
     new CustomResource(this, "apiLocationOutputCustomResource", {
       serviceToken: lambda.functionArn,
@@ -336,6 +338,7 @@ export class DashboardStack extends Stack {
         ]
       }
     )
+
   }
 
 
