@@ -249,6 +249,7 @@ export class DashboardStack extends Stack {
     /** name of latest version of lambda code */
     const lambdaKey = this.node.tryGetContext("lambdas")["activations-list"]
 
+    /** lambda construct */
     const lambda = new Function(this, "apiLocationOutput", {
       functionName: "api-location-output",
       description: "output API address",
@@ -268,6 +269,7 @@ export class DashboardStack extends Stack {
       applicationLogLevelV2: ApplicationLogLevel.DEBUG
     })
 
+    // invoke as a custom resource
     new CustomResource(this, "apiLocationOutputCustomResource", {
       serviceToken: lambda.functionArn,
     })

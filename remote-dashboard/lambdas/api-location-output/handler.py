@@ -2,7 +2,6 @@
 
 import json
 import os
-from pathlib import Path
 import logging
 import boto3
 from crhelper import CfnResource
