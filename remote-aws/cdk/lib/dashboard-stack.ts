@@ -1,4 +1,4 @@
-import { CfnOutput, CfnParameter, CustomResource, Duration, Fn, Stack, StackProps } from 'aws-cdk-lib';
+import { CfnOutput, CfnParameter, CustomResource, Duration, Fn, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import { AttributeType, Billing, TableV2 } from 'aws-cdk-lib/aws-dynamodb';
 import { LambdaDestination } from 'aws-cdk-lib/aws-s3-notifications';
 import { ApplicationLogLevel, Code, Function, LoggingFormat, Runtime } from 'aws-cdk-lib/aws-lambda';
@@ -59,7 +59,8 @@ export class DashboardStack extends Stack {
     })
 
     this.configBucket = new Bucket(this, "configBucket", {
-      bucketName: Fn.sub("vid-dash-config-${uniqueId}")
+      bucketName: Fn.sub("vid-dash-config-${uniqueId}"),
+      removalPolicy: RemovalPolicy.DESTROY
     })
 
     // new StringParameter(this, "cameraSystemState", {
@@ -247,7 +248,7 @@ export class DashboardStack extends Stack {
 
   apiCustomResource(api_url: string) {
     /** name of latest version of lambda code */
-    const lambdaKey = this.node.tryGetContext("lambdas")["activations-list"]
+    const lambdaKey = this.node.tryGetContext("lambdas")["api-location-output"]
 
     /** lambda construct */
     const lambda = new Function(this, "apiLocationOutput", {
@@ -261,12 +262,12 @@ export class DashboardStack extends Stack {
       handler: "handler.handler_function",
       // environment variables for lambda - pass api address in
       environment: {
-        "API_ADDRESS": api_url,
+        "API_ENDPOINT": api_url,
         "CONFIG_BUCKET": this.configBucket.bucketName
       },
       role: this.createCustomResourceExecutionRole(),
       loggingFormat: LoggingFormat.JSON,
-      applicationLogLevelV2: ApplicationLogLevel.DEBUG
+      applicationLogLevelV2: ApplicationLogLevel.DEBUG,
     })
 
     // invoke as a custom resource
@@ -278,7 +279,7 @@ export class DashboardStack extends Stack {
   createCustomResourceExecutionRole() {
     const lambdaRole = new Role(
       this,
-      "apiCustomResrouceLambdaRole",
+      "apiCustomResourceLambdaRole",
       {
         roleName: "api-custom-resource-lambda-role",
         assumedBy: new CompositePrincipal(
