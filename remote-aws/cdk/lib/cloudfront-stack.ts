@@ -296,6 +296,23 @@ export class CloudFrontStack extends Stack {
         })
         copyPrivateWebResources.node.addDependency(grantToCodeBucket)
         copyPrivateWebResources.node.addDependency(grantToPrivateBucket)
+
+        // copy config file across
+        const copyApiConfig = new CustomResource(this, "copyApiConfig", {
+            serviceToken: copyLambda.functionArn,
+            properties: {
+                sourceRegion: "eu-west-2",
+                sourceBucket: Fn.sub("vid-dash-private-web-${uniqueId}"),
+                destinationRegion: "us-east-1",
+                destinationBucket: this.privateWebBucket.bucketName,
+                keys: ["config.json"]
+            }
+        })
+
+        // grant read and list rights to the config bucket
+        Bucket.fromBucketName(this, "configBucketReference",
+            Fn.sub("vid-dash-private-web-${uniqueId}")).grantRead(copyLambda)
+
     }
 
     /** Deploy Edge Lambda */
