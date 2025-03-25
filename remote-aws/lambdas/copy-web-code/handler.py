@@ -55,6 +55,9 @@ def copy_files(event: dict, _):
     dest_bucket = s3_dest.Bucket(dest_bucket_name)
     logger.info("Destination Bucket: %s", dest_bucket_name)
 
+    # strip prefix off filename in destination
+    strip_prefix = props.get("stripPrefix", "true").upper() == "TRUE"
+
     # iterate contents of source bucket, and copy contents across
     # without parent folder name
     keys = props["keys"]
@@ -68,7 +71,11 @@ def copy_files(event: dict, _):
         for file in source_bucket.objects.filter(Prefix=key_prefix):
             logger.debug("Copying %s", file.key)
             source = {"Bucket": source_bucket_name, "Key": str(file.key)}
-            new_key = Path(file.key).relative_to(key_prefix)
+            # strip prefix off destination key if required
+            if strip_prefix:
+                new_key = Path(file.key).relative_to(key_prefix)
+            else:
+                new_key = file.key
             # allow individual files to be passed through
             if new_key == "":
                 new_key = Path(file).name

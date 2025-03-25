@@ -305,7 +305,8 @@ export class CloudFrontStack extends Stack {
                 sourceBucket: Fn.sub("vid-dash-config-${uniqueId}"),
                 destinationRegion: "us-east-1",
                 destinationBucket: this.privateWebBucket.bucketName,
-                keys: ["config.json"]
+                keys: ["config.json"],
+                stripPrefix: "false",
             }
         })
 
