@@ -307,6 +307,7 @@ export class CloudFrontStack extends Stack {
                 destinationBucket: this.privateWebBucket.bucketName,
                 keys: ["config.json"],
                 stripPrefix: "false",
+                triggerParam: "trigger"
             }
         })
 
