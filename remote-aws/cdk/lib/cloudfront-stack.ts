@@ -302,7 +302,7 @@ export class CloudFrontStack extends Stack {
             serviceToken: copyLambda.functionArn,
             properties: {
                 sourceRegion: "eu-west-2",
-                sourceBucket: Fn.sub("vid-dash-private-web-${uniqueId}"),
+                sourceBucket: Fn.sub("vid-dash-config-${uniqueId}"),
                 destinationRegion: "us-east-1",
                 destinationBucket: this.privateWebBucket.bucketName,
                 keys: ["config.json"]
@@ -311,7 +311,7 @@ export class CloudFrontStack extends Stack {
 
         // grant read and list rights to the config bucket
         Bucket.fromBucketName(this, "configBucketReference",
-            Fn.sub("vid-dash-private-web-${uniqueId}")).grantRead(copyLambda)
+            Fn.sub("vid-dash-config-${uniqueId}")).grantRead(copyLambda)
 
     }
 
