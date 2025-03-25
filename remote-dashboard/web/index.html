@@ -61,41 +61,6 @@
     </footer>
     <script src="scripts/index.js"></script>
 
-    <script>
-      fetch("https://www.ds-cam-fyp.click/activations/", {
-        method: "POST"
-      }).then(r => r.json()).then(j => {
-        console.log("http://www.ds-cam-fyp.click/activations/  POST")
-        console.log(j)
-      })
-      fetch("https://www.ds-cam-fyp.click/prod", {
-        method: "GET"
-      }).then(r => r.json()).then(j => {
-        console.log("http://www.ds-cam-fyp.click/prod  GET")
-        console.log(j)
-      })
-      fetch("https://www.ds-cam-fyp.click/prod/activations", {
-        method: "GET"
-      }).then(r => r.json()).then(j => {
-        console.log("http://www.ds-cam-fyp.click/prod/activations  GET")
-        console.log(j)
-      })
-      fetch("https://www.ds-cam-fyp.click/prod/activations/activations", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        }
-      }).then(r => r.json()).then(j => {
-        console.log("http://www.ds-cam-fyp.click/prod/activations/activations  GET")
-        console.log(j)
-      })
-      fetch("https://www.ds-cam-fyp.click/activations", {
-        method: "GET"
-      }).then(r => r.json()).then(j => {
-        console.log("http://www.ds-cam-fyp.click/activations  GET")
-        console.log(j)
-      })
-    </script>
   </body>
 
 </html>

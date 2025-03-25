@@ -15,6 +15,7 @@ function addNotificationToMain(props) {
  * @param {string} props.videoStill uri of video still
  * @param {string} props.timestamp timestamp of activation
  * @param {string} props.camera camera details
+ * @param {string} props.filename filename of video
  * @returns DOM object
  */
 function createNotification(props) {
@@ -41,6 +42,31 @@ function createNotification(props) {
 
   return card
 }
+
+function updateActivations(newActivations = true) {
+  // clear notifications
+  fetch(apiUrl)
+    .then(res => res.json())
+    .then(js => {
+      // clear main or existing cards
+      document.querySelector("main").innerHTML = ""
+      for (let i = 0; i < js.length; ++i) {
+        console.log(js[i])
+        addNotificationToMain({ videoStill: "https://placehold.co/150x75", ...js[i] })
+      }
+    }
+
+    )
+
+}
+
+fetch("config.json").then(res => res.json()).then(js => {
+  window.apiUrl = (js["api-endpoint"].slice(-1) == "/")
+    ? `${js["api-endpoint"]}activations`
+    : `${js["api-endpoint"]}/activations`
+  console.log(`API URL is: ${apiUrl}`)
+  updateActivations()
+})
 
 addNotificationToMain({ videoStill: "https://placehold.co/150x75", timestamp: "19/02/2025 08:30", camera: "Test Camera (Camera 1)" })
 
