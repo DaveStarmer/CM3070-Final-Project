@@ -6,9 +6,7 @@ import { Bucket, EventType, IBucket } from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
 import { CompositePrincipal, Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { ParameterDataType, ParameterTier, StringParameter } from 'aws-cdk-lib/aws-ssm';
-import { DomainName, LambdaIntegration, LambdaRestApi, RestApi } from 'aws-cdk-lib/aws-apigateway';
-import { Distribution } from 'aws-cdk-lib/aws-cloudfront';
-import { HttpOrigin } from 'aws-cdk-lib/aws-cloudfront-origins';
+import { LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway';
 
 
 export class DashboardStack extends Stack {
@@ -84,7 +82,7 @@ export class DashboardStack extends Stack {
     this.uploadBucket.addEventNotification(EventType.OBJECT_CREATED, new LambdaDestination(this.notificationLambda))
 
     // create API for listing notifications
-    this.createListApi(props?.env?.region || "")
+    this.createNotificationsApi(props?.env?.region || "")
   }
 
   createDynamoDBTable() {
@@ -154,14 +152,18 @@ export class DashboardStack extends Stack {
     return lambdaRole
   }
 
-  createListApi(region: string) {
+  /**
+   * Create the API for notitifications
+   * @param region string representation of region, e.g. eu-west-2
+   */
+  createNotificationsApi(region: string) {
     const api = new RestApi(this, "listActivationsApi", {
       restApiName: "activationsApi",
       description: "list activations",
       deploy: true,
     })
 
-    const apiLambda = this.createListApiLambda()
+    const apiLambda = this.createApiLambda()
 
     const apiIntegration = new LambdaIntegration(apiLambda)
 
@@ -179,26 +181,13 @@ export class DashboardStack extends Stack {
       parameterName: "domain-name",
       stringValue: api.url
     })
-
-    // const origin = new HttpOrigin(distro.domainName, {
-    //   originId: `${api.restApiId}.execute-api.${region}.amazonaws.com`
-    // })
-
-    // const apiDomainNam = DomainName.fromDomainNameAttributes(this, 'DomainName', {
-    //   domainName: 'domainName',
-    //   domainNameAliasHostedZoneId: 'domainNameAliasHostedZoneId',
-    //   domainNameAliasTarget: 'domainNameAliasTarget',
-    // });
-
-    // new api.BasePathMapping(this, 'BasePathMapping', {
-    //   domainName: domainName,
-    //   restApi: api,
-    // })
-
-    // distro.addBehavior("/activations", origin)
   }
 
-  createListApiLambda() {
+  /**
+   * Create Lambda to respond to API
+   * @returns Lambda object
+   */
+  createApiLambda() {
     /** name of latest version of lambda code */
     const lambdaKey = this.node.tryGetContext("lambdas")["activations-list"]
 
@@ -216,7 +205,7 @@ export class DashboardStack extends Stack {
       environment: {
         "DYNAMODB_TABLE": this.database.tableName
       },
-      role: this.createListAPILambdaExecutionRole(),
+      role: this.createAPILambdaExecutionRole(),
       loggingFormat: LoggingFormat.JSON,
       applicationLogLevelV2: ApplicationLogLevel.DEBUG
     })
@@ -227,7 +216,11 @@ export class DashboardStack extends Stack {
     return listApiLambda
   }
 
-  createListAPILambdaExecutionRole() {
+  /**
+   * Create execution role for API Lambda
+   * @returns Execution Role for API Lambda
+   */
+  createAPILambdaExecutionRole() {
     const lambdaRole = new Role(
       this,
       "listApiLambdaRole",
@@ -246,6 +239,8 @@ export class DashboardStack extends Stack {
     return lambdaRole
   }
 
+  /** Custom Resource to output API Address
+   */
   apiCustomResource(api_url: string) {
     /** name of latest version of lambda code */
     const lambdaKey = this.node.tryGetContext("lambdas")["api-location-output"]
@@ -278,6 +273,10 @@ export class DashboardStack extends Stack {
     })
   }
 
+  /**
+   * Create Execution Role for API Custom Resource
+   * @returns execution role
+   */
   createCustomResourceExecutionRole() {
     const lambdaRole = new Role(
       this,
@@ -297,7 +296,11 @@ export class DashboardStack extends Stack {
     return lambdaRole
   }
 
+  /**
+   * Create all managed policies, which can be attached variously to roles
+   */
   createManagedPolicies() {
+    // logs policy
     this.policies["cloudWatch"] = new ManagedPolicy(
       this,
       "cloudWatchLogsPolicy",
@@ -319,6 +322,7 @@ export class DashboardStack extends Stack {
       }
     )
 
+    // get parameters from SSM Parameter Store
     this.policies["getParameter"] = new ManagedPolicy(
       this,
       "ssmGetParameterPolicy",
