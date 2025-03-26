@@ -63,6 +63,10 @@ export class CloudFrontStack extends Stack {
             default: props?.env?.region
         })
 
+        new CfnParameter(this, "apiDomainName", {
+            type: "String",
+            description: "API Domain Name (output from dashboard stack)"
+        })
 
         /** code bucket construct */
         this.codeBucket = Bucket.fromBucketName(this, "codeBucket", Fn.ref("codeBucketName"))
@@ -219,6 +223,10 @@ export class CloudFrontStack extends Stack {
             originAccessLevels: [AccessLevel.READ, AccessLevel.LIST],
         })
 
+        const apiOrigin = new HttpOrigin(
+            Fn.select(0, Fn.split("/", Fn.select(0, Fn.split("https://", Fn.ref("apiDomainName")))))
+        )
+
         /** CloudFront Distribution */
         const cfDist = new Distribution(this, "cloudFrontDistribution", {
             enabled: true,
@@ -238,6 +246,11 @@ export class CloudFrontStack extends Stack {
                 ],
                 viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
                 cachePolicy: CachePolicy.CACHING_DISABLED
+            },
+            additionalBehaviors: {
+                "activations/*": {
+                    origin: apiOrigin
+                }
             },
             domainNames: [Fn.sub("www.${domainName}"), Fn.ref("domainName")],
             certificate: this.certificate,
@@ -283,6 +296,25 @@ export class CloudFrontStack extends Stack {
         })
         copyPrivateWebResources.node.addDependency(grantToCodeBucket)
         copyPrivateWebResources.node.addDependency(grantToPrivateBucket)
+
+        // copy config file across
+        const copyApiConfig = new CustomResource(this, "copyApiConfig", {
+            serviceToken: copyLambda.functionArn,
+            properties: {
+                sourceRegion: "eu-west-2",
+                sourceBucket: Fn.sub("vid-dash-config-${uniqueId}"),
+                destinationRegion: "us-east-1",
+                destinationBucket: this.privateWebBucket.bucketName,
+                keys: ["config.json"],
+                stripPrefix: "false",
+                triggerParam: "trigger"
+            }
+        })
+
+        // grant read and list rights to the config bucket
+        Bucket.fromBucketName(this, "configBucketReference",
+            Fn.sub("vid-dash-config-${uniqueId}")).grantRead(copyLambda)
+
     }
 
     /** Deploy Edge Lambda */

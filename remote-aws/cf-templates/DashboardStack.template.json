@@ -7,9 +7,9 @@
   },
   "codeBucketName": {
    "Type": "String",
-   "Default": "instruct-code-2560df37ccbefd6b43eeb50fdc8abe7f",
+   "Default": "public-cam-code-ec0c1faa4de3482c9bdc0081a3ec4834",
    "AllowedPattern": "^[a-z0-9.-]{1,63}$",
-   "Description": "Private Code Bucket Name"
+   "Description": "Code Bucket Name"
   }
  },
  "Resources": {
@@ -115,42 +115,11 @@
     "aws:cdk:path": "DashboardStack/cognitoEndpointParam/Resource"
    }
   },
-  "activationsTable6047EFE0": {
-   "Type": "AWS::DynamoDB::GlobalTable",
-   "Properties": {
-    "AttributeDefinitions": [
-     {
-      "AttributeName": "filename",
-      "AttributeType": "S"
-     }
-    ],
-    "BillingMode": "PAY_PER_REQUEST",
-    "KeySchema": [
-     {
-      "AttributeName": "filename",
-      "KeyType": "HASH"
-     }
-    ],
-    "Replicas": [
-     {
-      "Region": {
-       "Ref": "AWS::Region"
-      }
-     }
-    ],
-    "TableName": "activationsTable"
-   },
-   "UpdateReplacePolicy": "Retain",
-   "DeletionPolicy": "Retain",
-   "Metadata": {
-    "aws:cdk:path": "DashboardStack/activationsTable/Resource"
-   }
-  },
-  "notificationCloudWatchLogsPolicy8F9F0A06": {
+  "cloudWatchLogsPolicy62FA4890": {
    "Type": "AWS::IAM::ManagedPolicy",
    "Properties": {
     "Description": "",
-    "ManagedPolicyName": "notification-lambda-logs-policy",
+    "ManagedPolicyName": "cam-logs-policy",
     "Path": "/",
     "PolicyDocument": {
      "Statement": [
@@ -179,14 +148,14 @@
     }
    },
    "Metadata": {
-    "aws:cdk:path": "DashboardStack/notificationCloudWatchLogsPolicy/Resource"
+    "aws:cdk:path": "DashboardStack/cloudWatchLogsPolicy/Resource"
    }
   },
-  "notificationSsmGetParameterPolicyE587AAD4": {
+  "ssmGetParameterPolicy6E238F58": {
    "Type": "AWS::IAM::ManagedPolicy",
    "Properties": {
     "Description": "",
-    "ManagedPolicyName": "notification-get-parameter-policy",
+    "ManagedPolicyName": "cam-get-parameter-policy",
     "Path": "/",
     "PolicyDocument": {
      "Statement": [
@@ -214,7 +183,68 @@
     }
    },
    "Metadata": {
-    "aws:cdk:path": "DashboardStack/notificationSsmGetParameterPolicy/Resource"
+    "aws:cdk:path": "DashboardStack/ssmGetParameterPolicy/Resource"
+   }
+  },
+  "activationTable47DE6EF0": {
+   "Type": "AWS::DynamoDB::GlobalTable",
+   "Properties": {
+    "AttributeDefinitions": [
+     {
+      "AttributeName": "camera",
+      "AttributeType": "S"
+     },
+     {
+      "AttributeName": "timestamp",
+      "AttributeType": "S"
+     },
+     {
+      "AttributeName": "clipStatus",
+      "AttributeType": "S"
+     }
+    ],
+    "BillingMode": "PAY_PER_REQUEST",
+    "KeySchema": [
+     {
+      "AttributeName": "camera",
+      "KeyType": "HASH"
+     },
+     {
+      "AttributeName": "timestamp",
+      "KeyType": "RANGE"
+     }
+    ],
+    "LocalSecondaryIndexes": [
+     {
+      "IndexName": "clipStatusIndex",
+      "KeySchema": [
+       {
+        "AttributeName": "camera",
+        "KeyType": "HASH"
+       },
+       {
+        "AttributeName": "clipStatus",
+        "KeyType": "RANGE"
+       }
+      ],
+      "Projection": {
+       "ProjectionType": "ALL"
+      }
+     }
+    ],
+    "Replicas": [
+     {
+      "Region": {
+       "Ref": "AWS::Region"
+      }
+     }
+    ],
+    "TableName": "activations"
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "DashboardStack/activationTable/Resource"
    }
   },
   "notificationLambdaRoleE89DA80E": {
@@ -237,10 +267,10 @@
     },
     "ManagedPolicyArns": [
      {
-      "Ref": "notificationCloudWatchLogsPolicy8F9F0A06"
+      "Ref": "cloudWatchLogsPolicy62FA4890"
      },
      {
-      "Ref": "notificationSsmGetParameterPolicyE587AAD4"
+      "Ref": "ssmGetParameterPolicy6E238F58"
      }
     ],
     "RoleName": "notification-lambda-role"
@@ -336,12 +366,28 @@
         "dynamodb:UpdateItem"
        ],
        "Effect": "Allow",
-       "Resource": {
-        "Fn::GetAtt": [
-         "activationsTable6047EFE0",
-         "Arn"
-        ]
-       }
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "activationTable47DE6EF0",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "activationTable47DE6EF0",
+             "Arn"
+            ]
+           },
+           "/index/*"
+          ]
+         ]
+        }
+       ]
       }
      ],
      "Version": "2012-10-17"
@@ -370,7 +416,7 @@
     "Environment": {
      "Variables": {
       "DYNAMODB_TABLE": {
-       "Ref": "activationsTable6047EFE0"
+       "Ref": "activationTable47DE6EF0"
       },
       "SOURCE_BUCKET": {
        "Ref": "videoUpload4F12A8C9"
@@ -484,6 +530,343 @@
    ],
    "Metadata": {
     "aws:cdk:path": "DashboardStack/BucketNotificationsHandler050a0587b7544547bf325f094a3db834/Resource"
+   }
+  },
+  "listActivationsApi34766676": {
+   "Type": "AWS::ApiGateway::RestApi",
+   "Properties": {
+    "Description": "list activations",
+    "Name": "activationsApi"
+   },
+   "Metadata": {
+    "aws:cdk:path": "DashboardStack/listActivationsApi/Resource"
+   }
+  },
+  "listActivationsApiDeployment6445D741e95d2c54028fbc6f0187fb6bcfb6f8b3": {
+   "Type": "AWS::ApiGateway::Deployment",
+   "Properties": {
+    "Description": "list activations",
+    "RestApiId": {
+     "Ref": "listActivationsApi34766676"
+    }
+   },
+   "DependsOn": [
+    "listActivationsApiactivationsGETEAC19B07",
+    "listActivationsApiactivations70340CE4"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "DashboardStack/listActivationsApi/Deployment/Resource"
+   }
+  },
+  "listActivationsApiDeploymentStageprodE56C4C89": {
+   "Type": "AWS::ApiGateway::Stage",
+   "Properties": {
+    "DeploymentId": {
+     "Ref": "listActivationsApiDeployment6445D741e95d2c54028fbc6f0187fb6bcfb6f8b3"
+    },
+    "RestApiId": {
+     "Ref": "listActivationsApi34766676"
+    },
+    "StageName": "prod"
+   },
+   "Metadata": {
+    "aws:cdk:path": "DashboardStack/listActivationsApi/DeploymentStage.prod/Resource"
+   }
+  },
+  "listActivationsApiactivations70340CE4": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Fn::GetAtt": [
+      "listActivationsApi34766676",
+      "RootResourceId"
+     ]
+    },
+    "PathPart": "activations",
+    "RestApiId": {
+     "Ref": "listActivationsApi34766676"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "DashboardStack/listActivationsApi/Default/activations/Resource"
+   }
+  },
+  "listActivationsApiactivationsGETApiPermissionDashboardStacklistActivationsApi72416B88GETactivationsECAED963": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "listApiLambda7E6FD1BC",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "listActivationsApi34766676"
+       },
+       "/",
+       {
+        "Ref": "listActivationsApiDeploymentStageprodE56C4C89"
+       },
+       "/GET/activations"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "DashboardStack/listActivationsApi/Default/activations/GET/ApiPermission.DashboardStacklistActivationsApi72416B88.GET..activations"
+   }
+  },
+  "listActivationsApiactivationsGETApiPermissionTestDashboardStacklistActivationsApi72416B88GETactivations7BD0ED82": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "listApiLambda7E6FD1BC",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "listActivationsApi34766676"
+       },
+       "/test-invoke-stage/GET/activations"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "DashboardStack/listActivationsApi/Default/activations/GET/ApiPermission.Test.DashboardStacklistActivationsApi72416B88.GET..activations"
+   }
+  },
+  "listActivationsApiactivationsGETEAC19B07": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "GET",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:",
+        {
+         "Ref": "AWS::Region"
+        },
+        ":lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "listApiLambda7E6FD1BC",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "listActivationsApiactivations70340CE4"
+    },
+    "RestApiId": {
+     "Ref": "listActivationsApi34766676"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "DashboardStack/listActivationsApi/Default/activations/GET/Resource"
+   }
+  },
+  "listApiLambdaRole5EC99D0C": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": [
+         "edgelambda.amazonaws.com",
+         "lambda.amazonaws.com"
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Ref": "cloudWatchLogsPolicy62FA4890"
+     }
+    ],
+    "RoleName": "list-api-lambda-role"
+   },
+   "Metadata": {
+    "aws:cdk:path": "DashboardStack/listApiLambdaRole/Resource"
+   }
+  },
+  "listApiLambdaRoleDefaultPolicyE264BACF": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:DescribeTable",
+        "dynamodb:GetItem",
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator",
+        "dynamodb:Query",
+        "dynamodb:Scan"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "activationTable47DE6EF0",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "activationTable47DE6EF0",
+             "Arn"
+            ]
+           },
+           "/index/*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "listApiLambdaRoleDefaultPolicyE264BACF",
+    "Roles": [
+     {
+      "Ref": "listApiLambdaRole5EC99D0C"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "DashboardStack/listApiLambdaRole/DefaultPolicy/Resource"
+   }
+  },
+  "listApiLambda7E6FD1BC": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": {
+      "Ref": "codeBucketName"
+     },
+     "S3Key": "lambdas/activations-list-b4db6176a54aeb9357981cd5d398ce03.zip"
+    },
+    "Description": "responds to api requests for lists of notification",
+    "Environment": {
+     "Variables": {
+      "DYNAMODB_TABLE": {
+       "Ref": "activationTable47DE6EF0"
+      }
+     }
+    },
+    "FunctionName": "list-api-lambda",
+    "Handler": "handler.handler_function",
+    "LoggingConfig": {
+     "ApplicationLogLevel": "DEBUG",
+     "LogFormat": "JSON"
+    },
+    "Role": {
+     "Fn::GetAtt": [
+      "listApiLambdaRole5EC99D0C",
+      "Arn"
+     ]
+    },
+    "Runtime": "python3.13",
+    "Timeout": 300
+   },
+   "DependsOn": [
+    "listApiLambdaRoleDefaultPolicyE264BACF",
+    "listApiLambdaRole5EC99D0C"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "DashboardStack/listApiLambda/Resource"
+   }
+  }
+ },
+ "Outputs": {
+  "listActivationsApiEndpoint913BCE36": {
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "https://",
+      {
+       "Ref": "listActivationsApi34766676"
+      },
+      ".execute-api.",
+      {
+       "Ref": "AWS::Region"
+      },
+      ".",
+      {
+       "Ref": "AWS::URLSuffix"
+      },
+      "/",
+      {
+       "Ref": "listActivationsApiDeploymentStageprodE56C4C89"
+      },
+      "/"
+     ]
+    ]
    }
   }
  },
