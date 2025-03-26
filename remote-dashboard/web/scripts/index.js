@@ -15,6 +15,7 @@ function addNotificationToMain(props) {
  * @param {string} props.videoStill uri of video still
  * @param {string} props.timestamp timestamp of activation
  * @param {string} props.camera camera details
+ * @param {string} props.filename filename of video
  * @returns DOM object
  */
 function createNotification(props) {
@@ -42,6 +43,35 @@ function createNotification(props) {
   return card
 }
 
-addNotificationToMain({ videoStill: "https://placehold.co/150x75", timestamp: "19/02/2025 08:30", camera: "Test Camera (Camera 1)" })
+function updateActivations(newActivations = true) {
+  // clear notifications
+  fetch(apiUrl)
+    .then(res => res.json())
+    .then(js => {
+      // clear main or existing cards
 
-addNotificationToMain({ videoStill: "https://placehold.co/150x75", timestamp: "20/02/2025 19:00", camera: "Other  Test Camera (Camera 2)" })
+      // if no new activations, display message to that effect
+      if (js.length == 0) {
+        document.querySelector("main").innerHTML = "<div>No new notifications to show</div>"
+      }
+      // otherwise empty the activations display
+      else document.querySelector("main").innerHTML = ""
+
+      // iterate and put activation cards in place
+      for (let i = 0; i < js.length; ++i) {
+        addNotificationToMain({ videoStill: "https://placehold.co/150x75", ...js[i] })
+      }
+    }
+
+    )
+
+}
+
+fetch("config.json").then(res => res.json()).then(js => {
+  window.apiUrl = (js["api-endpoint"].slice(-1) == "/")
+    ? `${js["api-endpoint"]}activations`
+    : `${js["api-endpoint"]}/activations`
+  updateActivations()
+})
+
+

@@ -81,7 +81,9 @@
       "copy-web-code": "copy-web-code.zip",
       "edge-auth": "edge-auth.zip",
       "edge-response": "edge-response.zip",
-      "notification": "notification.zip"
+      "notification": "notification.zip",
+      "activations-list": "activations-list.zip",
+      "api-location-output": "api-location-output.zip"
     }
   }
 }
