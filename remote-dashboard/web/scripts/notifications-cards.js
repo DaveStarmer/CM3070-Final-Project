@@ -142,13 +142,13 @@ function createVideoPopup() {
     document.getElementById("page-overlay").classList.remove("popup-visible")
   })
 
+  // create the video div - in case other popups are wanted in future
+  const videoPopup = createDocElement(popup, "div", "video-popup")
+
   // create header block
-  const videoHeader = createDocElement(popup, "div", "popup-video-head")
+  const videoHeader = createDocElement(videoPopup, "div", "popup-video-head")
   createDocElement(videoHeader, "p", "popup-video-date-time")
   createDocElement(videoHeader, "p", "popup-video-info")
-
-  // create the video popup
-  const videoPopup = createDocElement(popup, "div", "video-popup")
 
   // create video element
   const videoPlayback = createDocElement(videoPopup, "video", "video-playback")
