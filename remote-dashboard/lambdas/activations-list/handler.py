@@ -24,13 +24,16 @@ def handler_function(event, _):
 
     http_method = event["requestContext"]["httpMethod"]
 
+    queryString = event.get("queryStringParameters", {})
+    if queryString is None:
+        # if provided in event as 'None' rather than not existing
+        queryString = {}
+
     if http_method == "PUT":
         return update_activation_status(event)
     elif http_method == "DELETE":
         return delete_video(event)
-    elif (
-        http_method == "GET" and event["queryStringParameters"].get("video") is not None
-    ):
+    elif http_method == "GET" and queryString.get("video") is not None:
         return get_video_url(event)
     else:
         return get_activations(event)

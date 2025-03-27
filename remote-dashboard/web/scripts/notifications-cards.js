@@ -43,6 +43,10 @@ function createNotification(props) {
   return card
 }
 
+/**
+ * update activations section of page
+ * @param {boolean} newActivations show only new activations (default)
+ */
 function updateActivations(newActivations = true) {
   // clear notifications
   fetch(apiUrl)
@@ -67,7 +71,87 @@ function updateActivations(newActivations = true) {
 
 }
 
-function createVideoPopup() {
+/**
+ * Helper function to create new DOM Element, attach to parent, and set common attributes
+ * 
+ * @param {string|Element} parent parent element to attach new element to (id or JS DOM Element)
+ * @param {string} elementType type of new element
+ * @param {string} id id of new element (optional, required if props set)
+ * @param {string[]} props.classes array of strings representing classes to be assigned to element
+ * @param {string} props.src source for image
+ * @param {string} props.alt alt text for image
+ * @returns created element
+ */
+function createDocElement(parent, elementType, id, props) {
+  // create element
+  const element = document.createElement(elementType)
+  // give element id if set
+  if (id) element.id = id
 
+  // deal with contents of props
+  // set classes if passed
+  if (props.classes) {
+    for (c of props.classes) {
+      element.classList.add(c)
+    }
+  }
+  // set img src
+  if (elementType == "img" && props.src) {
+    element.src = props.src
+  }
+  // set alt text
+  if (elementType == "img" && props.alt) {
+    element.alt = props.alt
+  }
+
+  // attach element to parent
+  if ((typeof parent).toLowerCase() == "string") {
+    // if id has been passed in, find JS DOM Element
+    parent = document.getElementById(parent)
+  }
+  parent.appendChild(element)
+  return element
+}
+
+function createVideoPopup() {
+  // create page overlay - the overlay to blank out the background if necessary
+  if (!document.getElementById("page-overlay")) {
+    createDocElement(document.body, "div", "page-overlay")
+  }
+
+  // create popup - the box if necessary
+  if (!document.getElementById("popup")) {
+    createDocElement("page-overlay", "div", "popup")
+  }
+  popup = document.getElementById("popup")
+
+  // create the close button for the popup
+  const popupClose = createDocElement(popup, "img", "popup-close")
+  popupClose.src = "images/close_24dp_000000.svg"
+  popupClose.addEventListener("click", ev => {
+    // remove visibility from popup elements
+    // this could be worked out programatically, but this absolute version makes it clearer for maintenance
+    document.getElementById("video-popup").classList.remove("popup-visible")
+    document.getElementById("popup").classList.remove("popup-visible")
+    document.getElementById("page-overlay").classList.remove("popup-visible")
+  })
+
+  // create the video popup
+  const videoPopup = createDocElement(popup, "div", "video-popup")
+
+  // buttons
+  // viewed status
+  const viewedButton = createDocElement(popup, "img", "viewed-status", {
+    src: "images/viewed.svg",
+    alt: "video viewed, click to mark as new",
+    classes: ["img-button"]
+  })
+
+  // share
+  const shareButton = createDocElement(popup, "img", "share-video", {
+    src: "images/share_24dp_000000.svg",
+    alt: "get share link valid for 7 days",
+    classes: ["img-button"]
+  })
 }
 
