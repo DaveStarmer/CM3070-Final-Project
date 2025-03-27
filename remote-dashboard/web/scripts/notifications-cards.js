@@ -166,10 +166,26 @@ function createVideoPopup() {
 }
 
 function selectNotification(ev) {
+  // move up the tree to find the parent activation card
   let target = ev.target
-  console.log(target)
   while (target != document.body && !target.classList.contains("activation-card")) {
     target = target.parentElement
-    console.log(target)
   }
+
+  const videoKey = target.dataset.video
+
+  fetch(`${apiUrl}/?video=${videoKey}`).then(response => {
+    // exit if invalid URL is sent
+    console.log(response)
+    return response.text()
+  }).then(videoUrl => {
+    console.log(videoUrl)
+    // set video to be displayed
+    document.getElementById("video-playback").src = videoUrl
+
+    // open popup
+    document.getElementById("video-popup").classList.add("popup-visible")
+    document.getElementById("popup").classList.add("popup-visible")
+    document.getElementById("page-overlay").classList.add("popup-visible")
+  })
 }

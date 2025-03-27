@@ -158,3 +158,8 @@ nav {
     justify-content: center;
     gap: 20px;
 }
+
+/* make page overlay display when extra class is added */
+#page-overlay.popup-visible {
+    display:block;
+}
