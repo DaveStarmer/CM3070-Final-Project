@@ -142,12 +142,17 @@ function createVideoPopup() {
     document.getElementById("page-overlay").classList.remove("popup-visible")
   })
 
+  // create header block
+  const videoHeader = createDocElement(popup, "div", "popup-video-head")
+  createDocElement(videoHeader, "p", "popup-video-date-time")
+  createDocElement(videoHeader, "p", "popup-video-info")
+
   // create the video popup
   const videoPopup = createDocElement(popup, "div", "video-popup")
 
   // create video element
   const videoPlayback = createDocElement(videoPopup, "video", "video-playback")
-  videoPlayback.setAttribute("controls", "true")
+  videoPlayback.setAttribute("controls", "controls")
 
   // create video source element
   createDocElement(videoPlayback, "source", "video-source")
@@ -176,6 +181,14 @@ function selectNotification(ev) {
     target = target.parentElement
   }
 
+  // set titles
+  const activationDateTime = target.querySelector(".activation-date-time").innerText
+  document.getElementById("popup-video-date-time").innerText = activationDateTime
+  const activationInfo = target.querySelector(".activation-info").innerText
+  document.getElementById("popup-video-info").innerText = activationInfo
+
+
+  // get video key to find
   const videoKey = target.dataset.video
 
   fetch(`${apiUrl}/?video=${videoKey}`).then(response => {
