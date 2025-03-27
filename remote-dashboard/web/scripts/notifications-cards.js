@@ -89,19 +89,21 @@ function createDocElement(parent, elementType, id, props) {
   if (id) element.id = id
 
   // deal with contents of props
-  // set classes if passed
-  if (props.classes) {
-    for (c of props.classes) {
-      element.classList.add(c)
+  if (props) {
+    // set classes if passed
+    if (props.classes) {
+      for (c of props.classes) {
+        element.classList.add(c)
+      }
     }
-  }
-  // set img src
-  if (elementType == "img" && props.src) {
-    element.src = props.src
-  }
-  // set alt text
-  if (elementType == "img" && props.alt) {
-    element.alt = props.alt
+    // set img src
+    if (elementType == "img" && props.src) {
+      element.src = props.src
+    }
+    // set alt text
+    if (elementType == "img" && props.alt) {
+      element.alt = props.alt
+    }
   }
 
   // attach element to parent
