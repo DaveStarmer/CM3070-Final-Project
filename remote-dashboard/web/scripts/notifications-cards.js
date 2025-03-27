@@ -42,7 +42,7 @@ function createNotification(props) {
   info.appendChild(actCam)
 
   // add onclick eventListener to allow opening the full video in a popup
-  card.addEventListener("click", selectNotification, true)
+  card.addEventListener("click", selectNotification)
 
   return card
 }
@@ -166,5 +166,10 @@ function createVideoPopup() {
 }
 
 function selectNotification(ev) {
-  console.log(ev.target)
+  let target = ev.target
+  console.log(target)
+  while (target != document.body && !target.classList.contains("activation-card")) {
+    target = target.parentElement
+    console.log(target)
+  }
 }
