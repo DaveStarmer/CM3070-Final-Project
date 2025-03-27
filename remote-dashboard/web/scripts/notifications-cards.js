@@ -173,6 +173,7 @@ function createVideoPopup() {
     alt: "get share link valid for 7 days",
     classes: ["img-button"]
   })
+  shareButton.addEventListener("click", clickShareButton)
 }
 
 function selectNotification(ev) {
@@ -187,6 +188,7 @@ function selectNotification(ev) {
   document.getElementById("popup-video-date-time").innerText = activationDateTime
   const activationCam = target.querySelector(".activation-camera").innerText
   document.getElementById("popup-video-camera").innerText = activationCam
+  document.getElementById("share-video").dataset.video = target.dataset.video
 
 
   // get video key to find
@@ -194,7 +196,6 @@ function selectNotification(ev) {
 
   fetch(`${apiUrl}/?video=${videoKey}`).then(response => {
     // exit if invalid URL is sent
-    console.log(response)
     return response.text()
   }).then(videoUrl => {
     console.log(videoUrl)
@@ -205,5 +206,18 @@ function selectNotification(ev) {
     document.getElementById("video-popup").classList.add("popup-visible")
     document.getElementById("popup").classList.add("popup-visible")
     document.getElementById("page-overlay").classList.add("popup-visible")
+  })
+}
+
+function clickShareButton(ev) {
+  const videoKey = target.dataset.video
+
+  fetch(`${apiUrl}/?video=${videoKey}&share`).then(response => {
+    // exit if invalid URL is sent
+    return response.text()
+  }).then(videoUrl => {
+    console.log(videoUrl)
+    // copy video URL to clipboard
+    navigator.clipboard.writeText(videoUrl)
   })
 }
