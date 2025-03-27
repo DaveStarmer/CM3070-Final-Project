@@ -21,6 +21,10 @@
    "AllowedPattern": "^[a-z0-9-]{1,12}$",
    "Description": "Code Bucket Region"
   },
+  "apiDomainName": {
+   "Type": "String",
+   "Description": "API Domain Name (output from dashboard stack)"
+  },
   "domainName": {
    "Type": "String",
    "AllowedPattern": "[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)",
@@ -389,7 +393,7 @@
      "S3Bucket": {
       "Ref": "codeBucketName"
      },
-     "S3Key": "lambdas-cf/edge-auth-866871cdc15bb97e077d52a6e9db1e5e.zip"
+     "S3Key": "lambdas-cf/edge-auth-7e363ff68a3d4342b5db33b33583c73f.zip"
     },
     "Description": "Authorisation Edge Lambda",
     "FunctionName": "edge-auth",
@@ -414,7 +418,7 @@
     "aws:cdk:path": "CloudFrontStack/authLambda/Fn/Resource"
    }
   },
-  "authLambdaFnCurrentVersion75C86FD9ee7540e59d9043b8e639d358bd401bef": {
+  "authLambdaFnCurrentVersion75C86FD96c6c9ccb0c9e5cc1cba293edf5b6c93c": {
    "Type": "AWS::Lambda::Version",
    "Properties": {
     "FunctionName": {
@@ -533,7 +537,7 @@
     }
    },
    "DependsOn": [
-    "authLambdaFnCurrentVersion75C86FD9ee7540e59d9043b8e639d358bd401bef",
+    "authLambdaFnCurrentVersion75C86FD96c6c9ccb0c9e5cc1cba293edf5b6c93c",
     "authLambdaFnCACD311C",
     "responseLambdaFnCurrentVersion182D6968ffa7d67ce7917d17d17f2dc222c6391f",
     "responseLambdaFn5E189E9A"
@@ -558,7 +562,7 @@
       {
        "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
        "Compress": true,
-       "PathPattern": "activations",
+       "PathPattern": "activations/*",
        "TargetOriginId": "CloudFrontStackcloudFrontDistributionOrigin28FB37C3B",
        "ViewerProtocolPolicy": "allow-all"
       }
@@ -571,7 +575,7 @@
        {
         "EventType": "viewer-request",
         "LambdaFunctionARN": {
-         "Ref": "authLambdaFnCurrentVersion75C86FD9ee7540e59d9043b8e639d358bd401bef"
+         "Ref": "authLambdaFnCurrentVersion75C86FD96c6c9ccb0c9e5cc1cba293edf5b6c93c"
         }
        },
        {
@@ -615,7 +619,27 @@
         ]
        },
        "DomainName": {
-        "Ref": "domainName"
+        "Fn::Select": [
+         0,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             0,
+             {
+              "Fn::Split": [
+               "https://",
+               {
+                "Ref": "apiDomainName"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
        },
        "Id": "CloudFrontStackcloudFrontDistributionOrigin28FB37C3B"
       }
@@ -630,7 +654,7 @@
     }
    },
    "DependsOn": [
-    "authLambdaFnCurrentVersion75C86FD9ee7540e59d9043b8e639d358bd401bef",
+    "authLambdaFnCurrentVersion75C86FD96c6c9ccb0c9e5cc1cba293edf5b6c93c",
     "authLambdaFnCACD311C",
     "responseLambdaFnCurrentVersion182D6968ffa7d67ce7917d17d17f2dc222c6391f",
     "responseLambdaFn5E189E9A"
@@ -708,6 +732,29 @@
           [
            "arn:aws:s3:::",
            {
+            "Fn::Sub": "vid-dash-config-${uniqueId}"
+           },
+           "/*"
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           "arn:aws:s3:::",
+           {
+            "Fn::Sub": "vid-dash-config-${uniqueId}"
+           }
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           "arn:aws:s3:::",
+           {
             "Ref": "codeBucketName"
            },
            "/*"
@@ -773,7 +820,7 @@
      "S3Bucket": {
       "Ref": "codeBucketName"
      },
-     "S3Key": "lambdas-cf/copy-web-code-85ebc608f3e6082da36c726afcc2b927.zip"
+     "S3Key": "lambdas-cf/copy-web-code-7470edd8a846a40111969d48e58ecf9e.zip"
     },
     "Handler": "handler.handler_function",
     "Role": {
@@ -819,6 +866,35 @@
    "DeletionPolicy": "Delete",
    "Metadata": {
     "aws:cdk:path": "CloudFrontStack/copyPrivateWebResources/Default"
+   }
+  },
+  "copyApiConfig": {
+   "Type": "AWS::CloudFormation::CustomResource",
+   "Properties": {
+    "ServiceToken": {
+     "Fn::GetAtt": [
+      "copyBetweenBuckets89CEF446",
+      "Arn"
+     ]
+    },
+    "sourceRegion": "eu-west-2",
+    "sourceBucket": {
+     "Fn::Sub": "vid-dash-config-${uniqueId}"
+    },
+    "destinationRegion": "us-east-1",
+    "destinationBucket": {
+     "Ref": "privateWebBucketDEC03662"
+    },
+    "keys": [
+     "config.json"
+    ],
+    "stripPrefix": "false",
+    "triggerParam": "trigger"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "CloudFrontStack/copyApiConfig/Default"
    }
   }
  },
