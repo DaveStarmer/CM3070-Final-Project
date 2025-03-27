@@ -101,6 +101,7 @@
     "aws:cdk:path": "DashboardStack/videoStorage/Resource"
    }
   },
+
   "configBucketED6325D8": {
    "Type": "AWS::S3::Bucket",
    "Properties": {
@@ -112,6 +113,19 @@
    "DeletionPolicy": "Delete",
    "Metadata": {
     "aws:cdk:path": "DashboardStack/configBucket/Resource"
+
+  "cognitoEndpointParamC1A7C797": {
+   "Type": "AWS::SSM::Parameter",
+   "Properties": {
+    "DataType": "text",
+    "Description": "Cognito Endpoint",
+    "Name": "camera-system-state",
+    "Tier": "Standard",
+    "Type": "String",
+    "Value": "ENABLED"
+   },
+   "Metadata": {
+    "aws:cdk:path": "DashboardStack/cognitoEndpointParam/Resource"
    }
   },
   "cloudWatchLogsPolicy62FA4890": {
@@ -1038,6 +1052,7 @@
    "Metadata": {
     "aws:cdk:path": "DashboardStack/domainNameParam/Resource"
    }
+
   }
  },
  "Outputs": {
@@ -1066,6 +1081,7 @@
      ]
     ]
    }
+
   },
   "apiDomainName": {
    "Value": {
@@ -1092,6 +1108,7 @@
      ]
     ]
    }
+
   }
  },
  "Conditions": {},
