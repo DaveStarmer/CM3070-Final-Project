@@ -39,6 +39,7 @@ function createNotification(props) {
   /** camera text */
   const actCam = document.createElement("p")
   actCam.innerText = props.camera
+  actCam.classList.add("activation-camera")
   info.appendChild(actCam)
 
   // add onclick eventListener to allow opening the full video in a popup
@@ -148,7 +149,7 @@ function createVideoPopup() {
   // create header block
   const videoHeader = createDocElement(videoPopup, "div", "popup-video-head")
   createDocElement(videoHeader, "p", "popup-video-date-time")
-  createDocElement(videoHeader, "p", "popup-video-info")
+  createDocElement(videoHeader, "p", "popup-video-camera")
 
   // create video element
   const videoPlayback = createDocElement(videoPopup, "video", "video-playback")
@@ -184,8 +185,8 @@ function selectNotification(ev) {
   // set titles
   const activationDateTime = target.querySelector(".activation-date-time").innerText
   document.getElementById("popup-video-date-time").innerText = activationDateTime
-  const activationInfo = target.querySelector(".activation-info").innerText
-  document.getElementById("popup-video-info").innerText = activationInfo
+  const activationCam = target.querySelector(".activation-camera").innerText
+  document.getElementById("popup-video-camera").innerText = activationCam
 
 
   // get video key to find
