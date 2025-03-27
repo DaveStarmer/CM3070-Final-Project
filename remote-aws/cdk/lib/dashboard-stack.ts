@@ -61,13 +61,13 @@ export class DashboardStack extends Stack {
       removalPolicy: RemovalPolicy.DESTROY
     })
 
-    // new StringParameter(this, "cameraSystemState", {
-    //   description: "Cognito Endpoint",
-    //   dataType: ParameterDataType.TEXT,
-    //   tier: ParameterTier.STANDARD,
-    //   parameterName: "camera-system-state",
-    //   stringValue: "ENABLED"
-    // })
+    new StringParameter(this, "cameraSystemState", {
+      description: "Cognito Endpoint",
+      dataType: ParameterDataType.TEXT,
+      tier: ParameterTier.STANDARD,
+      parameterName: "camera-system-state",
+      stringValue: "ENABLED"
+    })
 
     // create centralised managed policies which are used by individual roles
     this.policies = {} // typescript compiler requires a value, properly filled by the function call
@@ -213,6 +213,8 @@ export class DashboardStack extends Stack {
 
     // add access rights for lambda to read from database
     this.database.grantReadData(listApiLambda)
+    // add access rights for video bucket
+    this.videoBucket.grantRead(listApiLambda)
 
     return listApiLambda
   }
@@ -343,8 +345,5 @@ export class DashboardStack extends Stack {
         ]
       }
     )
-
   }
-
-
 }
