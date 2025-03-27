@@ -146,7 +146,11 @@ function createVideoPopup() {
   const videoPopup = createDocElement(popup, "div", "video-popup")
 
   // create video element
-  createDocElement(videoPopup, "video", "video-playback")
+  const videoPlayback = createDocElement(videoPopup, "video", "video-playback")
+  videoPlayback.setAttribute("controls", "true")
+
+  // create video source element
+  createDocElement(videoPlayback, "source", "video-source")
 
   // toolbar
   const videoToolbar = createDocElement(videoPopup, "div", "video-toolbar")
@@ -181,7 +185,7 @@ function selectNotification(ev) {
   }).then(videoUrl => {
     console.log(videoUrl)
     // set video to be displayed
-    document.getElementById("video-playback").src = videoUrl
+    document.getElementById("video-source").src = videoUrl
 
     // open popup
     document.getElementById("video-popup").classList.add("popup-visible")
