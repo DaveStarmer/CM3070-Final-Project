@@ -28,7 +28,9 @@ def handler_function(event, _):
         return update_activation_status(event)
     elif http_method == "DELETE":
         return delete_video(event)
-    elif http_method == "GET" and "video" in event["queryStringParameters"]:
+    elif (
+        http_method == "GET" and event["queryStringParameters"].get("video") is not None
+    ):
         return get_video_url(event)
     else:
         return get_activations(event)

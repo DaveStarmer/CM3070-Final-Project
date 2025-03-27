@@ -67,4 +67,7 @@ function updateActivations(newActivations = true) {
 
 }
 
+function createVideoPopup() {
+
+}
 
