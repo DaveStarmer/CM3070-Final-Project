@@ -22,6 +22,7 @@ function createNotification(props) {
   /** outer card */
   const card = document.createElement("div")
   card.classList.add("activation-card")
+  card.dataset.video = props.filename
   /** video still image */
   const videoStill = document.createElement("img")
   videoStill.src = props.videoStill
@@ -39,6 +40,9 @@ function createNotification(props) {
   const actCam = document.createElement("p")
   actCam.innerText = props.camera
   info.appendChild(actCam)
+
+  // add onclick eventListener to allow opening the full video in a popup
+  card.addEventListener("click", selectNotification, true)
 
   return card
 }
@@ -125,7 +129,7 @@ function createVideoPopup() {
   if (!document.getElementById("popup")) {
     createDocElement("page-overlay", "div", "popup")
   }
-  popup = document.getElementById("popup")
+  const popup = document.getElementById("popup")
 
   // create the close button for the popup
   const popupClose = createDocElement(popup, "img", "popup-close")
@@ -141,19 +145,26 @@ function createVideoPopup() {
   // create the video popup
   const videoPopup = createDocElement(popup, "div", "video-popup")
 
-  // buttons
+  // create video element
+  createDocElement(videoPopup, "video", "video-playback")
+
+  // toolbar
+  const videoToolbar = createDocElement(videoPopup, "div", "video-toolbar")
   // viewed status
-  const viewedButton = createDocElement(popup, "img", "viewed-status", {
+  const viewedButton = createDocElement(videoToolbar, "img", "viewed-status", {
     src: "images/viewed.svg",
     alt: "video viewed, click to mark as new",
     classes: ["img-button"]
   })
 
   // share
-  const shareButton = createDocElement(popup, "img", "share-video", {
+  const shareButton = createDocElement(videoToolbar, "img", "share-video", {
     src: "images/share_24dp_000000.svg",
     alt: "get share link valid for 7 days",
     classes: ["img-button"]
   })
 }
 
+function selectNotification(ev) {
+  console.log(ev.target)
+}

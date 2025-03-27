@@ -112,3 +112,49 @@ nav {
 .activation-date-time {
     font-weight: bold;
 }
+
+/* Popups */
+#page-overlay {
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000a;
+}
+
+#popup {
+    position: absolute;
+    left: 5%;
+    top: 5%;
+    width: 90%;
+    height: 90%;
+    background-color: white;
+    border-radius: 15px;
+}
+
+#popup > div {
+    height: 100%;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+#popup-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+}
+
+.img-button {
+    cursor: pointer;
+    width: 50px;
+}
+
+#video-toolbar {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
