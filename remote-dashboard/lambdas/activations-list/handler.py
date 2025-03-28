@@ -30,10 +30,10 @@ def handler_function(event, _):
         # if provided in event as 'None' rather than not existing
         queryString = {}
 
-    if http_method == "PUT":
-        return update_activation_status(event)
-    elif http_method == "DELETE":
+    if http_method == "DELETE":
         return delete_video(event)
+    elif http_method == "GET" and queryString.get("systemActivation") is not None:
+        return update_activation_status(event)
     elif http_method == "GET" and queryString.get("video") is not None:
         return get_video_url(event)
     else:
@@ -41,11 +41,11 @@ def handler_function(event, _):
 
 
 def update_activation_status(event):
-    logger.debug("PUT method - update activation status")
+    logger.debug("update activation status")
     logger.debug(event)
-    body = json.loads(event["body"])
+    queryString = event["queryStringParameters"]
 
-    system_activation = body.get("systemActivation", "").upper()
+    system_activation = queryString.get("systemActivation", "").upper()
     if system_activation in ["ENABLED", "DISABLED"]:
         # create ssm client
         ssm_client = boto3.client("ssm")

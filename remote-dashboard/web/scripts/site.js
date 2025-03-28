@@ -91,16 +91,10 @@ function createMenuItem(parent, currentPage, description, url) {
 
 function systemActivation(ev) {
   if (document.getElementById("sys-active").checked) {
-    fetch(apiUrl, {
-      method: "PUT",
-      body: JSON.stringify({ "systemActivation": "ENABLED" })
-    })
+    fetch(`${apiUrl}?systemActivation=ENABLED`)
   }
   else {
-    fetch(apiUrl, {
-      method: "PUT",
-      body: JSON.stringify({ "systemActivation": "DISABLED" })
-    })
+    fetch(`${apiUrl}?systemActivation=DISABLED`)
   }
 }
 
