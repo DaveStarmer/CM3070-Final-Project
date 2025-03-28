@@ -69,6 +69,7 @@ function decoratePage() {
   sysActiveCheckbox.setAttribute("type", "checkbox")
   sysActiveCheckbox.id = "sys-active"
   sysActiveCheckbox.setAttribute("name", "sys-active")
+  sysActiveCheckbox.addEventListener("change", systemActivation)
   sysActiveDiv.appendChild(sysActiveCheckbox)
 
   // create span
@@ -86,6 +87,21 @@ function createMenuItem(parent, currentPage, description, url) {
   const item = document.createElement("li")
   item.appendChild(link)
   parent.appendChild(item)
+}
+
+function systemActivation(ev) {
+  if (document.getElementById("sys-active").checked) {
+    fetch(apiUrl, {
+      method: "PUT",
+      body: JSON.stringify({ "systemActivation": "ENABLED" })
+    })
+  }
+  else {
+    fetch(apiUrl, {
+      method: "PUT",
+      body: JSON.stringify({ "systemActivation": "DISABLED" })
+    })
+  }
 }
 
 const menuInfo = [
