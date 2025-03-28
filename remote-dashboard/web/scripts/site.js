@@ -90,6 +90,7 @@ function createMenuItem(parent, currentPage, description, url) {
 }
 
 function systemActivation(ev) {
+  console.log(document.getElementById("sys-active").checked)
   if (document.getElementById("sys-active").checked) {
     fetch(`${apiUrl}?systemActivation=ENABLED`)
   }

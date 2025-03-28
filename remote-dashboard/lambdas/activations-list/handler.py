@@ -29,6 +29,8 @@ def handler_function(event, _):
     if queryString is None:
         # if provided in event as 'None' rather than not existing
         queryString = {}
+    logger.debug("HTTP Request: %s", http_method)
+    logger.debug("Query String: %s", queryString)
 
     if http_method == "DELETE":
         return delete_video(event)
@@ -93,7 +95,7 @@ def get_activations(event: dict) -> dict:
     table_name = os.environ["DYNAMODB_TABLE"]
 
     if event["requestContext"]["httpMethod"] == "GET":
-        logger.debug("GET method")
+        logger.debug("GET method - list activations")
         search_params = event["queryStringParameters"]
         if search_params is None:
             search_params = {}
