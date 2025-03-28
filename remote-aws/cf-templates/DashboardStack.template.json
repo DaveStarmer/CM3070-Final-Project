@@ -108,10 +108,24 @@
      "Fn::Sub": "vid-dash-config-${uniqueId}"
     }
    },
-   "UpdateReplacePolicy": "Delete",
-   "DeletionPolicy": "Delete",
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
    "Metadata": {
     "aws:cdk:path": "DashboardStack/configBucket/Resource"
+   }
+  },
+  "cameraSystemStateB4801758": {
+   "Type": "AWS::SSM::Parameter",
+   "Properties": {
+    "DataType": "text",
+    "Description": "Cognito Endpoint",
+    "Name": "camera-system-state",
+    "Tier": "Standard",
+    "Type": "String",
+    "Value": "ENABLED"
+   },
+   "Metadata": {
+    "aws:cdk:path": "DashboardStack/cameraSystemState/Resource"
    }
   },
   "cloudWatchLogsPolicy62FA4890": {
@@ -785,6 +799,36 @@
          ]
         }
        ]
+      },
+      {
+       "Action": [
+        "s3:GetBucket*",
+        "s3:GetObject*",
+        "s3:List*"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "videoStorage429F1872",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "videoStorage429F1872",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
       }
      ],
      "Version": "2012-10-17"
@@ -807,14 +851,13 @@
      "S3Bucket": {
       "Ref": "codeBucketName"
      },
-     "S3Key": "lambdas/activations-list-a605a52b5352fcd22e80001ba028501d.zip"
+     "S3Key": "lambdas/activations-list-44e57f115defb1d734a3d9eb68fd5140.zip"
     },
     "Description": "responds to api requests for lists of notification",
     "Environment": {
      "Variables": {
       "DYNAMODB_TABLE": {
        "Ref": "activationTable47DE6EF0"
-
       },
       "VIDEO_CLIP_BUCKET": {
        "Ref": "videoStorage429F1872"
@@ -933,7 +976,7 @@
      "S3Bucket": {
       "Ref": "codeBucketName"
      },
-     "S3Key": "lambdas/api-location-output-a358b8602ca8b3cbd7f37963fad5c235.zip"
+     "S3Key": "lambdas/api-location-output-76bbdd33cf9210abee060aebc76c9ed4.zip"
     },
     "Description": "output API address",
     "Environment": {
