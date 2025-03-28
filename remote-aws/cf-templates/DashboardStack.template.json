@@ -976,7 +976,7 @@
      "S3Bucket": {
       "Ref": "codeBucketName"
      },
-     "S3Key": "lambdas/api-location-output-76bbdd33cf9210abee060aebc76c9ed4.zip"
+     "S3Key": "lambdas/api-location-output-1491d26b2ac2c8f55c78e6f840a93787.zip"
     },
     "Description": "output API address",
     "Environment": {
