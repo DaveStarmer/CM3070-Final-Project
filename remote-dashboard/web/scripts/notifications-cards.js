@@ -34,7 +34,7 @@ function createNotification(props) {
   /** timestamp text */
   const actDT = document.createElement("p")
   actDT.classList.add("activation-date-time")
-  actDT.innerText = props.timestamp
+  actDT.innerText = formatTimestamp(props.timestamp)
   info.appendChild(actDT)
   /** camera text */
   const actCam = document.createElement("p")
@@ -46,6 +46,12 @@ function createNotification(props) {
   card.addEventListener("click", selectNotification)
 
   return card
+}
+
+function formatTimestamp(ts) {
+  const date = `${ts.slice(0, 4)}-${ts.slice(4, 6)}-${ts.slice(6, 8)}`
+  const time = `${ts.slice(8, 10)}:${ts.slice(10, 12)}:${ts.slice(12, 14)}`
+  return `${date} ${time}`
 }
 
 /**
