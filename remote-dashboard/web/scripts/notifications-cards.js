@@ -174,14 +174,24 @@ function createVideoPopup() {
     classes: ["img-button"]
   })
   shareButton.addEventListener("click", clickShareButton)
+
+  // share confirm
+  const shareConfirm = createDocElement(popup, "div", "share-copy-confirm")
+  shareConfirm.innerText = "URL Copied"
+}
+
+function findTarget(ev, className) {
+  let root_target = ev.target
+  while (root_target != document.body && !root_target.classList.contains(className)) {
+    root_target = root_target.parentElement
+  }
+  return root_target
 }
 
 function selectNotification(ev) {
   // move up the tree to find the parent activation card
-  let target = ev.target
-  while (target != document.body && !target.classList.contains("activation-card")) {
-    target = target.parentElement
-  }
+  console.log(ev)
+  const target = findTarget(ev, "activation-card")
 
   // set titles
   const activationDateTime = target.querySelector(".activation-date-time").innerText
@@ -210,7 +220,7 @@ function selectNotification(ev) {
 }
 
 function clickShareButton(ev) {
-  const videoKey = target.dataset.video
+  const videoKey = ev.target.dataset.video
 
   fetch(`${apiUrl}/?video=${videoKey}&share`).then(response => {
     // exit if invalid URL is sent
@@ -219,5 +229,17 @@ function clickShareButton(ev) {
     console.log(videoUrl)
     // copy video URL to clipboard
     navigator.clipboard.writeText(videoUrl)
+    displayShareButton(ev)
   })
+}
+
+function displayShareButton(ev) {
+  console.log(ev)
+  const tooltip = document.getElementById("share-copy-confirm")
+  tooltip.classList.add("popup-visible")
+  tooltip.style.left = ev.layerX
+  tooltip.style.top = ev.layerY
+  window.setTimeout(e => {
+    document.getElementById("share-copy-confirm").classList.remove("popup-visible")
+  }, 5000)
 }

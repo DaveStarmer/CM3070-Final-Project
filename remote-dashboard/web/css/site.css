@@ -163,3 +163,20 @@ nav {
 #page-overlay.popup-visible {
     display:block;
 }
+
+div#share-copy-confirm {
+    display: none;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    height: fit-content;
+    background-color: #ccc;
+    border: 1px solid black;
+    border-radius: 10px;
+    font-weight: bold;
+    color: green;
+}
+
+div#share-copy-confirm.popup-visible {
+    display: block;
+}
