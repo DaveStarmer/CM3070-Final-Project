@@ -25,18 +25,18 @@ def handler_function(event, _):
 
     http_method = event["requestContext"]["httpMethod"]
 
-    queryString = event.get("queryStringParameters", {})
-    if queryString is None:
+    query_params = event.get("queryStringParameters")
+    if query_params is None:
         # if provided in event as 'None' rather than not existing
-        queryString = {}
+        query_params = {}
     logger.debug("HTTP Request: %s", http_method)
-    logger.debug("Query String: %s", queryString)
+    logger.debug("Query String: %s", query_params)
 
     if http_method == "DELETE":
         return delete_video(event)
-    elif http_method == "GET" and queryString.get("systemActivation") is not None:
+    elif http_method == "GET" and query_params.get("systemActivation") is not None:
         return update_activation_status(event)
-    elif http_method == "GET" and queryString.get("video") is not None:
+    elif http_method == "GET" and query_params.get("video") is not None:
         return get_video_url(event)
     else:
         return get_activations(event)
@@ -45,9 +45,9 @@ def handler_function(event, _):
 def update_activation_status(event):
     logger.debug("update activation status")
     logger.debug(event)
-    queryString = event["queryStringParameters"]
+    query_params = event["queryStringParameters"]
 
-    system_activation = queryString.get("systemActivation", "").upper()
+    system_activation = query_params.get("systemActivation", "").upper()
     if system_activation in ["ENABLED", "DISABLED"]:
         # create ssm client
         ssm_client = boto3.client("ssm")
@@ -57,6 +57,29 @@ def update_activation_status(event):
 
 def delete_video(event):
     logger.debug("DELETE method - delete video")
+    query_params = event["queryStringParameters"]
+    if "delete" in query_params:
+        delete_key = query_params["delete"]
+        logger.info("Deleting %s", delete_key)
+        s3_client = boto3.client("s3")
+        s3_client.delete_object(
+            Bucket=os.environ.get("VIDEO_CLIP_BUCKET"), Key=delete_key
+        )
+        logger.info("%s deleted", delete_key)
+        logger.info("Marking %s as deleted", delete_key)
+        db_client = boto3.client("dynamodb")
+        timestamp = delete_key[:14]
+        camera = os.path.basename(os.path.splitext(delete_key)[0])[15:]
+        camera = camera.replace("_", " ")
+        db_client.update_item(
+            TableName=os.environ["DYNAMODB_TABLE"],
+            Key={
+                "timestamp": {"S": timestamp},
+                "camera": {"S": camera},
+            },
+            AttributeUpdates={"clipStatus": {"S": "DELETED"}},
+        )
+        logger.info("%s marked as deleted", delete_key)
 
 
 def get_video_url(event):

@@ -170,6 +170,7 @@ export class DashboardStack extends Stack {
 
     apiResource.addMethod("GET", apiIntegration)
     apiResource.addMethod("PUT", apiIntegration)
+    apiResource.addMethod("DELETE", apiIntegration)
     this.apiCustomResource(api.url)
 
 
@@ -206,16 +207,18 @@ export class DashboardStack extends Stack {
       environment: {
         "DYNAMODB_TABLE": this.database.tableName,
         "VIDEO_CLIP_BUCKET": this.videoBucket.bucketName,
+        "TRIGGER": "TRIGGER"
       },
       role: this.createAPILambdaExecutionRole(),
       loggingFormat: LoggingFormat.JSON,
       applicationLogLevelV2: ApplicationLogLevel.DEBUG
     })
 
-    // add access rights for lambda to read from database
-    this.database.grantReadData(listApiLambda)
+    // add access rights for lambda to read from and write to database
+    this.database.grantReadWriteData(listApiLambda)
     // add access rights for video bucket
     this.videoBucket.grantRead(listApiLambda)
+    this.videoBucket.grantDelete(listApiLambda)
 
     return listApiLambda
   }
