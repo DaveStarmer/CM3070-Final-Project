@@ -181,6 +181,14 @@ function createVideoPopup() {
   })
   shareButton.addEventListener("click", clickShareButton)
 
+  // delete
+  const deleteButton = createDocElement(videoToolbar, "img", "delete-video", {
+    src: "images/delete_24dp_000000.svg",
+    alt: "delete video",
+    classes: ["img-button"]
+  })
+  deleteButton.addEventListener("click", clickDeleteButton)
+
   // share confirm
   const shareConfirm = createDocElement(popup, "div", "share-copy-confirm")
   shareConfirm.innerText = "URL Copied"
@@ -235,12 +243,11 @@ function clickShareButton(ev) {
     console.log(videoUrl)
     // copy video URL to clipboard
     navigator.clipboard.writeText(videoUrl)
-    displayShareButton(ev)
+    displayShareConfirmation(ev)
   })
 }
 
-function displayShareButton(ev) {
-  console.log(ev)
+function displayShareConfirmation(ev) {
   const tooltip = document.getElementById("share-copy-confirm")
   tooltip.classList.add("popup-visible")
   tooltip.style.left = ev.layerX
@@ -248,4 +255,13 @@ function displayShareButton(ev) {
   window.setTimeout(e => {
     document.getElementById("share-copy-confirm").classList.remove("popup-visible")
   }, 5000)
+}
+
+function clickDeleteButton(ev) {
+  const videoKey = document.getElementById("share-video").dataset.video
+  if (confirm(`Delete video ${videoKey}?`)) {
+    fetch(`${apiUrl}?delete=${videoKey}`, {
+      method: "DELETE"
+    })
+  }
 }
