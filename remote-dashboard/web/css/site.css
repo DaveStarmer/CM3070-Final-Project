@@ -112,3 +112,84 @@ nav {
 .activation-date-time {
     font-weight: bold;
 }
+
+/* Popups */
+#page-overlay {
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000a;
+}
+
+#popup {
+    position: absolute;
+    left: 5%;
+    top: 5%;
+    width: 90%;
+    height: 90%;
+    background-color: white;
+    border-radius: 15px;
+}
+
+#popup > div {
+    height: 100%;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+#popup-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+}
+
+.img-button {
+    cursor: pointer;
+    width: 50px;
+}
+
+#video-toolbar {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+/* make page overlay display when extra class is added */
+#page-overlay.popup-visible {
+    display:block;
+}
+
+div#share-copy-confirm {
+    display: none;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    height: fit-content;
+    background-color: #ccc;
+    border: 1px solid black;
+    border-radius: 10px;
+    font-weight: bold;
+    color: green;
+}
+
+div#share-copy-confirm.popup-visible {
+    display: block;
+}
+
+#popup-video-date-time {
+    font-weight: bold;
+    font-size: 130%;
+}
+
+#popup-video-camera {
+    font-size: 120%;
+}
+
+#popup-video-head {
+    padding-left: 10px;
+}

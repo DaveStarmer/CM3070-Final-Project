@@ -58,16 +58,15 @@ export class DashboardStack extends Stack {
 
     this.configBucket = new Bucket(this, "configBucket", {
       bucketName: Fn.sub("vid-dash-config-${uniqueId}"),
-      removalPolicy: RemovalPolicy.DESTROY
     })
 
-    // new StringParameter(this, "cameraSystemState", {
-    //   description: "Cognito Endpoint",
-    //   dataType: ParameterDataType.TEXT,
-    //   tier: ParameterTier.STANDARD,
-    //   parameterName: "camera-system-state",
-    //   stringValue: "ENABLED"
-    // })
+    new StringParameter(this, "cameraSystemState", {
+      description: "Cognito Endpoint",
+      dataType: ParameterDataType.TEXT,
+      tier: ParameterTier.STANDARD,
+      parameterName: "camera-system-state",
+      stringValue: "ENABLED"
+    })
 
     // create centralised managed policies which are used by individual roles
     this.policies = {} // typescript compiler requires a value, properly filled by the function call
@@ -203,7 +202,8 @@ export class DashboardStack extends Stack {
       handler: "handler.handler_function",
       // environment variables for lambda - pass names of database table and buckets in
       environment: {
-        "DYNAMODB_TABLE": this.database.tableName
+        "DYNAMODB_TABLE": this.database.tableName,
+        "VIDEO_CLIP_BUCKET": this.videoBucket.bucketName,
       },
       role: this.createAPILambdaExecutionRole(),
       loggingFormat: LoggingFormat.JSON,
@@ -212,6 +212,8 @@ export class DashboardStack extends Stack {
 
     // add access rights for lambda to read from database
     this.database.grantReadData(listApiLambda)
+    // add access rights for video bucket
+    this.videoBucket.grantRead(listApiLambda)
 
     return listApiLambda
   }
@@ -342,8 +344,5 @@ export class DashboardStack extends Stack {
         ]
       }
     )
-
   }
-
-
 }
