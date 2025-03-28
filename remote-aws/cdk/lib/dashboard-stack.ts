@@ -58,7 +58,6 @@ export class DashboardStack extends Stack {
 
     this.configBucket = new Bucket(this, "configBucket", {
       bucketName: Fn.sub("vid-dash-config-${uniqueId}"),
-      removalPolicy: RemovalPolicy.DESTROY
     })
 
     new StringParameter(this, "cameraSystemState", {

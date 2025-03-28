@@ -19,6 +19,7 @@ def handler_function(event, _):
     Returns:
         _type_: _description_
     """
+
     logger.debug("Event: %s", event)
     logger.debug("Environment Variables: %s", os.environ)
 
@@ -69,7 +70,6 @@ def get_video_url(event):
     }
 
     return response
-
 
 def get_activations(event: dict) -> dict:
     """List Activations in database

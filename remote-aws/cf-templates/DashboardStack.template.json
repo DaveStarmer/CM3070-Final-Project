@@ -814,6 +814,7 @@
      "Variables": {
       "DYNAMODB_TABLE": {
        "Ref": "activationTable47DE6EF0"
+
       },
       "VIDEO_CLIP_BUCKET": {
        "Ref": "videoStorage429F1872"
