@@ -180,3 +180,12 @@ div#share-copy-confirm {
 div#share-copy-confirm.popup-visible {
     display: block;
 }
+
+#popup-video-date-time {
+    font-weight: bold;
+    font-size: 130%;
+}
+
+#popup-video-camera {
+    font-size: 120%;
+}
