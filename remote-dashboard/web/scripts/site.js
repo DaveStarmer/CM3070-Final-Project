@@ -4,11 +4,28 @@ function decoratePage() {
 
   /** nav element on page (starts empty) */
   const navTag = document.querySelector("nav")
+  navTag.innerHTML = ""
+  /** create label element for menu open checkbox */
+  const menuOpenLabel = document.createElement("label")
+  menuOpenLabel.setAttribute("for", "menu-open")
+  navTag.appendChild(menuOpenLabel)
+  /** menu icon */
+  const menuImg = document.createElement("img")
+  menuOpenLabel.appendChild(menuImg)
+  menuImg.id = "menu-icon"
+  menuImg.src = "images/menu_24dp_000000.svg"
+  navTag.appendChild(menuOpenLabel)
+  /** hidden checkbox */
+  const menuCheckbox = document.createElement("input")
+  menuCheckbox.setAttribute("type", "checkbox")
+  menuCheckbox.setAttribute("name", "menu-open")
+  menuCheckbox.id = "menu-open"
+  menuOpenLabel.appendChild(menuCheckbox)
   /** list element to append menu items to */
-  const menuList = document.createElement("ol")
-  menuList.start = 0 // ensure home is number element 0
+  const menuList = document.createElement("ul")
+  menuList.id = "nav-menu"
   // append menu to the nav section
-  navTag.appendChild(menuList)
+  menuOpenLabel.appendChild(menuList)
 
   /** URL of current page */
   const fullUrl = window.location.href
@@ -35,6 +52,30 @@ function decoratePage() {
     createMenuItem(menuList, currPageFilename, ...menuInfo[i])
     if (menuInfo[i][1] == currPageFilename) currPageIndex = i
   }
+
+  // create outer label
+  const sysActiveLabel = document.createElement("label")
+  sysActiveLabel.innerText = "System Active"
+  sysActiveLabel.setAttribute("for", "sys-active")
+  navTag.appendChild(sysActiveLabel)
+
+  // containing div
+  const sysActiveDiv = document.createElement("div")
+  sysActiveDiv.classList.add("toggle")
+  sysActiveLabel.appendChild(sysActiveDiv)
+
+  // hidden checkbox
+  const sysActiveCheckbox = document.createElement("input")
+  sysActiveCheckbox.setAttribute("type", "checkbox")
+  sysActiveCheckbox.id = "sys-active"
+  sysActiveCheckbox.setAttribute("name", "sys-active")
+  sysActiveDiv.appendChild(sysActiveCheckbox)
+
+  // create span
+  const toggleKnob = document.createElement("span")
+  toggleKnob.classList.add("toggleknob")
+  sysActiveDiv.appendChild(toggleKnob)
+
 }
 
 function createMenuItem(parent, currentPage, description, url) {
