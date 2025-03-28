@@ -42,6 +42,15 @@ def handler_function(event, _):
 
 def update_activation_status(event):
     logger.debug("PUT method - update activation status")
+    logger.debug(event)
+    body = json.loads(event["body"])
+
+    system_activation = body.get("systemActivation", "").upper()
+    if system_activation in ["ENABLED", "DISABLED"]:
+        # create ssm client
+        ssm_client = boto3.client("ssm")
+        # get current value of parameter holding system state
+        ssm_client.put_parameter(Name="camera-system-state", Value=system_activation)
 
 
 def delete_video(event):
@@ -70,6 +79,7 @@ def get_video_url(event):
     }
 
     return response
+
 
 def get_activations(event: dict) -> dict:
     """List Activations in database

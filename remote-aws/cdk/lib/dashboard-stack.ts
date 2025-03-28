@@ -169,7 +169,9 @@ export class DashboardStack extends Stack {
     const apiResource = api.root.addResource("activations")
 
     apiResource.addMethod("GET", apiIntegration)
+    apiResource.addMethod("PUT", apiIntegration)
     this.apiCustomResource(api.url)
+
 
     new CfnOutput(this, "apiDomainName", { key: "apiDomainName", value: api.url })
 
