@@ -42,7 +42,16 @@ def handler_function(event, _):
         return get_activations(event)
 
 
-def update_activation_status(event):
+def update_activation_status(event: dict) -> dict:
+    """Update System Activation status
+    respond to an update in system activation status
+
+    Args:
+        event (dict): AWS Event
+
+    Returns:
+        dict: HTTP Event to return (status 200 OK)
+    """
     logger.debug("update activation status")
     logger.debug(event)
     query_params = event["queryStringParameters"]
@@ -54,8 +63,27 @@ def update_activation_status(event):
         # get current value of parameter holding system state
         ssm_client.put_parameter(Name="camera-system-state", Value=system_activation)
 
+    response = {
+        "statusCode": 200,
+        "headers": {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Credentials": True,
+        },
+    }
 
-def delete_video(event):
+    return response
+
+
+def delete_video(event: dict) -> dict:
+    """Delete Video clip and update database
+    from DELETE HTTP calll
+
+    Args:
+        event (dict): AWS Event
+
+    Returns:
+        dict: HTTP Event to return (status 200 OK)
+    """
     logger.debug("DELETE method - delete video")
     query_params = event["queryStringParameters"]
     if "delete" in query_params:
@@ -81,8 +109,26 @@ def delete_video(event):
         )
         logger.info("%s marked as deleted", delete_key)
 
+    response = {
+        "statusCode": 200,
+        "headers": {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Credentials": True,
+        },
+    }
 
-def get_video_url(event):
+    return response
+
+
+def get_video_url(event: dict) -> dict:
+    """Return pre-signed URL for Video
+
+    Args:
+        event (dict): AWS Event
+
+    Returns:
+        dict: HTTP Event to return (containing URL)
+    """
     # share for 1 hour for viewing videos, 7 hours to share them
     if "share" in event["queryStringParameters"]:
         share_duration = 7 * 24 * 60 * 60  # a week of seconds (for sharing)

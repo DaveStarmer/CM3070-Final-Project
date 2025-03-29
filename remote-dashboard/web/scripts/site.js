@@ -1,3 +1,6 @@
+/**
+ * add menu, to page
+ */
 function decoratePage() {
   // Menu icon from https://fonts.google.com/icons?selected=Material+Icons:menu
   // Open menu icon https://fonts.google.com/icons?selected=Material+Icons:menu_open
@@ -79,6 +82,13 @@ function decoratePage() {
 
 }
 
+/**
+ * Create individual Menu Item
+ * @param {string | HTMLElement} parent parent item to append new item to
+ * @param {string} currentPage current page name
+ * @param {string} description text to display
+ * @param {string} url url to link to
+ */
 function createMenuItem(parent, currentPage, description, url) {
   const link = document.createElement("a")
   link.href = url
@@ -89,16 +99,21 @@ function createMenuItem(parent, currentPage, description, url) {
   parent.appendChild(item)
 }
 
-function systemActivation(ev) {
-  console.log(document.getElementById("sys-active").checked)
+/**
+ * Enable or disable system with UI toggle
+ */
+function systemActivation() {
   if (document.getElementById("sys-active").checked) {
+    // system should now be enabled
     fetch(`${apiUrl}?systemActivation=ENABLED`)
   }
   else {
+    // system should now be disabled
     fetch(`${apiUrl}?systemActivation=DISABLED`)
   }
 }
 
+/** array of menu items. Items are of the form ["Description", "url"] */
 const menuInfo = [
   ["Home", "index.html"],
   ["Deactivate", ""],
