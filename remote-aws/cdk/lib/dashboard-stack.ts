@@ -160,6 +160,9 @@ export class DashboardStack extends Stack {
       restApiName: "activationsApi",
       description: "list activations",
       deploy: true,
+      defaultCorsPreflightOptions: {
+        allowOrigins: [Fn.sub("www.${domainName}")]
+      }
     })
 
     const apiLambda = this.createApiLambda()
@@ -168,9 +171,36 @@ export class DashboardStack extends Stack {
 
     const apiResource = api.root.addResource("activations")
 
-    apiResource.addMethod("GET", apiIntegration)
-    apiResource.addMethod("PUT", apiIntegration)
-    apiResource.addMethod("DELETE", apiIntegration)
+    apiResource.addMethod("GET", apiIntegration, {
+      methodResponses: [
+        {
+          "statusCode": "200",
+          "responseParameters": {
+            'method.response.header.Access-Control-Allow-Origin': true
+          }
+        }
+      ]
+    })
+    apiResource.addMethod("PUT", apiIntegration, {
+      methodResponses: [
+        {
+          "statusCode": "200",
+          "responseParameters": {
+            'method.response.header.Access-Control-Allow-Origin': true
+          }
+        }
+      ]
+    })
+    apiResource.addMethod("DELETE", apiIntegration, {
+      methodResponses: [
+        {
+          "statusCode": "200",
+          "responseParameters": {
+            'method.response.header.Access-Control-Allow-Origin': true
+          }
+        }
+      ]
+    })
     this.apiCustomResource(api.url)
 
 
