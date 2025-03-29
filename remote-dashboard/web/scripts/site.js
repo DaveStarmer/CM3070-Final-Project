@@ -113,7 +113,11 @@ function systemActivation() {
 }
 
 function getSystemActivation() {
-  fetch(`${apiUrl}?systemActivation`).then(response => response.json()).then(js => {
+  fetch(`${apiUrl}?systemActivation`, {
+    headers: {
+      "Access-Control-Allow-Origin": "*"
+    }
+  }).then(response => response.json()).then(js => {
     console.log(js)
     document.getElementById("sys-active").checked = (js["systemActivation"] == "ENABLED")
   })

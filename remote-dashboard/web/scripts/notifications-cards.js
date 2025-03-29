@@ -159,12 +159,6 @@ function createVideoPopup() {
 
   // toolbar
   const videoToolbar = createDocElement(videoPopup, "div", "video-toolbar")
-  // viewed status
-  const viewedButton = createDocElement(videoToolbar, "img", "viewed-status", {
-    src: "images/viewed.svg",
-    alt: "video viewed, click to mark as new",
-    classes: ["img-button"]
-  })
 
   // share
   const shareButton = createDocElement(videoToolbar, "img", "share-video", {
