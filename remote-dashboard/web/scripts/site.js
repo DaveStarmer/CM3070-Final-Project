@@ -80,6 +80,8 @@ function decoratePage() {
   toggleKnob.classList.add("toggleknob")
   sysActiveDiv.appendChild(toggleKnob)
 
+  // update system activation
+  getSystemActivation()
 }
 
 /**
@@ -111,6 +113,13 @@ function systemActivation() {
     // system should now be disabled
     fetch(`${apiUrl}?systemActivation=DISABLED`)
   }
+}
+
+function getSystemActivation() {
+  fetch(`${apiUrl}?systemActivation`).then(response => response.json()).then(js => {
+    console.log(js)
+    document.getElementById("sys-active").checked = (js["systemActivation"] == "ENABLED")
+  })
 }
 
 /** array of menu items. Items are of the form ["Description", "url"] */

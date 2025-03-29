@@ -207,7 +207,6 @@ export class DashboardStack extends Stack {
       environment: {
         "DYNAMODB_TABLE": this.database.tableName,
         "VIDEO_CLIP_BUCKET": this.videoBucket.bucketName,
-        "TRIGGER": "TRIGGER"
       },
       role: this.createAPILambdaExecutionRole(),
       loggingFormat: LoggingFormat.JSON,

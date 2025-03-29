@@ -34,7 +34,7 @@ def handler_function(event, _):
 
     if http_method == "DELETE":
         return delete_video(event)
-    elif http_method == "GET" and query_params.get("systemActivation") is not None:
+    elif http_method == "GET" and "systemActivation" in query_params:
         return update_activation_status(event)
     elif http_method == "GET" and query_params.get("video") is not None:
         return get_video_url(event)
@@ -57,19 +57,33 @@ def update_activation_status(event: dict) -> dict:
     query_params = event["queryStringParameters"]
 
     system_activation = query_params.get("systemActivation", "").upper()
+
+    # create ssm client
+    ssm_client = boto3.client("ssm")
+
     if system_activation in ["ENABLED", "DISABLED"]:
-        # create ssm client
-        ssm_client = boto3.client("ssm")
-        # get current value of parameter holding system state
+        # put new value of parameter holding system state
         ssm_client.put_parameter(Name="camera-system-state", Value=system_activation)
 
-    response = {
-        "statusCode": 200,
-        "headers": {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Credentials": True,
-        },
-    }
+        response = {
+            "statusCode": 200,
+            "headers": {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Credentials": True,
+            },
+        }
+    else:
+        # get current value of parameter holding system state
+        activation_value = ssm_client.get_parameter(Name="camera-system-state")
+
+        response = {
+            "statusCode": 200,
+            "headers": {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Credentials": True,
+            },
+            "body": json.dumps({"systemActivation": activation_value}),
+        }
 
     return response
 
