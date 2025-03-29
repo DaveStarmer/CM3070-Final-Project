@@ -100,11 +100,16 @@ nav {
 /* Camera Cards */
 .activation-card {
     margin: 3px;
-    background-color: #999;
+    background-color: #bcf;
     display: flex;
     margin: 5px;
     padding: 5px;
 }
+
+.activation-card.new {
+    background-color: #79f;
+}
+
 .activation-info {
     padding-left: 10px;
 }
