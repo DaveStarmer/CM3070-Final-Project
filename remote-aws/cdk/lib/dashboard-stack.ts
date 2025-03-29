@@ -42,6 +42,12 @@ export class DashboardStack extends Stack {
       default: "public-cam-code-ec0c1faa4de3482c9bdc0081a3ec4834"
     })
 
+    // domain name
+    new CfnParameter(this, "domainName", {
+      type: "String",
+      description: "Name of Domain",
+    })
+
     // Buckets
     // create bucket CDK construct from name
     this.codeBucket = Bucket.fromBucketName(this, "codeBucket", Fn.ref("codeBucketName"))
@@ -161,7 +167,8 @@ export class DashboardStack extends Stack {
       description: "list activations",
       deploy: true,
       defaultCorsPreflightOptions: {
-        allowOrigins: [Fn.sub("www.${domainName}")]
+        allowHeaders: ["*"],
+        allowOrigins: ["*"]
       }
     })
 
