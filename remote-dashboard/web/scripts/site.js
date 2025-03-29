@@ -127,7 +127,7 @@ function getSystemActivation() {
 const menuInfo = [
   ["Home", "index.html"],
   ["Deactivate", ""],
-  ["Alerts", "alerts.html"],
+  ["Notifications", "notifications.html"],
   ["Logout", "/logout"],
 ]
 
