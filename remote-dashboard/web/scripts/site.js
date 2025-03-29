@@ -79,9 +79,6 @@ function decoratePage() {
   const toggleKnob = document.createElement("span")
   toggleKnob.classList.add("toggleknob")
   sysActiveDiv.appendChild(toggleKnob)
-
-  // update system activation
-  getSystemActivation()
 }
 
 /**
@@ -129,6 +126,16 @@ const menuInfo = [
   ["Alerts", "/alerts"],
   ["Logout", "/logout"],
 ]
+
+fetch("config.json").then(res => res.json()).then(js => {
+  window.apiUrl = (js["api-endpoint"].slice(-1) == "/")
+    ? `${js["api-endpoint"]}activations`
+    : `${js["api-endpoint"]}/activations`
+  updateActivations()
+
+  // update system activation
+  getSystemActivation()
+})
 
 // call decorate page function
 decoratePage()

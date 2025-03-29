@@ -140,13 +140,7 @@ function createVideoPopup() {
   // create the close button for the popup
   const popupClose = createDocElement(popup, "img", "popup-close")
   popupClose.src = "images/close_24dp_000000.svg"
-  popupClose.addEventListener("click", ev => {
-    // remove visibility from popup elements
-    // this could be worked out programatically, but this absolute version makes it clearer for maintenance
-    document.getElementById("video-popup").classList.remove("popup-visible")
-    document.getElementById("popup").classList.remove("popup-visible")
-    document.getElementById("page-overlay").classList.remove("popup-visible")
-  })
+  popupClose.addEventListener("click", closePopup)
 
   // create the video div - in case other popups are wanted in future
   const videoPopup = createDocElement(popup, "div", "video-popup")
@@ -193,6 +187,14 @@ function createVideoPopup() {
   shareConfirm.innerText = "URL Copied"
 }
 
+function closePopup() {
+  // remove visibility from popup elements
+  // this could be worked out programatically, but this absolute version makes it clearer for maintenance
+  document.getElementById("video-popup").classList.remove("popup-visible")
+  document.getElementById("popup").classList.remove("popup-visible")
+  document.getElementById("page-overlay").classList.remove("popup-visible")
+}
+
 function findTarget(ev, className) {
   let root_target = ev.target
   while (root_target != document.body && !root_target.classList.contains(className)) {
@@ -215,7 +217,6 @@ function selectNotification(ev) {
   const activationCam = target.querySelector(".activation-camera").innerText
   document.getElementById("popup-video-camera").innerText = activationCam
   document.getElementById("share-video").dataset.video = target.dataset.video
-
 
   // get video key to find
   const videoKey = target.dataset.video
@@ -262,8 +263,19 @@ function displayShareConfirmation(ev) {
 function clickDeleteButton(ev) {
   const videoKey = document.getElementById("share-video").dataset.video
   if (confirm(`Delete video ${videoKey}?`)) {
+    // delete video from storage and update database
     fetch(`${apiUrl}?delete=${videoKey}`, {
       method: "DELETE"
     })
+
+    // remove from UI list
+    const activations = document.querySelector("main")
+    // iterate through list and remove matching entry
+    for (activation of activations) {
+      if (activation.dataset.video == videoKey) activation.remove()
+    }
+
+    // close popup
+    closePopup()
   }
 }
