@@ -42,6 +42,12 @@ export class DashboardStack extends Stack {
       default: "public-cam-code-ec0c1faa4de3482c9bdc0081a3ec4834"
     })
 
+    // domain name
+    new CfnParameter(this, "domainName", {
+      type: "String",
+      description: "Name of Domain",
+    })
+
     // Buckets
     // create bucket CDK construct from name
     this.codeBucket = Bucket.fromBucketName(this, "codeBucket", Fn.ref("codeBucketName"))
@@ -160,6 +166,10 @@ export class DashboardStack extends Stack {
       restApiName: "activationsApi",
       description: "list activations",
       deploy: true,
+      defaultCorsPreflightOptions: {
+        allowHeaders: ["*"],
+        allowOrigins: ["*"]
+      }
     })
 
     const apiLambda = this.createApiLambda()
@@ -168,8 +178,38 @@ export class DashboardStack extends Stack {
 
     const apiResource = api.root.addResource("activations")
 
-    apiResource.addMethod("GET", apiIntegration)
+    apiResource.addMethod("GET", apiIntegration, {
+      methodResponses: [
+        {
+          "statusCode": "200",
+          "responseParameters": {
+            'method.response.header.Access-Control-Allow-Origin': true
+          }
+        }
+      ]
+    })
+    apiResource.addMethod("PUT", apiIntegration, {
+      methodResponses: [
+        {
+          "statusCode": "200",
+          "responseParameters": {
+            'method.response.header.Access-Control-Allow-Origin': true
+          }
+        }
+      ]
+    })
+    apiResource.addMethod("DELETE", apiIntegration, {
+      methodResponses: [
+        {
+          "statusCode": "200",
+          "responseParameters": {
+            'method.response.header.Access-Control-Allow-Origin': true
+          }
+        }
+      ]
+    })
     this.apiCustomResource(api.url)
+
 
     new CfnOutput(this, "apiDomainName", { key: "apiDomainName", value: api.url })
 
@@ -210,10 +250,11 @@ export class DashboardStack extends Stack {
       applicationLogLevelV2: ApplicationLogLevel.DEBUG
     })
 
-    // add access rights for lambda to read from database
-    this.database.grantReadData(listApiLambda)
+    // add access rights for lambda to read from and write to database
+    this.database.grantReadWriteData(listApiLambda)
     // add access rights for video bucket
     this.videoBucket.grantRead(listApiLambda)
+    this.videoBucket.grantDelete(listApiLambda)
 
     return listApiLambda
   }

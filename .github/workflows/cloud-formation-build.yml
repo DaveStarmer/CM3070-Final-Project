@@ -125,6 +125,7 @@ jobs:
           --capabilities CAPABILITY_NAMED_IAM
           --parameter-overrides uniqueId=${{ secrets.FYP_UNIQUE_ID }}
           codeBucketName=${{ secrets.FYP_PRIVATE_CODE_BUCKET }}
+          domainName=${{ vars.FYP_DOMAIN }}
 
           else
           echo No changes to deploy

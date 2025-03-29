@@ -22,6 +22,7 @@ function createNotification(props) {
   /** outer card */
   const card = document.createElement("div")
   card.classList.add("activation-card")
+  if (props.clipStatus == "NEW") card.classList.add("new")
   card.dataset.video = props.filename
   /** video still image */
   const videoStill = document.createElement("img")
@@ -63,8 +64,6 @@ function updateActivations(newActivations = true) {
   fetch(apiUrl)
     .then(res => res.json())
     .then(js => {
-      // clear main or existing cards
-
       // if no new activations, display message to that effect
       if (js.length == 0) {
         document.querySelector("main").innerHTML = "<div>No new notifications to show</div>"
@@ -141,13 +140,7 @@ function createVideoPopup() {
   // create the close button for the popup
   const popupClose = createDocElement(popup, "img", "popup-close")
   popupClose.src = "images/close_24dp_000000.svg"
-  popupClose.addEventListener("click", ev => {
-    // remove visibility from popup elements
-    // this could be worked out programatically, but this absolute version makes it clearer for maintenance
-    document.getElementById("video-popup").classList.remove("popup-visible")
-    document.getElementById("popup").classList.remove("popup-visible")
-    document.getElementById("page-overlay").classList.remove("popup-visible")
-  })
+  popupClose.addEventListener("click", closePopup)
 
   // create the video div - in case other popups are wanted in future
   const videoPopup = createDocElement(popup, "div", "video-popup")
@@ -166,12 +159,6 @@ function createVideoPopup() {
 
   // toolbar
   const videoToolbar = createDocElement(videoPopup, "div", "video-toolbar")
-  // viewed status
-  const viewedButton = createDocElement(videoToolbar, "img", "viewed-status", {
-    src: "images/viewed.svg",
-    alt: "video viewed, click to mark as new",
-    classes: ["img-button"]
-  })
 
   // share
   const shareButton = createDocElement(videoToolbar, "img", "share-video", {
@@ -181,9 +168,25 @@ function createVideoPopup() {
   })
   shareButton.addEventListener("click", clickShareButton)
 
+  // delete
+  const deleteButton = createDocElement(videoToolbar, "img", "delete-video", {
+    src: "images/delete_24dp_000000.svg",
+    alt: "delete video",
+    classes: ["img-button"]
+  })
+  deleteButton.addEventListener("click", clickDeleteButton)
+
   // share confirm
   const shareConfirm = createDocElement(popup, "div", "share-copy-confirm")
   shareConfirm.innerText = "URL Copied"
+}
+
+function closePopup() {
+  // remove visibility from popup elements
+  // this could be worked out programatically, but this absolute version makes it clearer for maintenance
+  document.getElementById("video-popup").classList.remove("popup-visible")
+  document.getElementById("popup").classList.remove("popup-visible")
+  document.getElementById("page-overlay").classList.remove("popup-visible")
 }
 
 function findTarget(ev, className) {
@@ -199,13 +202,15 @@ function selectNotification(ev) {
   console.log(ev)
   const target = findTarget(ev, "activation-card")
 
+  // update status to no longer display as new
+  target.classList.remove("new")
+
   // set titles
   const activationDateTime = target.querySelector(".activation-date-time").innerText
   document.getElementById("popup-video-date-time").innerText = activationDateTime
   const activationCam = target.querySelector(".activation-camera").innerText
   document.getElementById("popup-video-camera").innerText = activationCam
   document.getElementById("share-video").dataset.video = target.dataset.video
-
 
   // get video key to find
   const videoKey = target.dataset.video
@@ -235,12 +240,11 @@ function clickShareButton(ev) {
     console.log(videoUrl)
     // copy video URL to clipboard
     navigator.clipboard.writeText(videoUrl)
-    displayShareButton(ev)
+    displayShareConfirmation(ev)
   })
 }
 
-function displayShareButton(ev) {
-  console.log(ev)
+function displayShareConfirmation(ev) {
   const tooltip = document.getElementById("share-copy-confirm")
   tooltip.classList.add("popup-visible")
   tooltip.style.left = ev.layerX
@@ -248,4 +252,24 @@ function displayShareButton(ev) {
   window.setTimeout(e => {
     document.getElementById("share-copy-confirm").classList.remove("popup-visible")
   }, 5000)
+}
+
+function clickDeleteButton(ev) {
+  const videoKey = document.getElementById("share-video").dataset.video
+  if (confirm(`Delete video ${videoKey}?`)) {
+    // delete video from storage and update database
+    fetch(`${apiUrl}?delete=${videoKey}`, {
+      method: "DELETE"
+    })
+
+    // remove from UI list
+    const activations = document.querySelector("main")
+    // iterate through list and remove matching entry
+    for (activation of activations) {
+      if (activation.dataset.video == videoKey) activation.remove()
+    }
+
+    // close popup
+    closePopup()
+  }
 }
