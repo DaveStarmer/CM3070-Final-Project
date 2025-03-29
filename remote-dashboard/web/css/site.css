@@ -110,6 +110,10 @@ nav {
     background-color: #79f;
 }
 
+.activation-card.deleted {
+    background-color: #f44;
+}
+
 .activation-info {
     padding-left: 10px;
 }

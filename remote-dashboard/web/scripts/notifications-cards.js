@@ -43,8 +43,9 @@ function createNotification(props) {
   actCam.classList.add("activation-camera")
   info.appendChild(actCam)
 
-  // add onclick eventListener to allow opening the full video in a popup
-  card.addEventListener("click", selectNotification)
+  // add onclick eventListener to allow opening the full video in a popup - if not deleted
+  if (props.clipStatus != "DELETED") card.addEventListener("click", selectNotification)
+  else card.classList.add("deleted")
 
   return card
 }
@@ -73,7 +74,10 @@ function updateActivations(newActivations = true) {
 
       // iterate and put activation cards in place
       for (let i = 0; i < js.length; ++i) {
-        addNotificationToMain({ videoStill: "https://placehold.co/150x75", ...js[i] })
+        if (!newActivations || js[i].clipStatus == "NEW") {
+          // do not add notification if deleted and only showing new
+          addNotificationToMain({ videoStill: "https://placehold.co/150x75", ...js[i] })
+        }
       }
     }
 
