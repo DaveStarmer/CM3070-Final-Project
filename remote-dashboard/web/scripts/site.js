@@ -127,7 +127,7 @@ function getSystemActivation() {
 const menuInfo = [
   ["Home", "index.html"],
   ["Deactivate", ""],
-  ["Alerts", "/alerts"],
+  ["Alerts", "alerts.html"],
   ["Logout", "/logout"],
 ]
 
@@ -135,7 +135,6 @@ fetch("config.json").then(res => res.json()).then(js => {
   window.apiUrl = (js["api-endpoint"].slice(-1) == "/")
     ? `${js["api-endpoint"]}activations`
     : `${js["api-endpoint"]}/activations`
-  updateActivations()
 
   // update system activation
   getSystemActivation()
