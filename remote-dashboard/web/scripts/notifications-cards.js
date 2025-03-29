@@ -22,6 +22,7 @@ function createNotification(props) {
   /** outer card */
   const card = document.createElement("div")
   card.classList.add("activation-card")
+  if (props.clipStatus == "NEW") card.classList.add("new")
   card.dataset.video = props.filename
   /** video still image */
   const videoStill = document.createElement("img")
@@ -63,8 +64,6 @@ function updateActivations(newActivations = true) {
   fetch(apiUrl)
     .then(res => res.json())
     .then(js => {
-      // clear main or existing cards
-
       // if no new activations, display message to that effect
       if (js.length == 0) {
         document.querySelector("main").innerHTML = "<div>No new notifications to show</div>"
@@ -206,6 +205,9 @@ function selectNotification(ev) {
   // move up the tree to find the parent activation card
   console.log(ev)
   const target = findTarget(ev, "activation-card")
+
+  // update status to no longer display as new
+  target.classList.remove("new")
 
   // set titles
   const activationDateTime = target.querySelector(".activation-date-time").innerText
