@@ -7,6 +7,7 @@ import { Construct } from 'constructs';
 import { CompositePrincipal, Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { ParameterDataType, ParameterTier, StringParameter } from 'aws-cdk-lib/aws-ssm';
 import { LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway';
+import { Topic } from 'aws-cdk-lib/aws-sns';
 
 
 export class DashboardStack extends Stack {
@@ -24,6 +25,8 @@ export class DashboardStack extends Stack {
   notificationLambda: Function
   /** centralised policy list */
   policies: { [key: string]: ManagedPolicy }
+  /** notification topic - to send emails/texts */
+  topic: Topic
 
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
@@ -81,10 +84,13 @@ export class DashboardStack extends Stack {
     // create database table to store notifications
     this.createDynamoDBTable()
 
+    this.createNotificationSNS()
+
     // create lambda to respond to uploads and notify users
     this.createNotificationLambda()
     // link this lambda to creation of an object in the upload bucket
     this.uploadBucket.addEventNotification(EventType.OBJECT_CREATED, new LambdaDestination(this.notificationLambda))
+
 
     // create API for listing notifications
     this.createNotificationsApi(props?.env?.region || "")
@@ -121,7 +127,8 @@ export class DashboardStack extends Stack {
       environment: {
         "DYNAMODB_TABLE": this.database.tableName,
         "SOURCE_BUCKET": this.uploadBucket.bucketName,
-        "DESTINATION_BUCKET": this.videoBucket.bucketName
+        "DESTINATION_BUCKET": this.videoBucket.bucketName,
+        "SNS_TOPIC": this.topic.topicArn,
       },
       role: this.createNotificationLambdaExecutionRole(),
       loggingFormat: LoggingFormat.JSON,
@@ -135,6 +142,8 @@ export class DashboardStack extends Stack {
     this.videoBucket.grantPut(this.notificationLambda)
     // add access rights for lambda to write to dynamodb table
     this.database.grantWriteData(this.notificationLambda)
+    // add access rights to publish to SNS topic
+    this.topic.grantPublish(this.notificationLambda)
   }
 
   createNotificationLambdaExecutionRole() {
@@ -301,13 +310,14 @@ export class DashboardStack extends Stack {
       // environment variables for lambda - pass api address in
       environment: {
         "API_ENDPOINT": api_url,
-        "CONFIG_BUCKET": this.configBucket.bucketName
+        "CONFIG_BUCKET": this.configBucket.bucketName,
       },
       role: this.createCustomResourceExecutionRole(),
       loggingFormat: LoggingFormat.JSON,
       applicationLogLevelV2: ApplicationLogLevel.DEBUG,
     })
 
+    // grant access to config bucket
     this.configBucket.grantWrite(lambda)
 
     // invoke as a custom resource
@@ -385,5 +395,11 @@ export class DashboardStack extends Stack {
         ]
       }
     )
+  }
+
+  createNotificationSNS() {
+    this.topic = new Topic(this, "notificationTopic", {
+      "topicName": "notifications-topic"
+    })
   }
 }

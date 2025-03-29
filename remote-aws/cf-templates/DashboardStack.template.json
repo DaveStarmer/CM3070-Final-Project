@@ -264,6 +264,15 @@
     "aws:cdk:path": "DashboardStack/activationTable/Resource"
    }
   },
+  "notificationTopic102BFE2A": {
+   "Type": "AWS::SNS::Topic",
+   "Properties": {
+    "TopicName": "notifications-topic"
+   },
+   "Metadata": {
+    "aws:cdk:path": "DashboardStack/notificationTopic/Resource"
+   }
+  },
   "notificationLambdaRoleE89DA80E": {
    "Type": "AWS::IAM::Role",
    "Properties": {
@@ -405,6 +414,13 @@
          ]
         }
        ]
+      },
+      {
+       "Action": "sns:Publish",
+       "Effect": "Allow",
+       "Resource": {
+        "Ref": "notificationTopic102BFE2A"
+       }
       }
      ],
      "Version": "2012-10-17"
@@ -427,7 +443,7 @@
      "S3Bucket": {
       "Ref": "codeBucketName"
      },
-     "S3Key": "lambdas/notification-ca674a8c0d052af28e3713e4c22b3df8.zip"
+     "S3Key": "lambdas/notification-3d2d8f5a220cf2fc1da6d8b019c9ca4e.zip"
     },
     "Description": "copies clips to storage bucket, writes info to database",
     "Environment": {
@@ -440,6 +456,9 @@
       },
       "DESTINATION_BUCKET": {
        "Ref": "videoStorage429F1872"
+      },
+      "SNS_TOPIC": {
+       "Ref": "notificationTopic102BFE2A"
       }
      }
     },
@@ -1373,7 +1392,7 @@
      "S3Bucket": {
       "Ref": "codeBucketName"
      },
-     "S3Key": "lambdas/api-location-output-9af5b674951ed8c62ae16f6c32e7ee8d.zip"
+     "S3Key": "lambdas/api-location-output-adbf56a1e6872d5f7d11c5b716129931.zip"
     },
     "Description": "output API address",
     "Environment": {
