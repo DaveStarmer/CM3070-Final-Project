@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 import logging
 import boto3
@@ -22,6 +23,7 @@ def handler_function(event, _):
 
     s3_client = boto3.client("s3")
     db_client = boto3.client("dynamodb")
+    sns_client = boto3.client("sns")
 
     # detect if system disabled, and log appropriately
     enabled = system_enabled()
@@ -64,6 +66,20 @@ def handler_function(event, _):
                 },
             )
             logger.debug("Data written to database")
+
+            ts_datetime = datetime.strptime(timestamp, "%Y%m%d%H%M%S")
+            ts_date = ts_datetime.strftime("%d-%m-%Y")
+            ts_time = ts_datetime.strftime("%H:%M:%S")
+
+            message = f"""Motion was detected on your security camera system at {ts_time} on
+            {ts_date}. Please log into the camera dashboard to check your notifications.
+            """
+
+            sns_client.publish(
+                TopicArn=os.environ["SNS_TOPIC"],
+                Subject=f"Security Camera Activation {ts_date} {ts_time}",
+                Message=message,
+            )
 
         # delete uploaded video from source bucket
         # if enabled, this will have been copied to the storage bucket,
