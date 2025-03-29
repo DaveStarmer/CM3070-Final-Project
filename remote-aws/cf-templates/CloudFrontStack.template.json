@@ -393,7 +393,7 @@
      "S3Bucket": {
       "Ref": "codeBucketName"
      },
-     "S3Key": "lambdas-cf/edge-auth-5a9e427119e89ac278377e73908fd227.zip"
+     "S3Key": "lambdas-cf/edge-auth-eba654ace7f29b51e18980a4d37ec8bc.zip"
     },
     "Description": "Authorisation Edge Lambda",
     "FunctionName": "edge-auth",
@@ -418,7 +418,7 @@
     "aws:cdk:path": "CloudFrontStack/authLambda/Fn/Resource"
    }
   },
-  "authLambdaFnCurrentVersion75C86FD9b2a3ba4fb29c139deaa40ecd66a33692": {
+  "authLambdaFnCurrentVersion75C86FD966dcdad4d5fbb12ee8278e11e92f32b1": {
    "Type": "AWS::Lambda::Version",
    "Properties": {
     "FunctionName": {
@@ -537,7 +537,7 @@
     }
    },
    "DependsOn": [
-    "authLambdaFnCurrentVersion75C86FD9b2a3ba4fb29c139deaa40ecd66a33692",
+    "authLambdaFnCurrentVersion75C86FD966dcdad4d5fbb12ee8278e11e92f32b1",
     "authLambdaFnCACD311C",
     "responseLambdaFnCurrentVersion182D6968ffa7d67ce7917d17d17f2dc222c6391f",
     "responseLambdaFn5E189E9A"
@@ -575,7 +575,7 @@
        {
         "EventType": "viewer-request",
         "LambdaFunctionARN": {
-         "Ref": "authLambdaFnCurrentVersion75C86FD9b2a3ba4fb29c139deaa40ecd66a33692"
+         "Ref": "authLambdaFnCurrentVersion75C86FD966dcdad4d5fbb12ee8278e11e92f32b1"
         }
        },
        {
@@ -654,7 +654,7 @@
     }
    },
    "DependsOn": [
-    "authLambdaFnCurrentVersion75C86FD9b2a3ba4fb29c139deaa40ecd66a33692",
+    "authLambdaFnCurrentVersion75C86FD966dcdad4d5fbb12ee8278e11e92f32b1",
     "authLambdaFnCACD311C",
     "responseLambdaFnCurrentVersion182D6968ffa7d67ce7917d17d17f2dc222c6391f",
     "responseLambdaFn5E189E9A"
@@ -820,7 +820,7 @@
      "S3Bucket": {
       "Ref": "codeBucketName"
      },
-     "S3Key": "lambdas-cf/copy-web-code-31c7d226b444dd8ca82206c1226166f8.zip"
+     "S3Key": "lambdas-cf/copy-web-code-6782827df9b3d74a9d7f9beec9b6fc10.zip"
     },
     "Handler": "handler.handler_function",
     "Role": {

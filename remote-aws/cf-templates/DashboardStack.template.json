@@ -10,6 +10,10 @@
    "Default": "public-cam-code-ec0c1faa4de3482c9bdc0081a3ec4834",
    "AllowedPattern": "^[a-z0-9.-]{1,63}$",
    "Description": "Code Bucket Name"
+  },
+  "domainName": {
+   "Type": "String",
+   "Description": "Name of Domain"
   }
  },
  "Resources": {
@@ -555,7 +559,7 @@
     "aws:cdk:path": "DashboardStack/listActivationsApi/Resource"
    }
   },
-  "listActivationsApiDeployment6445D741e95d2c54028fbc6f0187fb6bcfb6f8b3": {
+  "listActivationsApiDeployment6445D7414802716e24844a1c23baba74008eb6ab": {
    "Type": "AWS::ApiGateway::Deployment",
    "Properties": {
     "Description": "list activations",
@@ -564,8 +568,12 @@
     }
    },
    "DependsOn": [
+    "listActivationsApiactivationsDELETE3810230B",
     "listActivationsApiactivationsGETEAC19B07",
-    "listActivationsApiactivations70340CE4"
+    "listActivationsApiactivationsOPTIONS0F6D97EF",
+    "listActivationsApiactivationsPUT6D933E03",
+    "listActivationsApiactivations70340CE4",
+    "listActivationsApiOPTIONSEF6055B0"
    ],
    "Metadata": {
     "aws:cdk:path": "DashboardStack/listActivationsApi/Deployment/Resource"
@@ -575,7 +583,7 @@
    "Type": "AWS::ApiGateway::Stage",
    "Properties": {
     "DeploymentId": {
-     "Ref": "listActivationsApiDeployment6445D741e95d2c54028fbc6f0187fb6bcfb6f8b3"
+     "Ref": "listActivationsApiDeployment6445D7414802716e24844a1c23baba74008eb6ab"
     },
     "RestApiId": {
      "Ref": "listActivationsApi34766676"
@@ -584,6 +592,52 @@
    },
    "Metadata": {
     "aws:cdk:path": "DashboardStack/listActivationsApi/DeploymentStage.prod/Resource"
+   }
+  },
+  "listActivationsApiOPTIONSEF6055B0": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'*'",
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Fn::GetAtt": [
+      "listActivationsApi34766676",
+      "RootResourceId"
+     ]
+    },
+    "RestApiId": {
+     "Ref": "listActivationsApi34766676"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "DashboardStack/listActivationsApi/Default/OPTIONS/Resource"
    }
   },
   "listActivationsApiactivations70340CE4": {
@@ -602,6 +656,49 @@
    },
    "Metadata": {
     "aws:cdk:path": "DashboardStack/listActivationsApi/Default/activations/Resource"
+   }
+  },
+  "listActivationsApiactivationsOPTIONS0F6D97EF": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'*'",
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "listActivationsApiactivations70340CE4"
+    },
+    "RestApiId": {
+     "Ref": "listActivationsApi34766676"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "DashboardStack/listActivationsApi/Default/activations/OPTIONS/Resource"
    }
   },
   "listActivationsApiactivationsGETApiPermissionDashboardStacklistActivationsApi72416B88GETactivationsECAED963": {
@@ -720,6 +817,14 @@
       ]
      }
     },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Origin": true
+      },
+      "StatusCode": "200"
+     }
+    ],
     "ResourceId": {
      "Ref": "listActivationsApiactivations70340CE4"
     },
@@ -729,6 +834,276 @@
    },
    "Metadata": {
     "aws:cdk:path": "DashboardStack/listActivationsApi/Default/activations/GET/Resource"
+   }
+  },
+  "listActivationsApiactivationsPUTApiPermissionDashboardStacklistActivationsApi72416B88PUTactivations8DFDAF13": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "listApiLambda7E6FD1BC",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "listActivationsApi34766676"
+       },
+       "/",
+       {
+        "Ref": "listActivationsApiDeploymentStageprodE56C4C89"
+       },
+       "/PUT/activations"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "DashboardStack/listActivationsApi/Default/activations/PUT/ApiPermission.DashboardStacklistActivationsApi72416B88.PUT..activations"
+   }
+  },
+  "listActivationsApiactivationsPUTApiPermissionTestDashboardStacklistActivationsApi72416B88PUTactivationsD0D075E3": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "listApiLambda7E6FD1BC",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "listActivationsApi34766676"
+       },
+       "/test-invoke-stage/PUT/activations"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "DashboardStack/listActivationsApi/Default/activations/PUT/ApiPermission.Test.DashboardStacklistActivationsApi72416B88.PUT..activations"
+   }
+  },
+  "listActivationsApiactivationsPUT6D933E03": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "PUT",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:",
+        {
+         "Ref": "AWS::Region"
+        },
+        ":lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "listApiLambda7E6FD1BC",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Origin": true
+      },
+      "StatusCode": "200"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "listActivationsApiactivations70340CE4"
+    },
+    "RestApiId": {
+     "Ref": "listActivationsApi34766676"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "DashboardStack/listActivationsApi/Default/activations/PUT/Resource"
+   }
+  },
+  "listActivationsApiactivationsDELETEApiPermissionDashboardStacklistActivationsApi72416B88DELETEactivationsBC44D925": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "listApiLambda7E6FD1BC",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "listActivationsApi34766676"
+       },
+       "/",
+       {
+        "Ref": "listActivationsApiDeploymentStageprodE56C4C89"
+       },
+       "/DELETE/activations"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "DashboardStack/listActivationsApi/Default/activations/DELETE/ApiPermission.DashboardStacklistActivationsApi72416B88.DELETE..activations"
+   }
+  },
+  "listActivationsApiactivationsDELETEApiPermissionTestDashboardStacklistActivationsApi72416B88DELETEactivations6D98A5DA": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "listApiLambda7E6FD1BC",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "listActivationsApi34766676"
+       },
+       "/test-invoke-stage/DELETE/activations"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "DashboardStack/listActivationsApi/Default/activations/DELETE/ApiPermission.Test.DashboardStacklistActivationsApi72416B88.DELETE..activations"
+   }
+  },
+  "listActivationsApiactivationsDELETE3810230B": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "DELETE",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:",
+        {
+         "Ref": "AWS::Region"
+        },
+        ":lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "listApiLambda7E6FD1BC",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Origin": true
+      },
+      "StatusCode": "200"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "listActivationsApiactivations70340CE4"
+    },
+    "RestApiId": {
+     "Ref": "listActivationsApi34766676"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "DashboardStack/listActivationsApi/Default/activations/DELETE/Resource"
    }
   },
   "listApiLambdaRole5EC99D0C": {
@@ -768,13 +1143,17 @@
       {
        "Action": [
         "dynamodb:BatchGetItem",
+        "dynamodb:BatchWriteItem",
         "dynamodb:ConditionCheckItem",
+        "dynamodb:DeleteItem",
         "dynamodb:DescribeTable",
         "dynamodb:GetItem",
         "dynamodb:GetRecords",
         "dynamodb:GetShardIterator",
+        "dynamodb:PutItem",
         "dynamodb:Query",
-        "dynamodb:Scan"
+        "dynamodb:Scan",
+        "dynamodb:UpdateItem"
        ],
        "Effect": "Allow",
        "Resource": [
@@ -829,6 +1208,24 @@
          ]
         }
        ]
+      },
+      {
+       "Action": "s3:DeleteObject*",
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::Join": [
+         "",
+         [
+          {
+           "Fn::GetAtt": [
+            "videoStorage429F1872",
+            "Arn"
+           ]
+          },
+          "/*"
+         ]
+        ]
+       }
       }
      ],
      "Version": "2012-10-17"
@@ -851,7 +1248,7 @@
      "S3Bucket": {
       "Ref": "codeBucketName"
      },
-     "S3Key": "lambdas/activations-list-44e57f115defb1d734a3d9eb68fd5140.zip"
+     "S3Key": "lambdas/activations-list-9d9c0bf9a36257e4c8ef9e7b8f47e604.zip"
     },
     "Description": "responds to api requests for lists of notification",
     "Environment": {
@@ -976,7 +1373,7 @@
      "S3Bucket": {
       "Ref": "codeBucketName"
      },
-     "S3Key": "lambdas/api-location-output-1491d26b2ac2c8f55c78e6f840a93787.zip"
+     "S3Key": "lambdas/api-location-output-9af5b674951ed8c62ae16f6c32e7ee8d.zip"
     },
     "Description": "output API address",
     "Environment": {
