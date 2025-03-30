@@ -1267,9 +1267,9 @@
      "S3Bucket": {
       "Ref": "codeBucketName"
      },
-     "S3Key": "lambdas/activations-list-9d9c0bf9a36257e4c8ef9e7b8f47e604.zip"
+     "S3Key": "lambdas/activations-list-1683057a834cfd8aa697575be5cda412.zip"
     },
-    "Description": "responds to api requests for lists of notification",
+    "Description": "respond to api requests for lists of notification",
     "Environment": {
      "Variables": {
       "DYNAMODB_TABLE": {
@@ -1392,7 +1392,7 @@
      "S3Bucket": {
       "Ref": "codeBucketName"
      },
-     "S3Key": "lambdas/api-location-output-971dac54b4cef90df6a799881d40538c.zip"
+     "S3Key": "lambdas/api-location-output-f2e4dc94b3097ab6c19f01ee17f0d490.zip"
     },
     "Description": "output API address",
     "Environment": {
