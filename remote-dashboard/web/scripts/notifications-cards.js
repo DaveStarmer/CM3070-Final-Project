@@ -27,6 +27,7 @@ function createNotification(props) {
   /** video still image */
   const videoStill = document.createElement("img")
   videoStill.src = props.videoStill
+  videoStill.width = "150px"
   card.appendChild(videoStill)
   /** information area */
   const info = document.createElement("div")
@@ -76,7 +77,8 @@ function updateActivations(newActivations = true) {
       for (let i = 0; i < js.length; ++i) {
         if (!newActivations || js[i].clipStatus == "NEW") {
           // do not add notification if deleted and only showing new
-          addNotificationToMain({ videoStill: "https://placehold.co/150x75", ...js[i] })
+          // video placeholder (if still not available) from: https://fonts.google.com/icons?selected=Material+Icons:ondemand_video:&icon.query=play&icon.size=24&icon.color=%23000000
+          addNotificationToMain({ videoStill: "images/ondemand_video_24dp_000000.svg", ...js[i] })
         }
       }
     }
