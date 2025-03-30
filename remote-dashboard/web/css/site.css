@@ -102,6 +102,9 @@ nav {
 }
 
 /* Camera Cards */
+main {
+    padding: 5px 30px;
+}
 .activation-card {
     margin: 3px;
     background-color: #ddf;

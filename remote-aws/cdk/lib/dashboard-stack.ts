@@ -242,7 +242,7 @@ export class DashboardStack extends Stack {
     /** lambda to deal with api requests to list activations */
     const listApiLambda = new Function(this, "listApiLambda", {
       functionName: "list-api-lambda",
-      description: "responds to api requests for lists of notification",
+      description: "respond to api requests for lists of notification",
       timeout: Duration.minutes(5),
       runtime: Runtime.PYTHON_3_13,
       // source code for lambda
