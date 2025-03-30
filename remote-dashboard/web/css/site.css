@@ -1,3 +1,7 @@
+:root {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
 h1 {text-align: center;}
 
 /* Toggle */
@@ -104,6 +108,16 @@ nav {
     display: flex;
     margin: 5px;
     padding: 5px;
+    border-radius: 15px;
+    transition-duration: 0.25s;
+}
+
+.activation-card:hover {
+    transform: scale(0.99);
+}
+
+.activation-card:hover img {
+    opacity: 0.5;
 }
 
 .activation-card.new {
@@ -115,7 +129,12 @@ nav {
 }
 
 .activation-info {
-    padding-left: 10px;
+    padding-left: 12px;
+    font-size: 20px;
+}
+
+.activation-card:hover .activation-info {
+    color: #000a;
 }
 
 .activation-date-time {
