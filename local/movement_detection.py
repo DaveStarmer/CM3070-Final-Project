@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 
 # frames to compare back against
-FRAME_HISTORY = 40
+FRAME_HISTORY = 80
 # additional time to process video
 ADDITIONAL_PROCESSING_SECS = 0
 # threshold under which to merge or dispose of bounding rectangles which overlap
