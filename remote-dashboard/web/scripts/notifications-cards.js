@@ -27,7 +27,7 @@ function createNotification(props) {
   /** video still image */
   const videoStill = document.createElement("img")
   videoStill.src = props.videoStill
-  videoStill.width = "150px"
+  videoStill.width = "150"
   card.appendChild(videoStill)
   /** information area */
   const info = document.createElement("div")

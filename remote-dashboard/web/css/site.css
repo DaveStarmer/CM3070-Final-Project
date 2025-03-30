@@ -115,7 +115,8 @@ nav {
 }
 
 .activation-info {
-    padding-left: 10px;
+    padding-left: 12px;
+    font-size: large;
 }
 
 .activation-date-time {
