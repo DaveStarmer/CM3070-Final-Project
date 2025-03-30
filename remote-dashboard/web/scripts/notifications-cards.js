@@ -234,6 +234,9 @@ function selectNotification(ev) {
     document.getElementById("popup").classList.add("popup-visible")
     document.getElementById("page-overlay").classList.add("popup-visible")
   })
+
+  // update clip status as viewed
+  fetch(`${apiUrl}?video=${videoKey}&clipStatus=VIEWED`)
 }
 
 function clickShareButton(ev) {

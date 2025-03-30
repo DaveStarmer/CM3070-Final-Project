@@ -36,6 +36,8 @@ def handler_function(event, _):
         return delete_video(event)
     elif http_method == "GET" and "systemActivation" in query_params:
         return update_activation_status(event)
+    elif http_method == "GET" and query_params.get("clipStatus") is not None:
+        return update_clip_status(event)
     elif http_method == "GET" and query_params.get("video") is not None:
         return get_video_url(event)
     else:
@@ -209,3 +211,52 @@ def get_activations(event: dict) -> dict:
     logger.debug("Response: %s", api_response)
 
     return api_response
+
+
+def update_clip_status(event: dict) -> dict:
+    """Update clip status
+
+    Args:
+        event (dict): AWS Lambda event
+
+    Returns:
+        dict: response
+    """
+    logger.debug("GET method - update clip status")
+    query_params = event["queryStringParameters"]
+
+    if "video" not in query_params:
+        logger.info("Video not specified in request")
+        return {
+            "statusCode": 400,
+            "headers": {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Credentials": True,
+            },
+        }
+    video_key = query_params["video"]
+    new_status = query_params.get("clipStatus", "VIEWED")
+    logger.info("Marking %s as %s", video_key, new_status)
+    db_client = boto3.client("dynamodb")
+    timestamp = video_key[:14]
+    camera = os.path.basename(os.path.splitext(video_key)[0])[15:]
+    camera = camera.replace("_", " ")
+    db_client.update_item(
+        TableName=os.environ["DYNAMODB_TABLE"],
+        Key={
+            "timestamp": {"S": timestamp},
+            "camera": {"S": camera},
+        },
+        AttributeUpdates={"clipStatus": {"S": new_status}},
+    )
+    logger.info("%s marked as %s", video_key, new_status)
+
+    response = {
+        "statusCode": 200,
+        "headers": {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Credentials": True,
+        },
+    }
+
+    return response
