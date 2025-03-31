@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instructions</title>
+    <link rel="stylesheet" href="css/style.css">
+  </head>
+
+  <body>
+    <h1>Camera System Deployment Instructions</h1>
+    <nav></nav>
+
+    <h2>Update information after deployment</h2>
+    <ol>
+      <li>Return to Route 53</li>
+      <li>
+        Edit each of the previously-created A Records
+        <ol>
+          <li>Switch the 'Alias' toggle to on</li>
+          <li>Select 'Alias to CloudFront Distribution'</li>
+          <li>Put the CloudFront Distribution Domain Name copied from the output of the cloudformation stack in the
+            'value' field</li>
+          <li>Update the record</li>
+        </ol>
+      </li>
+    </ol>
+
+    <script src="scripts/instructionpage.js"></script>
+  </body>
+
+</html>

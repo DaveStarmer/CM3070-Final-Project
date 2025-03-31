@@ -14,3 +14,97 @@
 ol li {
     padding: 6px 0;
 }
+
+nav ol li {
+    padding: 0;
+}
+
+nav li a {
+    display: block;
+    padding: 5px;
+    text-decoration: none;
+}
+
+nav li a:hover {
+    background-color: #90a0ff;
+}
+
+#next-prev-div{
+    display: flex;
+    justify-content: space-between;
+}
+
+.prev-next-link {
+    display: grid;
+    text-decoration: none;
+    width: fit-content;
+}
+
+.prev-next-text {
+    grid-area: prev-next
+}
+
+.prev-next-desc {
+    grid-area: desc
+}
+
+#next-page {
+    grid-template-areas:
+      "prev-next point"
+      "desc point";
+    text-align: right;
+}
+
+#prev-page {
+    grid-template-areas:
+      "point prev-next"
+      "point desc";
+}
+
+.big-point {
+    font-size: 300%;
+    font-weight: bold;
+    grid-area: point;
+}
+
+/* Menu */
+/* Menu Checkbox */
+#menu-open {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+/* Menu */
+/* display when checkbox checked, hide at other times */
+#menu-open ~ #nav-menu {
+    display: none;
+}
+#menu-open:checked ~ #nav-menu {
+    display: block;
+}
+/* outer menu style */
+#nav-menu {
+    position: fixed;
+    background-color: white;
+    border: 2px solid black;
+}
+/* individual items - links */
+#nav-menu a {
+    width: 150px;
+    height: 30px;
+    padding: 5px;
+    display: flex;
+    justify-content: baseline;
+    align-items: center;
+    text-decoration: none;
+}
+/* hover menu item */
+#nav-menu a:hover {
+    background-color: blue;
+    color: white;
+}
+nav {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
