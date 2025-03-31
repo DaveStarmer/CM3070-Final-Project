@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instructions</title>
+    <link rel="stylesheet" href="css/style.css">
+  </head>
+
+  <body>
+    <h1>Camera System Deployment Instructions</h1>
+    <nav></nav>
+    <h2>Subscribe to alerts</h2>
+    <ol>
+      <li>Search for 'SNS' in AWS search bar and select</li>
+      <li>
+        Select 'topics' from the left hand side
+        <img src="images/06_sns/1SNS.png" class="screenshot">
+      </li>
+      <li>Select the only topic shown</li>
+      <li>Copy the ARN</li>
+      <li>
+        Click on the yellow "Create Subscription" button
+        <img src="images/06_sns/2Topic.png" alt="" class="screenshot">
+      </li>
+      <li>Paste the ARN into the top field</li>
+      <li>
+        Select 'Email' from the protocol list
+        <img src="images/06_sns/3type.png" alt="" class="screenshot">
+      </li>
+      <li>Enter the email address to subscribe in the appropriate field</li>
+      <li>
+        Check your email - you will need to follow the instructions in the confirmation email
+        <img src="images/06_sns/5confirm.png" alt="" class="screenshot">
+      </li>
+    </ol>
+
+
+    <script src="scripts/instructionpage.js"></script>
+  </body>
+
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instructions</title>
+    <link rel="stylesheet" href="css/style.css">
+  </head>
+
+  <body>
+    <h1>Camera System Deployment Instructions</h1>
+    <nav></nav>
+
+    <h2>Get Domain Name and Certificate</h2>
+    <ol>
+      <li>
+        Log into AWS Console ('sign in' from
+        <a href="https://aws.amazon.com/" target="_blank">https://aws.amazon.com/</a>, or you may already be there from
+        the previous step)
+        <img src="images/01_register_domain/01_console.png" alt="AWS Console" class="screenshot">
+      </li>
+      <li>Into the search box at the top of the page type <span class="cmd">Route 53</span></li>
+      <li>Select Route 53 from the list</li>
+      <li>
+        On the Route 53 page, Click on 'Register Domains' at the top right
+        <img src="images/01_register_domain/02_domains_screen.png" alt="Empty Domain List Screen" class="screenshot">
+      </li>
+      <li>
+        Enter preferred domain name, other options will be shown along with their yearly cost.
+        <img src="images/01_register_domain/03_register_domain.png" alt="Register Domain Screen" class="screenshot">
+      </li>
+      <li>Click on 'select' next to the desired domain name</li>
+      <li>
+        Click on 'Proceed to Checkout'
+        <img src="images/01_register_domain/04_domain_in_basket.png" alt="Domain in Basket" class="screenshot">
+      </li>
+      <li>
+        On the next screen, set domain renewal as appropriate.
+        <img src="images/01_register_domain/05_renewal_options.png" alt="Renewal Options" class="screenshot">
+      </li>
+      <li>
+        Fill in your details on the next page.
+        <img src="images/01_register_domain/06_personal_details.png" alt="Personal Details" class="screenshot">
+      </li>
+      <li>
+        Review your purchase and click 'submit'
+        <img src="images/01_register_domain/07_review_purchase.png" alt="Review purchase" class="screenshot">
+      </li>
+      <li>
+        Domain will be created, and will appear on the page when Complete
+        <img src="images/01_register_domain/08_return_to_domains_list.png" alt="Domains List" class="screenshot">
+      </li>
+      <li>
+        After a few minutes, the domain will appear on the list with a status of 'In progress'
+        <img src="images/01_register_domain/09_domain_on_list.png" alt="Domain appears on list" class="screenshot">
+      </li>
+      <li>Select 'Hosted Zones' from the menu on the left</li>
+      <li> Repeat the following steps setting 'Record name' to blank, <span class="cmd">auth</span>,
+        and <span class="cmd">www</span>
+        <ol>
+          <li>Click 'Create Record'</li>
+          <li>
+            Leave the 'Record name' blank
+            <img src="images/01_register_domain/10_create_a_record.png" alt="A Record Creation" class="screenshot">
+          </li>
+          <li>Enter <span class="cmd">1.2.3.4</span> in the 'Value' field</li>
+          <li>Click the '1m' button to set the TTL to 1 minute</li>
+        </ol>
+      </li>
+      <li>The previous steps can be completed to create AAAA records for IPv6 records if desired</li>
+      <li>
+        Enter <span class="cmd">Certificate Manager</span> in the search box, and select from the list
+      </li>
+      <li>Click on 'request'</li>
+      <li>Ensure 'Request a public certificate' is selected, and click 'next'</li>
+      <li>
+        In 'Fully qualified domain name' enter <span class="cmd">*.</span> followed by the domain name registered
+        earlier, e.g. <span class="cmd">*.example.com</span>. Leave all other options as shown below
+        <img src="images/01_register_domain/11_cert_request.png" alt="Certificat Request Page" class="screenshot">
+      </li>
+      <li>Take note of the 'ARN' for the certificate</li>
+      <li>Click on 'request'</li>
+      <li>
+        The resulting page will show the certificate is being requested. Click on 'Create records in Route 53'.
+        <img src="images/01_register_domain/12_cert_requested.png" alt="Certificate requested" class="screenshot">
+      </li>
+    </ol>
+
+    <script src="scripts/instructionpage.js"></script>
+  </body>
+
+</html>

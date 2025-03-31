@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instructions</title>
+    <link rel="stylesheet" href="css/style.css">
+  </head>
+
+  <body>
+    <h1>Camera System Deployment Instructions</h1>
+    <nav></nav>
+
+    <h2>Deploy Cloudformation templates</h2>
+    <ol>
+      <li>Enter <span class="cmd">CloudFormation</span> in the search bar</li>
+      <li>Ensure that the region (top right-hand corner) is set to 'United States (N. Virginia)</li>
+      <li>Repeat the following steps first for the dashboard stack, then the cloudformation stack
+        <ol>
+          <li>Select 'Create stack' from the top right-hand corner</li>
+          <li>Select the 'With new resources (standard) option</li>
+          <li>
+            Select 'Upload a template file' and choose the CloudFrontStack.template.json file
+            <img src="images/02_deploy_cloudformation/01_upload_cf_template.png"
+              alt="Upload CloudFront CloudFormation Template" class="screenshot">
+          </li>
+          <li>Click 'Next'</li>
+          <li>
+            Set the various CloudFormation Parameters
+            <img src="images/02_deploy_cloudformation/02_set_cf_parameters.png" alt="Set CloudFormation Parameters"
+              class="screenshot">
+            <ul>
+              <li>certificateArn should be the ARN of your certificate (copied earlier)</li>
+              <li>
+                codeBucketName should be the bucket with the code in it - if you have changed from the default, alter it
+                here
+              </li>
+              <li>codeBucketRegion - the region the codeBucket is in</li>
+              <li>domainName - your domain name (excluding prefixes such as www. or auth.)</li>
+              <li>hostedZoneId - the Hosted Zone for your Route 53 domain</li>
+              <li>uniqueId - a unique number added to resources to prevent name conflicts, this could be the account
+                number
+              </li>
+            </ul>
+          </li>
+          <li>Click 'Next'</li>
+          <li>
+            On the next page most options can be left as default, the tick box for acknowledging CloudFormation might
+            create
+            IAM roles should be ticked
+            <img src="images/02_deploy_cloudformation/03_stack_option_confirm.png" alt="Confirm Stack Options Page"
+              class="screenshot">
+          </li>
+          <li>Click 'Next'</li>
+          <li>
+            Click 'Submit' to create the stack
+            <img src="images/02_deploy_cloudformation/04_final_confirmation.png" alt="Final CloudFormation Confirmation"
+              class="screenshot">
+          </li>
+        </ol>
+      </li>
+      <li>
+        Once the stack shows a status of CREATE_COMPLETE, select it
+        <img src="images/02_deploy_cloudformation/05_stack_details.png" alt="Stack Details" class="screenshot">
+      </li>
+      <li>
+        Click on the 'Outputs' tab across the top
+        <img src="images/02_deploy_cloudformation/06_stack_outputs.png" alt="Stack Outputs" class="screenshot">
+      </li>
+      <li>Take note of the CloudFrontDistributionDomainName</li>
+    </ol>
+
+    <script src="scripts/instructionpage.js"></script>
+  </body>
+
+</html>

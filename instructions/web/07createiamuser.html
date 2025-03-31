@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instructions</title>
+    <link rel="stylesheet" href="css/style.css">
+  </head>
+
+  <body>
+    <h1>Camera System Deployment Instructions</h1>
+    <nav></nav>
+    <h2>Create IAM User</h2>
+    <ol>
+      <li>Search for 'IAM' in the AWS Search bar</li>
+      <li>Select 'Users'</li>
+      <li>Click create user</li>
+      <li>Enter a user name and click next</li>
+      <li>Select 'Attach Policies Directly'</li>
+      <li>Click 'Create Policy'</li>
+      <li>Select the JSON editor</li>
+      <li>
+        Paste in:
+        <code>
+          {
+          "Version": "2012-10-17",
+          "Statement": [
+          {
+          "Sid": "VisualEditor0",
+          "Effect": "Allow",
+          "Action": [
+          "s3:PutObject"
+          ],
+          "Resource": [
+          "arn:aws:s3:::vid-dash-upload-123456789012/*",
+          "arn:aws:s3:::vid-dash-upload-123456789012"
+          ]
+          }
+          ]
+          }
+        </code>
+
+        (replace 123456789012 with your unique number)
+      </li>
+      <li>View your new user</li>
+      <li>Click 'Create Access Key'</li>
+      <li>Select 'Other' then next</li>
+      <li>Click 'Create Access Key'</li>
+      <li>Take note of both your secret access key and your access key</li>
+    </ol>
+
+
+
+    <script src="scripts/instructionpage.js"></script>
+  </body>
+
+</html>

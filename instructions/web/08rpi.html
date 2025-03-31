@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instructions</title>
+    <link rel="stylesheet" href="css/style.css">
+  </head>
+
+  <body>
+    <h1>Camera System Deployment Instructions</h1>
+    <nav></nav>
+    <h2>Set up Raspberry Pi</h2>
+    <ol>
+      <li>
+        Download the Raspberry Pi Imager CloudFormation
+        <a href="https://www.raspberrypi.com/software/">Raspberry Pi Software</a>
+      </li>
+      <li>Put the SD card into the computer</li>
+      <li>Run Raspberry Pi Imager</li>
+      <li>Select the correct device</li>
+      <li>Select 'Other OS', then 'Raspberry Pi Lite'</li>
+      <li>Select the SD card as storage</li>
+      <li>Click next</li>
+      <li>
+        Change the personalisation options
+        <ul>
+          <li>it is recommended you set up an SSH Key for access by clicking the button</li>
+          <li>ensure that the wireless network is configured</li>
+          <li>take note of the device's network name</li>
+        </ul>
+      </li>
+      <li>Click next</li>
+      <li>Once the image is written to the SD card, swap card into the Raspberry Pi</li>
+      <li>Switch the Raspberry Pi on</li>
+      <li>Use scp to copy code files across to /home/user/app</li>
+      <li>ssh into the Pi</li>
+      <li>run pi_setup.sh</li>
+      <li>run generate_config.sh and answer the questions</li>
+      <li>reboot the Raspberry Pi</li>
+      <li>Your system should now work!</li>
+    </ol>
+
+
+    <script src="scripts/instructionpage.js"></script>
+  </body>
+
+</html>
